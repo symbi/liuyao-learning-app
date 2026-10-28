@@ -45,6 +45,9 @@
 - [MVP 实施计划](docs/mvp-plan.md)
 - [规则状态与待核实项](docs/rules-status.md)
 - [学习资料目录说明](materials/README.md)
+- [架构设计（Phase 0）](docs/architecture.md)
+- [UI 原型（浏览器打开）](docs/ui-mockup.html)
+- [待决策清单](docs/open-decisions.md)
 
 ## 建议的开发方式
 
