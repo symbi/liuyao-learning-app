@@ -37,6 +37,10 @@
 
 ## 文档导航
 
+- [项目主计划（含给 Claude Code 的启动任务）](docs/master-plan.md)
+- [历法引擎方案与验证计划](docs/calendar-engine-plan.md)
+- [开源项目与古籍参考资料调查计划](docs/reference-research-plan.md)
+
 - [项目背景](docs/project-background.md)
 - [MVP 实施计划](docs/mvp-plan.md)
 - [规则状态与待核实项](docs/rules-status.md)
