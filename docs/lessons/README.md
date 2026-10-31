@@ -9,10 +9,12 @@
 | 第七课 | 六亲动变、化进化退与日月影响 | [lesson-07-notes-v0.1.md](lesson-07-notes-v0.1.md) |
 | 第八课 | 六神象义与断卦辅助方法 | [lesson-08-notes-v0.1.md](lesson-08-notes-v0.1.md) |
 | 第九课 | 用神、原神、忌神与仇神 | [lesson-09-notes-v0.1.md](lesson-09-notes-v0.1.md) |
+| 第十课 | 月建、日月作用、三合与伏神 | [lesson-10-notes-v0.1.md](lesson-10-notes-v0.1.md) |
 
 ## 规则总览
 
 - [规则状态与待核实清单](../rules-status.md)
 - [第九课外部参考](../references/lesson-09-external-sources.md)
+- [第十课外部参考](../references/lesson-10-external-sources.md)
 
 规则卡片位于 [docs/rules](../rules/)；每条规则均保留课次来源、状态、适用边界及实现要求。
