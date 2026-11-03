@@ -11,6 +11,7 @@
 | 第九课 | 用神、原神、忌神与仇神 | [lesson-09-notes-v0.1.md](lesson-09-notes-v0.1.md) |
 | 第十课 | 月建、日月作用、三合与伏神 | [lesson-10-notes-v0.1.md](lesson-10-notes-v0.1.md) |
 | 第十一课 | 暗动、日辰冲与问卦规范 | [lesson-11-notes-v0.1.md](lesson-11-notes-v0.1.md) |
+| 第十二课 | 旺相休囚、动爻作用、合中带克与六冲六合 | [lesson-12-notes-v0.1.md](lesson-12-notes-v0.1.md) |
 
 ## 规则总览
 
@@ -18,5 +19,6 @@
 - [第九课外部参考](../references/lesson-09-external-sources.md)
 - [第十课外部参考](../references/lesson-10-external-sources.md)
 - [第十一课外部参考](../references/lesson-11-external-sources.md)
+- [第十二课外部参考](../references/lesson-12-external-sources.md)
 
 规则卡片位于 [docs/rules](../rules/)；每条规则均保留课次来源、状态、适用边界及实现要求。
