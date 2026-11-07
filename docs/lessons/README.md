@@ -14,6 +14,7 @@
 | 第十二课 | 旺相休囚、动爻作用、合中带克与六冲六合 | [lesson-12-notes-v0.1.md](lesson-12-notes-v0.1.md) |
 | 第十三课 | 流年年运、世爻主轴与六亲分项 | [lesson-13-notes-v0.1.md](lesson-13-notes-v0.1.md) |
 | 第十四课 | 婚姻占问、世应世用关系与求子胎爻 | [lesson-14-notes-v0.1.md](lesson-14-notes-v0.1.md) |
+| 第十五课 | 求官、体制外求职、升迁调动与择日问答 | [lesson-15-notes-v0.1.md](lesson-15-notes-v0.1.md) |
 
 ## 规则总览
 
@@ -24,5 +25,6 @@
 - [第十二课外部参考](../references/lesson-12-external-sources.md)
 - [第十三课外部参考](../references/lesson-13-external-sources.md)
 - [第十四课外部参考](../references/lesson-14-external-sources.md)
+- [第十五课外部参考](../references/lesson-15-external-sources.md)
 
 规则卡片位于 [docs/rules](../rules/)；每条规则均保留课次来源、状态、适用边界及实现要求。
