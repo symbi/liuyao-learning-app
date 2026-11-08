@@ -40,6 +40,7 @@
 - [项目主计划（含给 Claude Code 的启动任务）](docs/master-plan.md)
 - [历法引擎方案与验证计划](docs/calendar-engine-plan.md)
 - [开源项目与古籍参考资料调查计划](docs/reference-research-plan.md)
+- [开源项目分类目录、二十八宿与择日研究备忘录](docs/references/github-project-catalog-and-28-mansions.md)
 - [课程笔记总览](docs/lessons/README.md)
 
 - [项目背景](docs/project-background.md)
