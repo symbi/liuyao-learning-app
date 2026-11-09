@@ -15,6 +15,7 @@
 | 第十三课 | 流年年运、世爻主轴与六亲分项 | [lesson-13-notes-v0.1.md](lesson-13-notes-v0.1.md) |
 | 第十四课 | 婚姻占问、世应世用关系与求子胎爻 | [lesson-14-notes-v0.1.md](lesson-14-notes-v0.1.md) |
 | 第十五课 | 求官、体制外求职、升迁调动与择日问答 | [lesson-15-notes-v0.1.md](lesson-15-notes-v0.1.md) |
+| 第十六课 | 求财、项目收益、资金链与三合判断 | [lesson-16-notes-v0.1.md](lesson-16-notes-v0.1.md) |
 
 ## 规则总览
 
@@ -26,5 +27,6 @@
 - [第十三课外部参考](../references/lesson-13-external-sources.md)
 - [第十四课外部参考](../references/lesson-14-external-sources.md)
 - [第十五课外部参考](../references/lesson-15-external-sources.md)
+- [第十六课外部参考](../references/lesson-16-external-sources.md)
 
 规则卡片位于 [docs/rules](../rules/)；每条规则均保留课次来源、状态、适用边界及实现要求。
