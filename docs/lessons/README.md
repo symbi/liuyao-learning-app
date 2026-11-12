@@ -16,6 +16,7 @@
 | 第十四课 | 婚姻占问、世应世用关系与求子胎爻 | [lesson-14-notes-v0.1.md](lesson-14-notes-v0.1.md) |
 | 第十五课 | 求官、体制外求职、升迁调动与择日问答 | [lesson-15-notes-v0.1.md](lesson-15-notes-v0.1.md) |
 | 第十六课 | 求财、项目收益、资金链与三合判断 | [lesson-16-notes-v0.1.md](lesson-16-notes-v0.1.md) |
+| 第十七课 | 求学、考试、求名与择校/选专业 | [lesson-17-notes-v0.1.md](lesson-17-notes-v0.1.md) |
 
 ## 规则总览
 
@@ -28,5 +29,6 @@
 - [第十四课外部参考](../references/lesson-14-external-sources.md)
 - [第十五课外部参考](../references/lesson-15-external-sources.md)
 - [第十六课外部参考](../references/lesson-16-external-sources.md)
+- [第十七课外部参考](../references/lesson-17-external-sources.md)
 
 规则卡片位于 [docs/rules](../rules/)；每条规则均保留课次来源、状态、适用边界及实现要求。
