@@ -48,14 +48,14 @@
   "category": "求工作",
   "tagOrRealQuestion": "去这家公司工作怎么样？",
   "casting": null,
-  "teacherAnalysis": "老师对这个案例的原始讲解和结论"
+  "teacherAnalysis": "根据课堂资料整理的老师分析摘要和结论"
 }
 ```
 
 - `recordType` 和 `id` 是程序识别与去重所需字段，可以自动生成。
 - `category` 和 `tagOrRealQuestion` 是 HTML 中需要你选择/填写的两个简洁字段。
 - `casting` 是可选卦盘快照，只记录资料中实际有的内容。
-- `teacherAnalysis` 保留老师讲解；老师的原话、结论和整理者的归纳要能区分。
+- `teacherAnalysis` 保存根据课堂资料整理的老师分析摘要和结论；原始 ASR 全文保留在 Private raw。老师的结论、整理者归纳和不确定之处要能区分。
 
 不增加必填的多个 tags、独立标题、学习者笔记或复杂来源分类。案例列表按 Category 筛选，并可搜索 Tag / Real Question。
 
