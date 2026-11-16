@@ -38,6 +38,6 @@
 
 ## 案例课的自动关联约定
 
-每一课的总结仍放在本目录，例如 `lesson-18-notes-v0.1.md`。这一课单独拆出的案例统一放在 [materials/class-cases/lesson-18/](../../materials/class-cases/lesson-18/)；原始 ASR 转录保存在 Private raw 仓库的 `lessons/lesson-18/`。
+每一课的总结仍放在本目录，例如 `lesson-18-notes-v0.1.md`。这一课单独拆出的案例统一放在 [materials/class-cases/](../../materials/class-cases/)；原始 ASR 转录保存在 Private raw 仓库的 `lessons/lesson-18/`。
 
 后续整理或更新某一课总结时，按课次编号查找对应案例目录和原始转录，将案例摘要与链接放回该课总结中。不要要求用户手动重复粘贴案例，也不要把 ASR 中未经核实的识别结果当作老师最终结论。完整约定见[学习案例与每日卦例：课次关联方案](../data-model-and-storage.md)。
