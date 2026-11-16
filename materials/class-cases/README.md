@@ -21,7 +21,7 @@ materials/class-cases/
 - `category`: 在 HTML 里选择的 Category
 - `tagOrRealQuestion`: 可选文字，写 tag 或当事人真正的问题
 - `casting`: 可选卦盘快照，有可靠资料才保存
-- `teacherAnalysis`: 老师对案例的原始讲解和结论
+- `teacherAnalysis`: 根据课堂资料整理的老师分析摘要和结论；ASR 原文留在 Private raw，不整段复制
 
 课次由所在文件夹 `lesson-XX` 确定，不需要再让用户重复填写。Category 不作为目录名，不需要建立分类子文件夹。
 
