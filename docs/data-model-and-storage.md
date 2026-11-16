@@ -1,42 +1,41 @@
-# 数据模型与导入格式（V1）
+# 数据模型与存储方案（V1）
 
-本文定义两类彼此隔离的数据集：**课堂案例**与**每日卦例**。两者可以共享卦象快照字段，但不共用记录列表、导入入口或业务用途。
+本文定义两个业务边界：**课堂学习资料（包含老师案例）**与**每日卦例（个人日常数据）**。老师案例属于 Learning 项目本身，存放在现有 `liuyao-learning-app` 仓库；每日卦例目前继续由 HTML 本地保存并支持 JSON 导入/导出，未来再评估 Supabase 等独立数据库。当前阶段不新建数据仓库。
 
 ## 1. 核心原则
 
-- `class-cases` 与 `daily-records` 是两个独立数据集。
-- 导入时必须明确数据集类型；不根据文件名猜测类型。
+- 课堂案例是 Learning 学习资料的一部分，和课程笔记、规则、术语表一起维护在现有 Learning 仓库中。
+- 每日卦例是个人日常数据，与课堂案例分开管理；现阶段保存在浏览器本地，支持 JSON 导入/导出。
+- 导入时必须明确数据类型；不根据文件名猜测类型。
 - 课堂案例中的老师原文分析必须原样保留，不由应用自动改写或覆盖。
-- 每日卦例保存用户自己的每日记录；Memo 属于每日卦例，不属于课堂案例。
+- 课堂案例必须支持用户自行选择的分类（例如「求学」「求工作」），并可按分类筛选、搜索和浏览；分类不能替代课程编号、主题或标签。
+- 每日卦例保存用户自己的每日记录；`dailyMemo` 属于每日卦例，不属于课堂案例。
 - 卦象与排盘结果以导入时的快照为准。以后规则引擎升级，不静默重算或覆盖历史记录。
 - JSON 使用 UTF-8；日期采用 `YYYY-MM-DD`；时间戳采用 ISO 8601。
 - V1 先支持 JSON 导入/导出；GitHub 同步作为下一阶段，不在静态网页中保存 Token。
 
 ## 2. 目录规划
 
-私有数据仓库建议命名为 `symbi/liuyao-learning-data`：
+课堂案例放在现有 `symbi/liuyao-learning-app` 仓库中，与课程笔记和规则文档共同版本管理。建议目录：
 
 ```text
-liuyao-learning-data/                 # Private
-├── README.md
-├── schemas/
-│   ├── class-case.schema.json
-│   └── daily-record.schema.json
-├── class-cases/
-│   ├── lesson-01/
-│   │   └── case-001.json
-│   ├── lesson-02/
-│   └── lesson-03/
-├── daily-records/
-│   └── 2026/
-│       └── 2026-11/
-│           └── 2026-11-16.json
-└── backups/
-    ├── class-cases/
-    └── daily-records/
+liuyao-learning-app/
+├── materials/
+│   ├── lessons/
+│   └── class-cases/
+│       ├── README.md
+│       ├── 求学/
+│       ├── 求工作/
+│       ├── 感情/
+│       └── 其他/
+├── docs/
+│   └── data-model-and-storage.md
+└── ...
 ```
 
-课堂案例按课程组织；每日卦例按起卦日期组织。备份目录只存定期导出的备份，不作为应用日常读取的主目录。
+以上分类目录只是示例。最终分类名称以 HTML 中用户实际维护的分类清单为准；不要因为示例而预先锁定分类集合。原始录音、未整理转录稿等原始资料仍按现有 raw 资料归档流程管理；整理后的课堂案例和老师讲解归入 Learning 仓库。
+
+每日卦例当前不要求建立 GitHub 目录或新仓库。V80 继续使用本地存储与 JSON 备份。未来如迁移到 Supabase，数据库表和访问权限再单独设计。
 
 ## 3. 共用卦象快照
 
@@ -67,6 +66,7 @@ liuyao-learning-data/                 # Private
   "datasetType": "class-case",
   "id": "class-case-lesson-01-001",
   "title": "案例标题",
+  "category": "求学",
   "lesson": {
     "number": 1,
     "date": null,
@@ -99,6 +99,8 @@ liuyao-learning-data/                 # Private
   "updatedAt": null
 }
 ```
+
+`category` 是用户在 HTML 页面中为该案例选择的主分类，例如「求学」「求工作」。它应来自可维护的分类清单，而不是写死在代码里的固定枚举；列表页要能按该字段筛选。可额外使用 `tags` 做更细的关键词标记。`category` 与 `casting.questionCategory` 含义不同：前者是案例库整理分类，后者是起卦时的问题分类。
 
 注意：示例中的空对象/空数组是结构占位，不代表真实案例数据。导入真实案例时，保留原始材料中确实存在的内容；没有提供的信息保持 null 或省略。
 
@@ -161,19 +163,20 @@ liuyao-learning-data/                 # Private
 
 课堂案例导入使用独立转换器，不能将每日记录转换器套用到课堂案例。
 
-## 8. 同步与安全边界
+## 8. 仓库与未来数据库边界
 
-- `liuyao-learning-app`（Public）：网页代码、公开文档、JSON 格式说明和不含个人内容的示例。
-- `liuyao-learning-data`（Private）：课堂案例原始内容、每日卦例、Memo 和备份。
-- GitHub Token、OAuth 凭据或其他密钥不得写入 HTML、JavaScript、JSON 数据文件或 Public 仓库。
-- 在安全授权方案完成前，应用只做本地保存和 JSON 导入/导出；用户可手动备份到 Private 仓库。
-- 后续 GitHub 同步必须区分两个数据集的读写路径，并提供冲突检测与恢复机制。
+- `liuyao-learning-app`（现有 Learning 仓库）：网页代码、课程笔记、整理后的老师课堂案例、规则、术语表、数据格式说明和可公开的学习资料。
+- 现有 raw 资料仓库继续用于原始录音、未经整理的转录稿和来源文件；整理后的课堂案例归入 Learning 仓库。
+- 每日卦例：当前留在 V80 浏览器本地存储，使用 JSON 导入/导出做备份；不提交到 Public Learning 仓库。
+- 未来可评估 Supabase 等数据库保存每日卦例。届时再设计用户身份验证、表结构、访问控制、备份与迁移方案。
+- GitHub Token、Supabase service-role key 或其他密钥不得写入 HTML、JavaScript、JSON 数据文件或 Public 仓库。
+- 现阶段不实现 GitHub 数据同步，也不创建 `liuyao-learning-data` 新仓库。
 
 ## 9. V1 实施顺序
 
-1. 建立两个独立 JSON Schema，并用真实 V80 导出样本核对映射。
-2. 建立 Private 数据仓库及目录骨架。
-3. 实现课堂案例独立导入、列表、搜索和详情查看。
-4. 实现每日卦例独立导入、日期列表、打开编辑和 Memo 保存。
+1. 定义课堂案例 JSON 格式，增加可配置的 `category` 字段。
+2. 在现有 Learning 仓库建立课堂案例目录与分类说明。
+3. 实现 HTML 中课堂案例分类选择、导入、列表筛选、搜索和详情查看。
+4. 保持每日卦例现有本地存储、日期列表、Memo 编辑和 JSON 导入/导出。
 5. 增加批量导出、备份与重复记录冲突提示。
-6. 最后再设计 GitHub 安全授权和同步。
+6. 等每日数据积累和使用需求明确后，再评估 Supabase 等数据库；不提前引入后端复杂度。
