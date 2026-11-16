@@ -1,10 +1,10 @@
 # 架构设计（Phase 0）
 
-> 状态：设计稿，尚未开始实现。本文描述 MVP（含 Phase 1–3）的目标架构，与 `docs/master-plan.md`、`docs/calendar-engine-plan.md` 保持一致。规则状态以 `docs/rules-status.md`、待决策项以 `docs/open-decisions.md` 为准。
+> 本文保留 Phase 0 的目标架构设计。当前 Phase 1 的实际实现以根目录 `index.html` 和 `functions/api/[[path]].js` 为准；本页中的 React/Vite 模块拆分属于后续演进方向。
 
 ## 1. 总体形状
 
-纯静态单页应用，无后端、无运行时网络请求（打开页面不访问任何万年历网站）。所有计算在浏览器本地完成，核心逻辑是**与框架无关的纯函数模块**，可单独在 Node 中跑测试。
+Phase 0 原始设想是纯静态单页应用，所有计算在浏览器本地完成。Phase 1 保留这一点用于排盘计算，但新增同源 Pages Function 作为 GitHub 保存/读取接口；排盘计算本身不依赖该接口。
 
 ```
 浏览器
@@ -152,3 +152,11 @@ sequenceDiagram
 - 本文不新增规则、不确认口径；所有待决策集中在 `docs/open-decisions.md`，规则状态集中在 `docs/rules-status.md`。
 - 历法数据契约与准入条件见 `docs/calendar-engine-plan.md`；本文的 calendarAdapter 即其 §7 的落地形态。
 - UI 布局依据 `docs/ui-mockup.html`（桌面 1280px / 窄屏 390px，组件编号 UI-1…UI-4 与本文一致）。UI-2 为默认手动模式：六行自下而上（初爻在底），每爻含三枚花/字下拉、纳甲与六亲手选下拉。
+
+
+## 当前 Phase 1 实现补充
+
+- `index.html` 是当前 V80 单页原型，排盘计算继续在浏览器端运行。
+- `functions/api/[[path]].js` 是 Cloudflare Pages Function，负责 GitHub App OAuth、会话和 `daily-records/` 的 GitHub Contents API 读写。
+- 每日 JSON 存放于 Public 仓库 `daily-records/YYYY/MM/YYYY-MM-DD.json`。
+- Phase 2 再考虑 Supabase；不为 Phase 1 引入独立数据库。
