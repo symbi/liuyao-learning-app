@@ -5,7 +5,7 @@
   "dailyFortune": {
     "schemaVersion": 10,
     "id": "b570123d-07fe-41d5-98aa-5bf15693c487",
-    "savedAt": "2026-11-17T03:06:42.616Z",
+    "savedAt": "2026-11-17T11:19:07.263Z",
     "date": "2026-11-17",
     "timezone": "Asia/Tokyo",
     "question": {
@@ -33,16 +33,16 @@
       {
         "flowers": 2,
         "branch": "丑",
-        "relation": null,
-        "shen": null,
-        "changeBranch": null,
-        "changeRelation": null,
-        "effect": ""
+        "relation": "兄弟",
+        "shen": "朱雀",
+        "changeBranch": "寅",
+        "changeRelation": "官鬼",
+        "effect": "回头克"
       },
       {
         "flowers": 1,
         "branch": "亥",
-        "relation": null,
+        "relation": "妻财",
         "shen": null,
         "changeBranch": null,
         "changeRelation": null,
@@ -53,7 +53,7 @@
         "branch": "戌",
         "relation": "兄弟",
         "shen": "螣蛇",
-        "changeBranch": "未",
+        "changeBranch": null,
         "changeRelation": null,
         "effect": ""
       },
@@ -69,9 +69,9 @@
       {
         "flowers": 1,
         "branch": "寅",
-        "relation": null,
+        "relation": "官鬼",
         "shen": null,
-        "changeBranch": "卯",
+        "changeBranch": null,
         "changeRelation": null,
         "effect": ""
       }
@@ -97,7 +97,7 @@
       "ruleId": "JIANCHU-EXT-001",
       "algorithm": "(日支序号 - 月建序号 + 12) mod 12",
       "guidanceSnapshot": "宜：诸事；忌：诉讼、争讼",
-      "savedAt": "2026-11-17T03:06:42.616Z"
+      "savedAt": "2026-11-17T11:19:07.263Z"
     },
     "twentyEight": {
       "index": 5,
@@ -113,14 +113,14 @@
         "ji": "安葬、动土"
       },
       "source": "OPN48/cnlunar + donma/LunarData (candidate)",
-      "savedAt": "2026-11-17T03:04:40.243Z"
+      "savedAt": "2026-11-17T11:15:02.498Z"
     },
     "createdAt": "2026-11-17T03:06:42.616Z",
-    "updatedAt": "2026-11-17T03:06:42.616Z",
+    "updatedAt": "2026-11-17T11:19:07.263Z",
     "recordType": "dailyFortune"
   },
   "additionalQuestions": [],
-  "dailyMemo": "",
+  "dailyMemo": "今天经理需要我提交token报告，我不知道会被分析出什么，但是我还是交了。\n和钱财有关的就是股票又跌了\n两重官鬼，多重财，财生官，又是六合，所以官鬼很强啊",
   "createdAt": "2026-11-17T03:06:42.616Z",
-  "updatedAt": "2026-11-17T03:06:42.616Z"
+  "updatedAt": "2026-11-17T11:19:07.263Z"
 }
