@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "recordDate": "2026-11-17",
+  "timezone": "Asia/Tokyo",
+  "dailyFortune": {
+    "schemaVersion": 10,
+    "id": "b570123d-07fe-41d5-98aa-5bf15693c487",
+    "savedAt": "2026-11-17T03:06:42.616Z",
+    "date": "2026-11-17",
+    "timezone": "Asia/Tokyo",
+    "question": {
+      "category": "daily",
+      "categoryLabel": "今日运势（每日卦）",
+      "mainUseGod": "世爻",
+      "hint": "先看世爻，再结合日月、动爻与全卦关系。",
+      "text": ""
+    },
+    "pillars": {
+      "year": "丙午",
+      "month": "己亥",
+      "day": "乙未"
+    },
+    "lines": [
+      {
+        "flowers": 1,
+        "branch": "卯",
+        "relation": "官鬼",
+        "shen": "青龙",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 2,
+        "branch": "丑",
+        "relation": null,
+        "shen": null,
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 1,
+        "branch": "亥",
+        "relation": null,
+        "shen": null,
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 2,
+        "branch": "戌",
+        "relation": "兄弟",
+        "shen": "螣蛇",
+        "changeBranch": "未",
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 3,
+        "branch": "子",
+        "relation": "妻财",
+        "shen": "白虎",
+        "changeBranch": "巳",
+        "changeRelation": "父母",
+        "effect": "克"
+      },
+      {
+        "flowers": 1,
+        "branch": "寅",
+        "relation": null,
+        "shen": null,
+        "changeBranch": "卯",
+        "changeRelation": null,
+        "effect": ""
+      }
+    ],
+    "calendarAssignments": {
+      "yearRelation": "父母",
+      "monthRelation": "妻财",
+      "dayRelation": "兄弟",
+      "dayGod": "青龙",
+      "xunkong1": "巳",
+      "xunkong2": "午"
+    },
+    "jianchu": {
+      "name": "成",
+      "tone": "yellow",
+      "kind": "黄道吉日",
+      "yi": "诸事",
+      "ji": "诉讼、争讼",
+      "guidance": "宜：诸事；忌：诉讼、争讼",
+      "offset": 8,
+      "monthBranch": "亥",
+      "dayBranch": "未",
+      "ruleId": "JIANCHU-EXT-001",
+      "algorithm": "(日支序号 - 月建序号 + 12) mod 12",
+      "guidanceSnapshot": "宜：诸事；忌：诉讼、争讼",
+      "savedAt": "2026-11-17T03:06:42.616Z"
+    },
+    "twentyEight": {
+      "index": 5,
+      "name": "尾火虎",
+      "short": "尾",
+      "symbol": "青龙",
+      "direction": "东方",
+      "ruleId": "TWENTY_EIGHT_DAILY_ROTATION_CNLUNAR_2019",
+      "anchorDate": "2019-01-17",
+      "anchorMansion": "角木蛟",
+      "candidateYiji": {
+        "yi": "嫁娶、造作、开市、出行",
+        "ji": "安葬、动土"
+      },
+      "source": "OPN48/cnlunar + donma/LunarData (candidate)",
+      "savedAt": "2026-11-17T03:04:40.243Z"
+    },
+    "createdAt": "2026-11-17T03:06:42.616Z",
+    "updatedAt": "2026-11-17T03:06:42.616Z",
+    "recordType": "dailyFortune"
+  },
+  "additionalQuestions": [],
+  "dailyMemo": "",
+  "createdAt": "2026-11-17T03:06:42.616Z",
+  "updatedAt": "2026-11-17T03:06:42.616Z"
+}
