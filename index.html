@@ -419,6 +419,12 @@
   .small-action{border:1px solid #d6cbb6;border-radius:7px;background:#fffdf7;color:#4f6455;padding:6px 10px;font-size:12px;font-weight:750;line-height:1.2;white-space:nowrap;}
   .small-action.primary{background:#496d5a;border-color:#496d5a;color:#fff;}
   .small-action:hover{border-color:#8da794;}
+  .case-meta{display:grid;grid-template-columns:1fr;gap:7px;padding:8px 9px;border:1px solid #e5dcc9;border-radius:8px;background:#fbf7ed;}
+  .case-meta[hidden]{display:none;}
+  .case-field{display:grid;gap:3px;color:#686b5d;font-size:11px;font-weight:750;}
+  .case-field select{width:100%;min-width:0;padding:6px 7px;border:1px solid #ded5c2;border-radius:7px;background:#fffdf7;color:#34362f;font:inherit;font-size:12px;}
+  .case-hint{margin:0;color:var(--muted);font-size:11px;line-height:1.4;}
+  .record-case-tag{display:inline-flex;align-items:center;margin-left:6px;padding:2px 6px;border-radius:999px;background:var(--gold-soft);color:#80612b;font-size:10px;font-weight:800;vertical-align:middle;}
   .palette-stack{display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
   .sixgod-palette{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .sixgod-caption{font-size:11px;color:var(--muted);font-weight:700;white-space:nowrap;}
@@ -816,6 +822,7 @@
   }
   .worksheet-memo-header{display:flex;align-items:center;flex:0 0 auto;}
   .worksheet-memo-header strong{font-size:12px;font-weight:800;color:#34372f;}
+  .case-meta{flex:0 0 auto;}
   .worksheet-memo textarea{
     display:block;flex:1 1 auto;width:100%;min-width:0;min-height:210px;resize:vertical;
     padding:8px 9px;border:1px solid #ded5c2;border-radius:7px;
@@ -855,6 +862,7 @@
           <div class="jianchu-guidance" id="jianchu-guidance" role="status" aria-live="polite" aria-label="当天宜忌"></div>
         </div>
         <div class="record-controls">
+          <button type="button" class="small-action" id="toggle-case" aria-pressed="false">标记为案例</button>
           <button type="button" class="small-action primary" id="save-record">保存卦例</button>
           <button type="button" class="small-action" id="open-records">卦例记录 <span id="record-count">0</span></button>
           <button type="button" class="small-action" id="github-login">连接 GitHub</button>
@@ -915,9 +923,25 @@
       <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-element-badge" id="hexagram-element-badge" aria-label="卦宫五行"></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
     </div>
     <div class="rows" id="rows"></div>
-    <aside class="worksheet-memo" aria-label="每日记录">
-      <div class="worksheet-memo-header"><strong>每日记录</strong></div>
-      <textarea id="daily-memo" rows="10" maxlength="8000" aria-label="每日记录 Memo"></textarea>
+    <aside class="worksheet-memo" aria-label="每日记录或案例 Memo">
+      <div class="worksheet-memo-header"><strong id="memo-title">每日记录 Memo</strong></div>
+      <div class="case-meta" id="case-meta" hidden>
+        <label class="case-field" for="case-source">案例类型
+          <select id="case-source">
+            <option value="classroom">课堂案例（老师讲解）</option>
+            <option value="practice">个人练习案例</option>
+          </select>
+        </label>
+        <label class="case-field" id="case-review-field" for="case-review-status">核对状态
+          <select id="case-review-status">
+            <option value="pending">待核对</option>
+            <option value="verified">已核实</option>
+            <option value="disputed">存在分歧</option>
+          </select>
+        </label>
+        <p class="case-hint" id="case-memo-hint"></p>
+      </div>
+      <textarea id="daily-memo" rows="10" maxlength="8000" aria-label="每日记录 Memo" placeholder="记录当天的观察和复盘…"></textarea>
     </aside>
   </section>
 
@@ -1016,6 +1040,38 @@
   const questionTextEl=document.getElementById('question-text');
   const questionUseGodEl=document.getElementById('question-usegod');
   const questionHintEl=document.getElementById('question-hint');
+  const caseToggleButton=document.getElementById('toggle-case');
+  const caseMetaEl=document.getElementById('case-meta');
+  const caseSourceSelect=document.getElementById('case-source');
+  const caseReviewField=document.getElementById('case-review-field');
+  const caseReviewStatusSelect=document.getElementById('case-review-status');
+  const caseMemoTitle=document.getElementById('memo-title');
+  const caseMemoHint=document.getElementById('case-memo-hint');
+  const memoTextarea=document.getElementById('daily-memo');
+  const CASE_REVIEW_LABELS={pending:'待核对',verified:'已核实',disputed:'存在分歧'};
+  let isCaseRecord=false;
+  function updateCaseEditor(){
+    const source=caseSourceSelect.value==='practice'?'practice':'classroom';
+    const isClassroom=isCaseRecord&&source==='classroom';
+    caseToggleButton.textContent=isCaseRecord?'已标记为案例':'标记为案例';
+    caseToggleButton.classList.toggle('primary',isCaseRecord);
+    caseToggleButton.setAttribute('aria-pressed',String(isCaseRecord));
+    caseMetaEl.hidden=!isCaseRecord;
+    caseReviewField.hidden=!isClassroom;
+    caseMemoTitle.textContent=!isCaseRecord?'每日记录 Memo':(isClassroom?'课堂案例 Memo':'个人练习 Memo');
+    memoTextarea.setAttribute('aria-label',!isCaseRecord?'每日记录 Memo':(isClassroom?'课堂案例 Memo':'个人练习 Memo'));
+    memoTextarea.placeholder=!isCaseRecord?'记录当天的观察和复盘…':(isClassroom?'记录老师的分析重点、判断依据和课堂结论…':'记录自己的分析过程与复盘…');
+    caseMemoHint.textContent=isClassroom?'课堂案例会单独保存老师的分析笔记；默认待核对，不会自动当成已确认规则。':'个人练习会单独保存，不会与老师课堂案例混在一起。';
+  }
+  function setCaseEditor(record=null){
+    isCaseRecord=record?.isCase===true;
+    caseSourceSelect.value=record?.caseSource==='practice'?'practice':'classroom';
+    caseReviewStatusSelect.value=Object.prototype.hasOwnProperty.call(CASE_REVIEW_LABELS,record?.caseReviewStatus)?record.caseReviewStatus:'pending';
+    updateCaseEditor();
+  }
+  caseToggleButton.addEventListener('click',()=>{isCaseRecord=!isCaseRecord;updateCaseEditor();});
+  caseSourceSelect.addEventListener('change',updateCaseEditor);
+  setCaseEditor(null);
   const QUESTION_CATEGORY_BY_VALUE=new Map(QUESTION_CATALOG.map(item=>[item.value,item]));
   QUESTION_CATALOG.forEach(category=>{
     const option=document.createElement('option');
@@ -1557,6 +1613,7 @@
     if(!preserveAssignments){
       calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
       editingRecordId=null;
+      setCaseEditor(null);
       const memo=document.getElementById('daily-memo');
       if(memo) memo.value='';
     }
@@ -2616,8 +2673,8 @@
       githubShaByDate.set(date,result.sha||null);
       if(!doc){
         const legacy=readRecords().filter(item=>item.date===date);
-        const daily=legacy.find(item=>(item.question?.category||'daily')==='daily')||null;
-        const extras=legacy.filter(item=>(item.question?.category||'daily')!=='daily');
+        const daily=legacy.find(item=>item.recordType==='dailyFortune'||(!item.isCase&&(item.question?.category||'daily')==='daily'))||null;
+        const extras=legacy.filter(item=>item!==daily);
         if(daily||extras.length){
           doc={schemaVersion:1,recordDate:date,timezone:JAPAN_TZ,dailyFortune:daily?{...daily,recordType:'dailyFortune'}:null,additionalQuestions:extras.map(item=>({...item,recordType:'additionalQuestion'})),dailyMemo:daily?.dailyMemo||legacy.find(item=>item.dailyMemo)?.dailyMemo||'',createdAt:null,updatedAt:null};
           setGitHubStatus('发现浏览器旧记录；保存后可迁移到 GitHub');
@@ -2628,6 +2685,7 @@
       if(doc?.dailyFortune){openRecord({...doc.dailyFortune,date,recordType:'dailyFortune'});}
       else{
         editingRecordId=null;
+        setCaseEditor(null);
         restoreQuestion({category:'daily',text:''});
         document.getElementById('daily-memo').value=doc?.dailyMemo||'';
         state.forEach(item=>{item.flowers=null;item.branch=null;item.relation=null;item.shen=null;item.changeBranch=null;item.changeRelation=null;item.effect='';});
@@ -2683,13 +2741,15 @@
   }
   function makeRecordSnapshot(){
     return {
-      schemaVersion:10,
+      schemaVersion:11,
       id:editingRecordId||(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(16).slice(2)),
       savedAt:new Date().toISOString(),
       date:document.getElementById('record-date').value||selectedDateKey,
       timezone:JAPAN_TZ,
       question:getQuestionSnapshot(),
-      dailyMemo:document.getElementById('daily-memo').value.trim(),
+      isCase:isCaseRecord,
+      ...(isCaseRecord?{caseSource:caseSourceSelect.value,caseReviewStatus:caseSourceSelect.value==='classroom'?caseReviewStatusSelect.value:null,caseMemo:memoTextarea.value.trim()}:{}),
+      dailyMemo:isCaseRecord?'':memoTextarea.value.trim(),
       pillars:{year:document.getElementById('year-pillar').textContent,month:document.getElementById('month-pillar').textContent,day:document.getElementById('day-pillar').textContent},
       // Every manually assigned token/list value is saved per line for exact restoration.
       lines:state.map(item=>{
@@ -2725,20 +2785,37 @@
     const now=new Date().toISOString();
     doc.schemaVersion=1;doc.recordDate=date;doc.timezone=JAPAN_TZ;
     doc.createdAt=doc.createdAt||now;doc.updatedAt=now;
-    doc.dailyMemo=document.getElementById('daily-memo').value.trim();
+    // Daily notes remain date-level; a marked case keeps its own memo on the case record.
+    if(!record.isCase) doc.dailyMemo=record.dailyMemo||'';
     const category=record.question?.category||'daily';
-    if(category==='daily'){
-      const previous=doc.dailyFortune;
-      record.id=previous?.id||('daily-'+date);
-      record.createdAt=previous?.createdAt||previous?.savedAt||now;
+    const list=Array.isArray(doc.additionalQuestions)?doc.additionalQuestions:[];
+    const existingAdditionalIndex=list.findIndex(item=>item.id===record.id);
+    const existingAdditional=existingAdditionalIndex>=0?list[existingAdditionalIndex]:null;
+    const existingDaily=doc.dailyFortune?.id===record.id?doc.dailyFortune:null;
+    if(category==='daily'&&!record.isCase){
+      if(existingAdditionalIndex>=0) list.splice(existingAdditionalIndex,1);
+      const previous=existingDaily||doc.dailyFortune;
+      if(!existingDaily&&!existingAdditional){
+        record.id=previous?.id||('daily-'+date);
+        record.createdAt=previous?.createdAt||previous?.savedAt||now;
+      }else{
+        record.createdAt=(existingDaily||existingAdditional)?.createdAt||(existingDaily||existingAdditional)?.savedAt||now;
+      }
       record.updatedAt=now;record.savedAt=now;record.recordType='dailyFortune';
-      delete record.dailyMemo;
+      delete record.dailyMemo;delete record.caseSource;delete record.caseReviewStatus;delete record.caseMemo;
       doc.dailyFortune=record;
+      doc.additionalQuestions=list;
     }else{
-      const list=Array.isArray(doc.additionalQuestions)?doc.additionalQuestions:[];
+      if(existingDaily) doc.dailyFortune=null;
       const index=list.findIndex(item=>item.id===record.id);
-      if(index>=0){record.createdAt=list[index].createdAt||list[index].savedAt||now;record.updatedAt=now;list[index]=record;}
-      else{record.id='question-'+(crypto.randomUUID?crypto.randomUUID():String(Date.now()));record.createdAt=now;record.updatedAt=now;list.unshift(record);}
+      if(index>=0){
+        record.createdAt=list[index].createdAt||list[index].savedAt||now;
+        record.updatedAt=now;list[index]=record;
+      }else{
+        if(!existingDaily) record.id='question-'+(crypto.randomUUID?crypto.randomUUID():String(Date.now()));
+        record.createdAt=existingDaily?.createdAt||existingDaily?.savedAt||now;
+        record.updatedAt=now;list.unshift(record);
+      }
       record.savedAt=now;record.recordType='additionalQuestion';delete record.dailyMemo;
       doc.additionalQuestions=list;
     }
@@ -2746,7 +2823,8 @@
       await saveDayToGitHub(date,doc);
       editingRecordId=record.id;
       replaceDayCache(date,doc);
-      showToast((category==='daily'?'每日卦已保存：':'额外问题已保存：')+recordHexagramName(record));
+      const savedLabel=record.isCase?(record.caseSource==='practice'?'个人练习案例已保存：':'课堂案例已保存：'):(category==='daily'?'每日卦已保存：':'额外问题已保存：');
+      showToast(savedLabel+recordHexagramName(record));
     }catch(error){
       setGitHubStatus('未同步：'+error.message);
       showToast('GitHub 保存失败，尚未同步：'+error.message);
@@ -2777,8 +2855,9 @@
       renderCalendarValue(document.getElementById('day-pillar'),record.pillars.day||'');
     }
     restoreQuestion(record.question||null);
+    setCaseEditor(record);
     const legacyMemo=[record.morningAnalysis,record.eveningMemo].filter(value=>typeof value==='string'&&value.trim()).join('\n\n');
-    document.getElementById('daily-memo').value=typeof record.dailyMemo==='string'?record.dailyMemo:(activeDayDocument?.dailyMemo||legacyMemo);
+    memoTextarea.value=record.isCase?(typeof record.caseMemo==='string'?record.caseMemo:''):(typeof record.dailyMemo==='string'?record.dailyMemo:(activeDayDocument?.dailyMemo||legacyMemo));
     calendarAssignments={
       yearRelation:relations.includes(record.calendarAssignments?.yearRelation)?record.calendarAssignments.yearRelation:null,
       monthRelation:relations.includes(record.calendarAssignments?.monthRelation)?record.calendarAssignments.monthRelation:null,
@@ -2818,6 +2897,7 @@
       selectLabel.append(select);
       const main=document.createElement('div');main.className='record-main';
       const title=document.createElement('div');title.className='record-title';title.textContent=(record.date||'未注明日期')+'　'+recordHexagramName(record);
+      if(record.isCase){const caseTag=document.createElement('span');caseTag.className='record-case-tag';caseTag.textContent=record.caseSource==='practice'?'个人练习案例':'课堂案例';title.appendChild(caseTag);}
       if(record.question?.categoryLabel){const category=document.createElement('span');category.className='record-category';category.textContent=record.question.categoryLabel;title.appendChild(category);}
       const sub=document.createElement('div');sub.className='record-sub';
       const savedTime=record.savedAt?new Date(record.savedAt).toLocaleString('zh-CN',{hour12:false}):'';
@@ -2825,7 +2905,11 @@
       if(record.question?.mainUseGod) questionParts.push('用神：'+record.question.mainUseGod);
       if(record.question?.hint) questionParts.push('提示：'+record.question.hint);
       if(record.question?.text) questionParts.push('问题：'+record.question.text);
-      if(record.dailyMemo) questionParts.push('Memo：'+record.dailyMemo.slice(0,80));
+      if(record.isCase){
+        if(record.caseSource==='practice') questionParts.push('个人练习案例');
+        else questionParts.push('课堂案例 · '+(CASE_REVIEW_LABELS[record.caseReviewStatus]||'待核对'));
+        if(record.caseMemo) questionParts.push('案例 Memo：'+record.caseMemo.slice(0,80));
+      }else if(record.dailyMemo) questionParts.push('Memo：'+record.dailyMemo.slice(0,80));
       else if(record.morningAnalysis||record.eveningMemo) questionParts.push('Memo：'+[record.morningAnalysis,record.eveningMemo].filter(Boolean).join(' / ').slice(0,80));
       const journalText=questionParts.length?(questionParts.join(' · ')+' · '):'';
       const jianChuText=record.jianchu?.name?(' · '+record.jianchu.name):(record.date?'':'');
@@ -2860,7 +2944,7 @@
   }
   function exportRecords(records){
     if(!Array.isArray(records)||!records.length){showToast('请先勾选要导出的卦例');return;}
-    const payload={app:'liuyao-learning-app',schemaVersion:10,exportedAt:new Date().toISOString(),records};
+    const payload={app:'liuyao-learning-app',schemaVersion:11,exportedAt:new Date().toISOString(),records};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob);
     const anchor=document.createElement('a');anchor.href=url;
@@ -2915,12 +2999,14 @@
       question.text?'所问事项：'+question.text:'',
       question.mainUseGod?'主要用神：'+question.mainUseGod:'',
       question.hint?'用神提示：'+question.hint:'',
+      record.isCase?'案例类型：'+(record.caseSource==='practice'?'个人练习案例':'课堂案例（老师讲解）'):'',
+      record.isCase&&record.caseSource!=='practice'?'案例核对状态：'+(CASE_REVIEW_LABELS[record.caseReviewStatus]||'待核对'):'',
       '',
       '【六爻记录｜从初爻到上爻】',
       ...lines,
       '',
       calendarText.length?'【年月日及旬空标注】\n'+calendarText.join('\n'):'',
-      record.dailyMemo?'【每日记录 Memo】\n'+record.dailyMemo:'',
+      record.isCase&&record.caseMemo?'【案例分析 Memo】\n'+record.caseMemo:(!record.isCase&&record.dailyMemo?'【每日记录 Memo】\n'+record.dailyMemo:''),
       record.jianchu?.name?'建除：'+record.jianchu.name:'',
       record.twentyEight?.name?'二十八宿：'+record.twentyEight.name:'',
       '保存时间：'+(record.savedAt||'未记录'),
@@ -3051,6 +3137,7 @@
     calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
     selected=null;
     editingRecordId=null;
+    setCaseEditor(null);
     setQuestionCategory('daily');
     questionTextEl.value='';
     document.getElementById('daily-memo').value='';
