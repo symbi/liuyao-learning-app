@@ -207,6 +207,7 @@ async function handleListRecords(env, session) {
             ...parsed.dailyFortune,
             date,
             timezone: parsed.timezone || 'Asia/Tokyo',
+            dailyMemo: parsed.dailyMemo || parsed.dailyFortune.dailyMemo || '',
             recordType: 'dailyFortune'
           });
         }
@@ -217,6 +218,7 @@ async function handleListRecords(env, session) {
                 ...item,
                 date,
                 timezone: parsed.timezone || 'Asia/Tokyo',
+                dailyMemo: parsed.dailyMemo || item.dailyMemo || '',
                 recordType: 'additionalQuestion'
               });
             }
