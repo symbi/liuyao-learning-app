@@ -876,6 +876,7 @@
   <section class="card worksheet" aria-label="六爻输入区">
     <div class="worksheet-subhead">
       <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-element-badge" id="hexagram-element-badge" aria-label="卦宫五行"></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
+      <div class="worksheet-tools"><button type="button" class="small-action" id="clear-current-entry">清空本次输入</button></div>
     </div>
     <div class="rows" id="rows"></div>
     <aside class="worksheet-memo" aria-label="每日记录">
@@ -2693,6 +2694,23 @@
     finally{document.getElementById('import-records-file').value='';}
   }
   document.getElementById('save-record').addEventListener('click',saveCurrentRecord);
+  function clearCurrentEntry(){
+    if(!window.confirm('确定清空本次页面中的所有输入吗？这不会删除已经保存到 GitHub 的卦例。')) return;
+    state=Array.from({length:6},()=>({flowers:null,branch:null,relation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}));
+    calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
+    selected=null;
+    editingRecordId=null;
+    setQuestionCategory('daily');
+    questionTextEl.value='';
+    document.getElementById('daily-memo').value='';
+    updateSelectedTiles();
+    renderCalendarDropSlots();
+    state.forEach((_,index)=>renderRow(index));
+    refreshBranchStatusTokens();
+    renderTrigramNames();
+    showToast('本次输入已清空；已保存的卦例未受影响');
+  }
+  document.getElementById('clear-current-entry').addEventListener('click',clearCurrentEntry);
   document.getElementById('github-login').addEventListener('click',async()=>{
     if(githubAuthenticated){try{await githubRequest('/auth/logout',{method:'POST',body:'{}'});githubAuthenticated=false;githubShaByDate.clear();setGitHubStatus('GitHub 已断开');document.getElementById('github-login').textContent='连接 GitHub';}catch(error){showToast('断开失败：'+error.message);}}
     else window.location.href='/api/auth/login';
