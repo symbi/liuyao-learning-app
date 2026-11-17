@@ -2513,6 +2513,35 @@
       return null;
     }
   }
+
+  async function loadAllRecordsFromGitHub(){
+    const ok=githubAuthenticated||await refreshGitHubAuth();
+    if(!ok){
+      setGitHubStatus('请先连接 GitHub，才能同步云端卦例');
+      return false;
+    }
+    setGitHubStatus('正在从 GitHub 读取全部卦例 …');
+    const result=await githubRequest('/records',{method:'GET'});
+    const remote=Array.isArray(result.records)?result.records:[];
+    const existing=readRecords();
+    const merged=[];
+    const seen=new Set();
+    // Prefer GitHub copies, but keep browser-only legacy records that have not been migrated.
+    for(const record of [...remote,...existing]){
+      const key=record&&record.id
+        ?String(record.date||'')+':'+String(record.id)
+        :String(record?.date||'')+':'+String(record?.savedAt||'')+':'+recordThrowText(record||{});
+      if(seen.has(key)) continue;
+      seen.add(key);
+      merged.push(record);
+    }
+    if(!writeRecords(merged)) throw new Error('无法更新浏览器记录列表；GitHub 中的原始文件没有被修改');
+    renderRecords();
+    const skipped=Number(result.skippedFiles||0);
+    setGitHubStatus('已从 GitHub 同步 '+remote.length+' 条卦例'+(skipped?'；有 '+skipped+' 个文件未能读取':''));
+    return true;
+  }
+
   async function saveDayToGitHub(date, documentData){
     if(!githubAuthenticated&&!await refreshGitHubAuth()) throw new Error('请先连接 GitHub');
     if(!githubShaByDate.has(date)) await loadDayFromGitHub(date);
@@ -2715,7 +2744,16 @@
     if(githubAuthenticated){try{await githubRequest('/auth/logout',{method:'POST',body:'{}'});githubAuthenticated=false;githubShaByDate.clear();setGitHubStatus('GitHub 已断开');document.getElementById('github-login').textContent='连接 GitHub';}catch(error){showToast('断开失败：'+error.message);}}
     else window.location.href='/api/auth/login';
   });
-  document.getElementById('open-records').addEventListener('click',()=>{renderRecords();recordsDialog.showModal();});
+  document.getElementById('open-records').addEventListener('click',async()=>{
+    renderRecords();
+    recordsDialog.showModal();
+    try{await loadAllRecordsFromGitHub();}
+    catch(error){
+      if(error.status===401){githubAuthenticated=false;setGitHubStatus('GitHub 授权已失效，请重新连接');}
+      else setGitHubStatus('GitHub 同步失败：'+error.message);
+      showToast('读取 GitHub 卦例失败：'+error.message);
+    }
+  });
   document.getElementById('close-records').addEventListener('click',()=>recordsDialog.close());
   document.getElementById('export-records').addEventListener('click',exportRecords);
   document.getElementById('import-records').addEventListener('click',()=>document.getElementById('import-records-file').click());
