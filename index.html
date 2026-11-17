@@ -441,10 +441,25 @@
   .record-main{flex:1;min-width:0;}
   .record-title{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .record-sub{font-size:11px;color:var(--muted);margin-top:2px;}
-  .record-actions{display:flex;gap:5px;align-items:center;}
+  .record-actions{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+  .record-select,.record-select-all{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;font-size:11px;color:var(--muted);white-space:nowrap;}
+  .record-select input,.record-select-all input,.import-select input{accent-color:var(--jade);width:15px;height:15px;margin:0;}
   .record-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px;}
   .records-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:13px;padding-top:11px;border-top:1px solid #e6dfd1;}
+  .records-footer .record-actions{justify-content:flex-end;}
   .records-hint{font-size:11px;color:var(--muted);}
+  .record-selection-count,.import-selected-count{font-size:11px;color:var(--muted);white-space:nowrap;}
+  .import-dialog{width:min(620px,calc(100vw - 28px));}
+  .import-summary{font-size:12px;color:var(--muted);margin:0 0 9px;}
+  .import-list{display:flex;flex-direction:column;gap:7px;max-height:48vh;overflow:auto;}
+  .import-item{display:flex;align-items:flex-start;gap:9px;padding:9px 10px;border:1px solid #e5dece;border-radius:9px;background:#fffefb;}
+  .import-select{display:flex;align-items:flex-start;padding-top:2px;}
+  .import-item-main{flex:1;min-width:0;}
+  .import-item-title{font-size:13px;font-weight:800;}
+  .import-item-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  .import-item-status{font-size:10px;color:#9b6446;margin-top:2px;}
+  .import-item input:disabled{opacity:.45;}
+  @media(max-width:600px){.record-item{flex-wrap:wrap;}.record-actions{width:100%;justify-content:flex-start;}.records-footer .record-actions{width:100%;justify-content:flex-start;}}
   /* User-selected colors for the six spirits. */
   .tile.god-qinglong{color:#258b78!important;background:#e9f5f1!important;border-color:#b9ddd2!important;}
   .tile.god-zhuque{color:#c44738!important;background:#fff0ed!important;border-color:#efc2b9!important;}
@@ -768,7 +783,10 @@
     column-gap:14px;
     align-items:stretch;
   }
-  .worksheet-subhead{grid-column:1;grid-row:1;min-width:0;}
+  .worksheet-subhead{grid-column:1;grid-row:1;min-width:0;min-height:34px;padding-right:118px;}
+  .worksheet-tools{position:absolute;right:0;top:0;z-index:30;margin:0;}
+  .worksheet-tools .small-action{padding:5px 8px;font-size:11px;}
+  @media(max-width:460px){.worksheet-subhead{min-height:30px;padding-right:110px;}.worksheet-tools .small-action{padding:5px 6px;font-size:10px;}}
   .worksheet > .rows{grid-column:1;grid-row:2;min-width:0;}
   .worksheet-memo{
     grid-column:2;grid-row:1 / span 2;
@@ -922,9 +940,31 @@
     <div class="records-footer">
       <span class="records-hint">保存内容包括日期、问事分类、六次摇卦、本卦/变卦、拖拽填写和每日记录。</span>
       <div class="record-actions">
-        <button type="button" class="small-action" id="export-records">导出 JSON</button>
+        <label class="record-select-all"><input type="checkbox" id="select-all-records">全选</label>
+        <span class="record-selection-count" id="record-selection-count">已选 0 条</span>
+        <button type="button" class="small-action" id="export-records">导出所选</button>
         <button type="button" class="small-action" id="import-records">导入 JSON</button>
         <input type="file" id="import-records-file" accept=".json,application/json" hidden>
+      </div>
+    </div>
+  </div>
+</dialog>
+<dialog class="records-dialog import-dialog" id="import-dialog" aria-labelledby="import-dialog-title">
+  <div class="records-dialog-inner">
+    <div class="records-dialog-head">
+      <h2 id="import-dialog-title">选择要导入的卦例</h2>
+      <button type="button" class="small-action" id="close-import">返回</button>
+    </div>
+    <div class="import-summary" id="import-summary"></div>
+    <div class="import-list" id="import-list"></div>
+    <div class="records-footer">
+      <div class="record-actions">
+        <label class="record-select-all"><input type="checkbox" id="select-all-import">全选可导入项</label>
+        <span class="import-selected-count" id="import-selected-count">已选 0 条</span>
+      </div>
+      <div class="record-actions">
+        <button type="button" class="small-action" id="cancel-import">取消</button>
+        <button type="button" class="small-action primary" id="confirm-import">导入所选</button>
       </div>
     </div>
   </div>
@@ -2432,6 +2472,10 @@
   const RECORDS_KEY='liuyao.records.v2';
   const recordsDialog=document.getElementById('records-dialog');
   const recordsList=document.getElementById('records-list');
+  const importDialog=document.getElementById('import-dialog');
+  const importList=document.getElementById('import-list');
+  let selectedRecordKeys=new Set();
+  let importCandidates=[];
   let editingRecordId=null;
   function readRecords(){
     try{const value=JSON.parse(localStorage.getItem(RECORDS_KEY)||'[]');return Array.isArray(value)?value:[];}
@@ -2440,6 +2484,24 @@
   function writeRecords(records){
     try{localStorage.setItem(RECORDS_KEY,JSON.stringify(records));return true;}
     catch(error){showToast('浏览器存储空间不足，请导出 JSON 备份');return false;}
+  }
+  function recordSelectionKey(record){
+    return String(record?.id||((record?.date||'')+'|'+(record?.savedAt||'')+'|'+recordHexagramName(record)));
+  }
+  function getSelectedRecords(){
+    return readRecords().filter(record=>selectedRecordKeys.has(recordSelectionKey(record)));
+  }
+  function updateRecordSelectionUI(records=readRecords()){
+    const selectedCount=records.filter(record=>selectedRecordKeys.has(recordSelectionKey(record))).length;
+    const countNode=document.getElementById('record-selection-count');
+    const allNode=document.getElementById('select-all-records');
+    const exportNode=document.getElementById('export-records');
+    if(countNode) countNode.textContent='已选 '+selectedCount+' 条';
+    if(allNode){
+      allNode.checked=records.length>0&&selectedCount===records.length;
+      allNode.indeterminate=selectedCount>0&&selectedCount<records.length;
+    }
+    if(exportNode) exportNode.disabled=selectedCount===0;
   }
   const githubShaByDate=new Map();
   let githubAuthenticated=false;
@@ -2450,8 +2512,8 @@
   function dayRecords(documentData){
     if(!documentData) return [];
     const result=[];
-    if(documentData.dailyFortune) result.push({...documentData.dailyFortune,recordType:'dailyFortune'});
-    (documentData.additionalQuestions||[]).forEach(item=>result.push({...item,recordType:'additionalQuestion'}));
+    if(documentData.dailyFortune) result.push({...documentData.dailyFortune,dailyMemo:documentData.dailyMemo||documentData.dailyFortune.dailyMemo||'',recordType:'dailyFortune'});
+    (documentData.additionalQuestions||[]).forEach(item=>result.push({...item,dailyMemo:documentData.dailyMemo||item.dailyMemo||'',recordType:'additionalQuestion'}));
     return result;
   }
   function replaceDayCache(date, documentData){
@@ -2663,13 +2725,25 @@
   }
   function renderRecords(){
     const records=readRecords();
+    const availableKeys=new Set(records.map(recordSelectionKey));
+    selectedRecordKeys=new Set([...selectedRecordKeys].filter(key=>availableKeys.has(key)));
     document.getElementById('record-count').textContent=String(records.length);
     recordsList.replaceChildren();
     if(!records.length){
-      const empty=document.createElement('div');empty.className='record-empty';empty.textContent='还没有保存的卦例。';recordsList.appendChild(empty);return;
+      const empty=document.createElement('div');empty.className='record-empty';empty.textContent='还没有保存的卦例。';recordsList.appendChild(empty);
+      updateRecordSelectionUI(records);
+      return;
     }
     records.forEach(record=>{
       const item=document.createElement('div');item.className='record-item';
+      const key=recordSelectionKey(record);
+      const selectLabel=document.createElement('label');selectLabel.className='record-select';selectLabel.title='选择此卦例用于批量导出';
+      const select=document.createElement('input');select.type='checkbox';select.checked=selectedRecordKeys.has(key);
+      select.addEventListener('change',()=>{
+        if(select.checked) selectedRecordKeys.add(key); else selectedRecordKeys.delete(key);
+        updateRecordSelectionUI();
+      });
+      selectLabel.append(select);
       const main=document.createElement('div');main.className='record-main';
       const title=document.createElement('div');title.className='record-title';title.textContent=(record.date||'未注明日期')+'　'+recordHexagramName(record);
       if(record.question?.categoryLabel){const category=document.createElement('span');category.className='record-category';category.textContent=record.question.categoryLabel;title.appendChild(category);}
@@ -2679,7 +2753,6 @@
       if(record.question?.mainUseGod) questionParts.push('用神：'+record.question.mainUseGod);
       if(record.question?.hint) questionParts.push('提示：'+record.question.hint);
       if(record.question?.text) questionParts.push('问题：'+record.question.text);
-      const questionText=questionParts.length?(questionParts.join(' · ')+' · '):'';
       if(record.dailyMemo) questionParts.push('Memo：'+record.dailyMemo.slice(0,80));
       else if(record.morningAnalysis||record.eveningMemo) questionParts.push('Memo：'+[record.morningAnalysis,record.eveningMemo].filter(Boolean).join(' / ').slice(0,80));
       const journalText=questionParts.length?(questionParts.join(' · ')+' · '):'';
@@ -2689,6 +2762,8 @@
       main.append(title,sub);
       const actions=document.createElement('div');actions.className='record-actions';
       const open=document.createElement('button');open.type='button';open.className='small-action primary';open.textContent='打开';open.addEventListener('click',()=>openRecord(record));
+      const exportOne=document.createElement('button');exportOne.type='button';exportOne.className='small-action';exportOne.textContent='导出';exportOne.title='只导出这一条卦例';exportOne.addEventListener('click',()=>exportRecords([record],'single'));
+      const copy=document.createElement('button');copy.type='button';copy.className='small-action';copy.textContent='复制';copy.title='复制卦例内容，供 AI 分析';copy.addEventListener('click',()=>copyRecordForAI(record));
       const remove=document.createElement('button');remove.type='button';remove.className='small-action';remove.textContent='删除';remove.addEventListener('click',async()=>{
         if(!window.confirm('确定从 GitHub 删除这条卦例吗？')) return;
         const date=record.date;const doc=activeDayDocument&&activeDayDocument.recordDate===date?JSON.parse(JSON.stringify(activeDayDocument)):await loadDayFromGitHub(date);
@@ -2696,17 +2771,144 @@
         if(record.recordType==='dailyFortune'||doc.dailyFortune?.id===record.id) doc.dailyFortune=null;
         else doc.additionalQuestions=(doc.additionalQuestions||[]).filter(entry=>entry.id!==record.id);
         doc.updatedAt=new Date().toISOString();
-        try{await saveDayToGitHub(date,doc);if(editingRecordId===record.id)editingRecordId=null;replaceDayCache(date,doc);showToast('已从 GitHub 删除');}
-        catch(error){showToast('删除失败：'+error.message);}
+        try{
+          await saveDayToGitHub(date,doc);
+          if(editingRecordId===record.id)editingRecordId=null;
+          replaceDayCache(date,doc);
+          selectedRecordKeys.delete(key);
+          renderRecords();
+          showToast('已从 GitHub 删除');
+        }catch(error){showToast('删除失败：'+error.message);}
       });
-      actions.append(open,remove);item.append(main,actions);recordsList.appendChild(item);
+      actions.append(open,exportOne,copy,remove);
+      item.append(selectLabel,main,actions);
+      recordsList.appendChild(item);
     });
+    updateRecordSelectionUI(records);
   }
-  function exportRecords(){
-    const payload={app:'liuyao-learning-app',schemaVersion:10,exportedAt:new Date().toISOString(),records:readRecords()};
+  function exportRecords(records,mode='selected'){
+    if(!Array.isArray(records)||!records.length){showToast('请先勾选要导出的卦例');return;}
+    const payload={app:'liuyao-learning-app',schemaVersion:10,exportedAt:new Date().toISOString(),records};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);const anchor=document.createElement('a');anchor.href=url;anchor.download='liuyao-records-'+(new Date().toISOString().slice(0,10))+'.json';anchor.click();URL.revokeObjectURL(url);
-    showToast('卦例 JSON 已导出');
+    const url=URL.createObjectURL(blob);
+    const anchor=document.createElement('a');anchor.href=url;
+    const datePart=records.length===1?(records[0].date||'record'):'selected';
+    anchor.download='liuyao-records-'+datePart+'-'+(new Date().toISOString().slice(0,10))+'.json';
+    anchor.click();
+    window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    showToast(records.length===1?'已导出这一条卦例':'已导出 '+records.length+' 条卦例');
+  }
+  function formatRecordForAI(record){
+    const question=record.question||{};
+    const flowerLabels={
+      0:'O（三字，老阳／动爻）',
+      1:'•（一花两字，少阳／静爻）',
+      2:'••（两花一字，少阴／静爻）',
+      3:'X（三花，老阴／动爻）'
+    };
+    const lines=(record.lines||[]).map((line,index)=>{
+      const fields=[];
+      fields.push('摇卦：'+(flowerLabels[line.flowers]||'未记录'));
+      if(line.branch) fields.push('纳甲地支：'+line.branch);
+      if(line.relation) fields.push('六亲：'+line.relation);
+      if(line.shen) fields.push('六神：'+line.shen);
+      if(line.changeBranch) fields.push('变爻地支：'+line.changeBranch);
+      if(line.changeRelation) fields.push('变爻六亲：'+line.changeRelation);
+      if(line.effect) fields.push('生克关系：'+line.effect);
+      return '第'+(index+1)+'爻（'+(['初爻','二爻','三爻','四爻','五爻','上爻'][index]||'')+'）：'+fields.join('；');
+    });
+    const calendar=record.calendarAssignments||{};
+    const calendarText=[
+      calendar.yearRelation?'年柱六亲：'+calendar.yearRelation:'',
+      calendar.monthRelation?'月柱六亲：'+calendar.monthRelation:'',
+      calendar.dayRelation?'日柱六亲：'+calendar.dayRelation:'',
+      calendar.dayGod?'日干六神：'+calendar.dayGod:'',
+      calendar.xunkong1||calendar.xunkong2?'旬空：'+[calendar.xunkong1,calendar.xunkong2].filter(Boolean).join('、'):''
+    ].filter(Boolean);
+    const result=[
+      '【六爻卦例｜供 AI 分析】',
+      '日期：'+(record.date||'未注明'),
+      '卦名：'+recordHexagramName(record),
+      record.pillars?'年月日柱：'+[record.pillars.year,record.pillars.month,record.pillars.day].filter(Boolean).join('、'):'',
+      question.categoryLabel?'问事分类：'+question.categoryLabel:'',
+      question.text?'所问事项：'+question.text:'',
+      question.mainUseGod?'主要用神：'+question.mainUseGod:'',
+      question.hint?'用神提示：'+question.hint:'',
+      '',
+      '【六爻记录｜从初爻到上爻】',
+      ...lines,
+      '',
+      calendarText.length?'【年月日及旬空标注】\n'+calendarText.join('\n'):'',
+      record.dailyMemo?'【每日记录 Memo】\n'+record.dailyMemo:'',
+      record.jianchu?.name?'建除：'+record.jianchu.name:'',
+      record.twentyEight?.name?'二十八宿：'+record.twentyEight.name:'',
+      '保存时间：'+(record.savedAt||'未记录'),
+      '',
+      '【原始记录 JSON】',
+      JSON.stringify(record,null,2)
+    ].filter(value=>value!==''||value===0);
+    return result.join('\n');
+  }
+  async function copyRecordForAI(record){
+    const text=formatRecordForAI(record);
+    try{
+      await navigator.clipboard.writeText(text);
+      showToast('卦例内容已复制，可以粘贴给 AI 分析');
+    }catch(error){
+      const field=document.createElement('textarea');
+      field.value=text;field.setAttribute('readonly','');
+      field.style.position='fixed';field.style.opacity='0';field.style.pointerEvents='none';
+      document.body.appendChild(field);field.select();
+      const copied=document.execCommand('copy');field.remove();
+      showToast(copied?'卦例内容已复制，可以粘贴给 AI 分析':'复制失败，请检查浏览器剪贴板权限');
+    }
+  }
+  function updateImportSelectionUI(){
+    const eligible=importCandidates.filter(item=>!item.duplicate);
+    const selected=eligible.filter(item=>item.selected).length;
+    const count=document.getElementById('import-selected-count');
+    const all=document.getElementById('select-all-import');
+    const confirm=document.getElementById('confirm-import');
+    if(count) count.textContent='已选 '+selected+' 条';
+    if(all){
+      all.checked=eligible.length>0&&selected===eligible.length;
+      all.indeterminate=selected>0&&selected<eligible.length;
+    }
+    if(confirm) confirm.disabled=selected===0;
+  }
+  function renderImportCandidates(){
+    importList.replaceChildren();
+    const eligible=importCandidates.filter(item=>!item.duplicate).length;
+    const duplicates=importCandidates.length-eligible;
+    document.getElementById('import-summary').textContent=
+      '文件中找到 '+importCandidates.length+' 条有效卦例；其中 '+duplicates+' 条已存在，将跳过。勾选要导入的记录。导入内容仅加入当前浏览器记录列表，不会覆盖 GitHub 原文件。';
+    importCandidates.forEach((candidate,index)=>{
+      const item=document.createElement('div');item.className='import-item';
+      const label=document.createElement('label');label.className='import-select';
+      const checkbox=document.createElement('input');checkbox.type='checkbox';
+      checkbox.checked=!!candidate.selected;checkbox.disabled=!!candidate.duplicate;
+      checkbox.addEventListener('change',()=>{
+        candidate.selected=checkbox.checked;
+        updateImportSelectionUI();
+      });
+      label.append(checkbox);
+      const main=document.createElement('div');main.className='import-item-main';
+      const title=document.createElement('div');title.className='import-item-title';
+      title.textContent=(candidate.record.date||'未注明日期')+'　'+recordHexagramName(candidate.record);
+      const sub=document.createElement('div');sub.className='import-item-sub';
+      sub.textContent=[
+        candidate.record.question?.categoryLabel||'',
+        candidate.record.question?.text||'',
+        candidate.record.savedAt||''
+      ].filter(Boolean).join(' · ')||recordThrowText(candidate.record);
+      main.append(title,sub);
+      if(candidate.duplicate){
+        const status=document.createElement('div');status.className='import-item-status';status.textContent='这条记录已存在，导入时会跳过';
+        main.append(status);
+      }
+      item.append(label,main);importList.append(item);
+    });
+    updateImportSelectionUI();
   }
   async function importRecordsFile(file){
     if(!file)return;
@@ -2716,11 +2918,37 @@
       if(!Array.isArray(incoming)) throw new Error('missing records');
       const valid=incoming.filter(record=>record&&Array.isArray(record.lines)&&record.lines.length===6&&typeof record.date==='string');
       if(!valid.length) throw new Error('no valid record');
-      const existing=readRecords();const known=new Set(existing.map(record=>record.id));
-      const normalized=valid.map((record,index)=>({...record,id:record.id||('import-'+Date.now()+'-'+index)})).filter(record=>!known.has(record.id));
-      if(writeRecords([...normalized,...existing])){renderRecords();showToast('导入 '+normalized.length+' 条卦例');}
-    }catch(error){showToast('JSON 文件无法识别，请选择本工具导出的卦例文件');}
-    finally{document.getElementById('import-records-file').value='';}
+      const existingIds=new Set(readRecords().map(record=>String(record.id||'')));
+      const seenInFile=new Set();
+      importCandidates=valid.map((record,index)=>{
+        const normalized={...record,id:record.id||('import-'+Date.now()+'-'+index)};
+        const id=String(normalized.id);
+        const duplicate=existingIds.has(id)||seenInFile.has(id);
+        seenInFile.add(id);
+        return {record:normalized,duplicate,selected:!duplicate};
+      });
+      renderImportCandidates();
+      importDialog.showModal();
+    }catch(error){
+      showToast('JSON 文件无法识别，请选择本工具导出的卦例文件');
+    }finally{
+      document.getElementById('import-records-file').value='';
+    }
+  }
+  function confirmImportSelected(){
+    const chosen=importCandidates.filter(candidate=>candidate.selected&&!candidate.duplicate).map(candidate=>candidate.record);
+    if(!chosen.length){showToast('请先勾选要导入的卦例');return;}
+    const existing=readRecords();
+    const known=new Set(existing.map(record=>String(record.id||'')));
+    const normalized=chosen.filter(record=>!known.has(String(record.id)));
+    if(!normalized.length){showToast('所选卦例都已经存在');return;}
+    if(writeRecords([...normalized,...existing])){
+      selectedRecordKeys.clear();
+      importDialog.close();
+      renderRecords();
+      showToast('已导入 '+normalized.length+' 条卦例');
+      importCandidates=[];
+    }
   }
   document.getElementById('save-record').addEventListener('click',saveCurrentRecord);
   function clearCurrentEntry(){
@@ -2755,9 +2983,22 @@
     }
   });
   document.getElementById('close-records').addEventListener('click',()=>recordsDialog.close());
-  document.getElementById('export-records').addEventListener('click',exportRecords);
+  document.getElementById('export-records').addEventListener('click',()=>exportRecords(getSelectedRecords(),'selected'));
+  document.getElementById('select-all-records').addEventListener('change',event=>{
+    const records=readRecords();
+    if(event.target.checked) records.forEach(record=>selectedRecordKeys.add(recordSelectionKey(record)));
+    else selectedRecordKeys.clear();
+    renderRecords();
+  });
   document.getElementById('import-records').addEventListener('click',()=>document.getElementById('import-records-file').click());
   document.getElementById('import-records-file').addEventListener('change',event=>importRecordsFile(event.target.files?.[0]));
+  document.getElementById('select-all-import').addEventListener('change',event=>{
+    importCandidates.forEach(candidate=>{if(!candidate.duplicate) candidate.selected=event.target.checked;});
+    renderImportCandidates();
+  });
+  document.getElementById('confirm-import').addEventListener('click',confirmImportSelected);
+  document.getElementById('close-import').addEventListener('click',()=>importDialog.close());
+  document.getElementById('cancel-import').addEventListener('click',()=>importDialog.close());
   recordsDialog.addEventListener('click',event=>{if(event.target===recordsDialog)recordsDialog.close();});
   renderRecords();
   refreshGitHubAuth().then(ok=>{if(ok)loadDayFromGitHub(selectedDateKey);});
