@@ -2983,7 +2983,7 @@
     }
   });
   document.getElementById('close-records').addEventListener('click',()=>recordsDialog.close());
-  document.getElementById('export-records').addEventListener('click',()=>exportRecords(getSelectedRecords(),'selected'));
+  document.getElementById('export-records').addEventListener('click',()=>exportRecords(getSelectedRecords()));
   document.getElementById('select-all-records').addEventListener('change',event=>{
     const records=readRecords();
     if(event.target.checked) records.forEach(record=>selectedRecordKeys.add(recordSelectionKey(record)));
