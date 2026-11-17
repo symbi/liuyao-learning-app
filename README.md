@@ -24,6 +24,7 @@
 
 - [项目主计划](docs/master-plan.md)
 - [Phase 1 数据模型与每日卦例保存方案](docs/data-model-and-storage.md)
+- [Phase 1 知识库与课堂案例架构规划](docs/phase1-knowledge-base-architecture.md)
 - [Phase 1 部署说明](docs/phase1-deployment.md)
 - [历法引擎方案与验证计划](docs/calendar-engine-plan.md)
 - [开源项目与古籍参考资料调查计划](docs/reference-research-plan.md)
