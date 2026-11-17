@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "recordDate": "2026-11-16",
+  "timezone": "Asia/Tokyo",
+  "dailyFortune": {
+    "schemaVersion": 10,
+    "id": "6c4cf400-dc9c-430a-b79b-14d015649814",
+    "savedAt": "2026-11-17T11:41:23.019Z",
+    "date": "2026-11-16",
+    "timezone": "Asia/Tokyo",
+    "question": {
+      "category": "daily",
+      "categoryLabel": "今日运势（每日卦）",
+      "mainUseGod": "世爻",
+      "hint": "先看世爻，再结合日月、动爻与全卦关系。",
+      "text": ""
+    },
+    "pillars": {
+      "year": "丙午",
+      "month": "己亥",
+      "day": "甲午"
+    },
+    "lines": [
+      {
+        "flowers": 2,
+        "branch": "寅",
+        "relation": "妻财",
+        "shen": "青龙",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 0,
+        "branch": "辰",
+        "relation": "父母",
+        "shen": "朱雀",
+        "changeBranch": "亥",
+        "changeRelation": "子孙",
+        "effect": "克"
+      },
+      {
+        "flowers": 2,
+        "branch": "午",
+        "relation": "官鬼",
+        "shen": null,
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 1,
+        "branch": "亥",
+        "relation": "子孙",
+        "shen": "螣蛇",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 1,
+        "branch": "酉",
+        "relation": "兄弟",
+        "shen": null,
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 2,
+        "branch": "未",
+        "relation": "父母",
+        "shen": null,
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      }
+    ],
+    "calendarAssignments": {
+      "yearRelation": null,
+      "monthRelation": "子孙",
+      "dayRelation": "官鬼",
+      "dayGod": "青龙",
+      "xunkong1": "辰",
+      "xunkong2": "巳"
+    },
+    "jianchu": {
+      "name": "危",
+      "tone": "yellow",
+      "kind": "黄道吉日",
+      "yi": "祈福、安床、入宅",
+      "ji": "登高、远行、乘船、动土、建造",
+      "guidance": "宜：祈福、安床、入宅；忌：登高、远行、乘船、动土、建造",
+      "offset": 7,
+      "monthBranch": "亥",
+      "dayBranch": "午",
+      "ruleId": "JIANCHU-EXT-001",
+      "algorithm": "(日支序号 - 月建序号 + 12) mod 12",
+      "guidanceSnapshot": "宜：祈福、安床、入宅；忌：登高、远行、乘船、动土、建造",
+      "savedAt": "2026-11-17T11:41:22.138Z"
+    },
+    "twentyEight": {
+      "index": 4,
+      "name": "心月狐",
+      "short": "心",
+      "symbol": "青龙",
+      "direction": "东方",
+      "ruleId": "TWENTY_EIGHT_DAILY_ROTATION_CNLUNAR_2019",
+      "anchorDate": "2019-01-17",
+      "anchorMansion": "角木蛟",
+      "candidateYiji": {
+        "yi": "祭祀",
+        "ji": "嫁娶、建造、安葬、出行"
+      },
+      "source": "OPN48/cnlunar + donma/LunarData (candidate)",
+      "savedAt": "2026-11-17T11:33:57.177Z"
+    },
+    "createdAt": "2026-11-17T03:21:19.661Z",
+    "updatedAt": "2026-11-17T11:41:23.019Z",
+    "recordType": "dailyFortune"
+  },
+  "additionalQuestions": [],
+  "dailyMemo": "领导关于之前的不当行为谈话，但是没有什么大问题，主要不是针对我\n同事借钱\n税收要付的钱搞清楚确有其事，需要退还钱给税务局",
+  "createdAt": "2026-11-17T11:41:23.019Z",
+  "updatedAt": "2026-11-17T11:41:23.019Z"
+}
