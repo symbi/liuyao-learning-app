@@ -97,9 +97,17 @@
   .yao-mark{width:37px;flex:0 0 37px;margin:0}
   .yao-mark.yin{gap:4px}
   .yao-mark.yin .yangbar{width:16px}
-  .line-indicators{width:12px;flex:0 0 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-  .line-indicators span{display:none;width:11px;height:11px;flex:0 0 11px;border-radius:50%;background:#aaa69b;box-shadow:0 0 0 1px rgba(40,43,37,.08);}
+  .line-indicators{width:12px;flex:0 0 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;overflow:visible}
+  .line-indicators span{display:none;position:relative;width:11px;height:11px;flex:0 0 11px;border-radius:50%;background:#aaa69b;box-shadow:0 0 0 1px rgba(40,43,37,.08);}
   .shi-indicator.active,.ying-indicator.active{display:block}
+  .line-indicators .shi-indicator.active::after,.line-indicators .ying-indicator.active::after{
+    position:absolute;left:50%;top:-11px;transform:translateX(-50%);
+    padding:0 2px;border-radius:3px;background:rgba(255,253,247,.96);
+    color:#282b25;font-size:9px;line-height:1.05;font-weight:900;white-space:nowrap;
+    box-shadow:0 0 1px rgba(40,43,37,.18);
+  }
+  .line-indicators .shi-indicator.active::after{content:'世';}
+  .line-indicators .ying-indicator.active::after{content:'应';}
 
   .hexagram-name.element-water{color:#2677b8}
   .hexagram-name.element-wood{color:#32844b}
@@ -381,9 +389,9 @@
   .jianchu-glyph.tone-black{color:#202020;}
   .jianchu-glyph.tone-yellow{color:#b98519;}
   .jianchu-glyph.tone-neutral{color:#858585;}
-  .jianchu-guidance{display:flex;flex-direction:row;align-items:flex-start;gap:14px;min-width:0;max-width:min(760px,62vw);margin-left:4px;font-size:14px;line-height:1.45;white-space:normal;}
+  .jianchu-guidance{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;max-width:min(760px,62vw);margin-left:4px;font-size:14px;line-height:1.35;white-space:normal;}
   .jianchu-guidance:empty{display:none;}
-  .jianchu-guidance>span{flex:1 1 0;min-width:0;font-weight:750;}
+  .jianchu-guidance>span{flex:0 0 auto;min-width:0;font-weight:750;white-space:nowrap;}
   .jianchu-guidance .yi{color:#536e4e;}
   .jianchu-guidance .ji{color:#a14c3d;}
   .jianchu-guidance .note{color:#746d5d;}
@@ -494,8 +502,8 @@
     .line-row{min-width:430px;}
     .calendar-topline{flex-direction:row;align-items:center;flex-wrap:wrap;}
     .date-controls{width:100%;gap:5px;}
-    .jianchu-guidance{flex:1 1 100%;width:100%;max-width:100%;margin-left:2px;padding-left:3px;gap:12px;font-size:13px;}
-    .jianchu-guidance>span{flex:1 1 0;}
+    .jianchu-guidance{flex:1 1 100%;width:100%;max-width:100%;margin-left:2px;padding-left:3px;gap:1px;font-size:13px;}
+    .jianchu-guidance>span{flex:0 0 auto;white-space:nowrap;}
     .record-controls{width:100%;justify-content:flex-start;}
     .line-row{grid-template-columns:108px 42px 26px 40px 40px 42px 26px 40px 6em;gap:3px;padding:5px 4px;}
     .shen-cell{width:40px;min-width:40px;}
