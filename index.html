@@ -693,15 +693,15 @@
   }
 
 
-  /* v76: 二十八宿只显示单字；颜色隐含四象，不重复写方位/四象/七曜/动物。 */
+  /* v76: 二十八宿单字横排；宜、忌各占完整宽度，避免被七宿区域挤窄。 */
   .mansions-panel{
-    display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    display:flex;flex-direction:column;align-items:stretch;gap:6px;
     margin:5px 0 10px;padding:7px 9px;border:1px solid #e8e0d1;
     border-radius:9px;background:#fffdf8;
   }
   .mansions-list{
     display:flex;align-items:center;justify-content:flex-start;gap:7px;
-    min-width:0;flex:1 1 300px;overflow-x:auto;padding:2px 1px 4px;
+    width:100%;min-width:0;flex:0 0 auto;overflow-x:auto;padding:2px 1px 4px;
     scrollbar-width:thin;
   }
   .mansion-chip{
@@ -719,16 +719,19 @@
   .mansions-panel[data-symbol="玄武"]{--mansion-color:#2677b8;}
   .mansions-panel[data-symbol="白虎"]{--mansion-color:#858d95;}
   .mansions-panel[data-symbol="朱雀"]{--mansion-color:#c44738;}
-  .mansions-yiji{display:flex;flex-direction:column;gap:3px;min-width:220px;flex:1 1 260px;font-size:11px;line-height:1.4;}
+  .mansions-yiji{
+    display:flex;flex-direction:column;align-items:stretch;gap:3px;
+    width:100%;min-width:0;flex:0 0 auto;padding-left:2px;
+    font-size:11px;line-height:1.4;
+  }
   .mansions-yiji .yi{color:#536e4e;font-weight:800;}
   .mansions-yiji .ji{color:#a14c3d;font-weight:800;}
   .mansions-yiji .source-note{font-size:9px;color:#817b70;font-weight:500;}
   @media(max-width:600px){
     .mansions-panel{gap:5px;padding:6px 7px;margin:4px 0 8px;}
-    .mansions-list{flex-basis:100%;gap:5px;}
+    .mansions-list{gap:5px;}
     .mansion-chip{min-width:34px;width:34px;height:34px;font-size:21px;}
     .mansion-chip.active{font-size:23px;}
-    .mansions-yiji{min-width:100%;flex-basis:100%;padding-left:2px;}
   }
 
 
