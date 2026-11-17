@@ -167,6 +167,79 @@ async function handleRecords(request, env, session, date) {
   return json({ error: 'Method not allowed' }, 405, { allow: 'GET, PUT' });
 }
 
+
+async function handleListRecords(env, session) {
+  // Resolve main to the latest commit, then retrieve its complete Git tree.
+  const commitResponse = await githubFetch('/repos/' + OWNER + '/' + REPO + '/commits/main', session.accessToken);
+  const commit = await commitResponse.json();
+  if (!commitResponse.ok) return json({ error: commit.message || 'Unable to read GitHub commit' }, commitResponse.status);
+  const treeSha = commit.commit?.tree?.sha;
+  if (!treeSha) return json({ error: 'GitHub commit did not include a tree SHA' }, 502);
+
+  const treeResponse = await githubFetch('/repos/' + OWNER + '/' + REPO + '/git/trees/' + encodeURIComponent(treeSha) + '?recursive=1', session.accessToken);
+  const tree = await treeResponse.json();
+  if (!treeResponse.ok) return json({ error: tree.message || 'Unable to list GitHub records' }, treeResponse.status);
+  if (tree.truncated) return json({ error: 'The GitHub record tree is too large to list completely' }, 502);
+
+  const files = (tree.tree || []).filter(entry =>
+    entry.type === 'blob' &&
+    /^daily-records\/\d{4}\/\d{2}\/\d{4}-\d{2}-\d{2}\.json$/.test(entry.path || '')
+  );
+  const records = [];
+  let skippedFiles = 0;
+
+  // Read a small batch at a time to avoid sending too many GitHub requests at once.
+  for (let offset = 0; offset < files.length; offset += 8) {
+    const batch = files.slice(offset, offset + 8);
+    const results = await Promise.all(batch.map(async entry => {
+      try {
+        const response = await githubFetch('/repos/' + OWNER + '/' + REPO + '/git/blobs/' + encodeURIComponent(entry.sha), session.accessToken);
+        const blob = await response.json();
+        if (!response.ok || blob.encoding !== 'base64' || typeof blob.content !== 'string') return null;
+        const parsed = JSON.parse(decodeBase64Utf8(blob.content));
+        const match = entry.path.match(/^daily-records\/(\d{4})\/(\d{2})\/(\d{4}-\d{2}-\d{2})\.json$/);
+        const date = match?.[3];
+        if (!dateIsValid(date) || match[1] !== date.slice(0, 4) || match[2] !== date.slice(5, 7)) return null;
+
+        const dayRecords = [];
+        if (parsed?.dailyFortune && Array.isArray(parsed.dailyFortune.lines)) {
+          dayRecords.push({
+            ...parsed.dailyFortune,
+            date,
+            timezone: parsed.timezone || 'Asia/Tokyo',
+            recordType: 'dailyFortune'
+          });
+        }
+        if (Array.isArray(parsed?.additionalQuestions)) {
+          parsed.additionalQuestions.forEach(item => {
+            if (item && Array.isArray(item.lines)) {
+              dayRecords.push({
+                ...item,
+                date,
+                timezone: parsed.timezone || 'Asia/Tokyo',
+                recordType: 'additionalQuestion'
+              });
+            }
+          });
+        }
+        return dayRecords;
+      } catch {
+        return null;
+      }
+    }));
+    for (const result of results) {
+      if (result) records.push(...result);
+      else skippedFiles += 1;
+    }
+  }
+
+  records.sort((a, b) =>
+    String(b.date || '').localeCompare(String(a.date || '')) ||
+    String(b.savedAt || '').localeCompare(String(a.savedAt || ''))
+  );
+  return json({ records, files: files.length, skippedFiles });
+}
+
 export async function onRequest(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -181,6 +254,7 @@ export async function onRequest(context) {
   const session = await getSession(request, env);
   if (request.method === 'GET' && path === 'me') return json({ authenticated: !!session, login: session?.login || null });
   if (!session) return json({ error: 'Not authenticated' }, 401);
+  if (request.method === 'GET' && path === 'records') return handleListRecords(env, session);
   const match = path.match(/^records\/(\d{4}-\d{2}-\d{2})$/);
   if (match) return handleRecords(request, env, session, match[1]);
   return json({ error: 'Not found' }, 404);
