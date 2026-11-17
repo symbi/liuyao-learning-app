@@ -425,6 +425,7 @@
   .god-tiles{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
   .god-tiles .tile{width:44px;min-width:44px;height:30px;font-size:12px;}
   .line-row{grid-template-columns:116px 52px 29px 46px 46px 52px 29px 46px 6em;}
+  .drop-slot.inactive-change-slot{visibility:hidden;pointer-events:none;}
   .shen-cell{width:46px;min-width:46px;}
   .drop-slot.shen-filled{background:#f2eff8;border-color:#d1c8df;}
   .drop-slot.shen-filled .drop-token{font-size:11px;white-space:nowrap;}
@@ -1861,8 +1862,15 @@
     filledSlot(row.querySelector('[data-zone="branch"]'),item.branch,'branch');
     filledSlot(row.querySelector('[data-zone="relation"]'),item.relation,'relation');
     filledSlot(row.querySelector('[data-zone="shen"]'),item.shen,'god');
-    filledSlot(row.querySelector('[data-zone="changeBranch"]'),item.changeBranch,'branch');
-    filledSlot(row.querySelector('[data-zone="changeRelation"]'),item.changeRelation,'relation');
+    const changeBranchSlot=row.querySelector('[data-zone="changeBranch"]');
+    const changeRelationSlot=row.querySelector('[data-zone="changeRelation"]');
+    [changeBranchSlot,changeRelationSlot].forEach(slot=>{
+      slot.classList.toggle('inactive-change-slot',!isMovingForDisplay);
+      slot.setAttribute('aria-hidden',isMovingForDisplay?'false':'true');
+      slot.tabIndex=isMovingForDisplay?0:-1;
+    });
+    filledSlot(changeBranchSlot,item.changeBranch,'branch');
+    filledSlot(changeRelationSlot,item.changeRelation,'relation');
     row.querySelector('.effect-select').value=item.effect||'';
     renderTrigramNames();
   }
@@ -2024,8 +2032,13 @@
   }
   function getDarkMovementInfo(item){
     if(!item || item.flowers===null || !item.branch || !currentDayBranch) return null;
+    // 本课堂口径：卦中只要已有明动，就不再另取暗动。
+    const hasExplicitMoving=state.some(line=>{
+      if(!line || line.flowers===null || line.flowers===undefined) return false;
+      return !!mapping[line.flowers]?.moving;
+    });
+    if(hasExplicitMoving) return null;
     const cast=mapping[item.flowers];
-    // 明动保持明动；本项目课程口径：未明动静爻只要被日支冲，就按暗动处理。
     if(!cast || cast.moving) return null;
     const clashBranch=sixClashes[currentDayBranch];
     if(clashBranch && item.branch===clashBranch){
@@ -2647,10 +2660,15 @@
       dailyMemo:document.getElementById('daily-memo').value.trim(),
       pillars:{year:document.getElementById('year-pillar').textContent,month:document.getElementById('month-pillar').textContent,day:document.getElementById('day-pillar').textContent},
       // Every manually assigned token/list value is saved per line for exact restoration.
-      lines:state.map(item=>({
-        flowers:item.flowers,branch:item.branch,relation:item.relation,shen:item.shen,
-        changeBranch:item.changeBranch,changeRelation:item.changeRelation,effect:item.effect||''
-      })),
+      lines:state.map(item=>{
+        const isMoving=!!getLineMovementInfo(item);
+        return {
+          flowers:item.flowers,branch:item.branch,relation:item.relation,shen:item.shen,
+          changeBranch:isMoving?item.changeBranch:null,
+          changeRelation:isMoving?item.changeRelation:null,
+          effect:isMoving?(item.effect||''):''
+        };
+      }),
       // Year/month/day six-relative slots, day-stem six-god slot and the two xunkong branches.
       calendarAssignments:{...calendarAssignments},
       // Preserve the exact displayed 建除日 and the month/day branches used at save time.
@@ -2828,15 +2846,24 @@
       2:'••（两花一字，少阴／静爻）',
       3:'X（三花，老阴／动爻）'
     };
-    const lines=(record.lines||[]).map((line,index)=>{
+    const recordLines=Array.isArray(record.lines)?record.lines:[];
+    const hasExplicitMoving=recordLines.some(line=>!!mapping[line.flowers]?.moving);
+    const recordDayBranch=String(record.pillars?.day||'').slice(-1);
+    const recordClashBranch=recordDayBranch?sixClashes[recordDayBranch]:null;
+    const lines=recordLines.map((line,index)=>{
+      const isBrightMoving=!!mapping[line.flowers]?.moving;
+      const isDarkMoving=!hasExplicitMoving&&!isBrightMoving&&!!recordClashBranch&&line.branch===recordClashBranch;
+      const isMoving=isBrightMoving||isDarkMoving;
       const fields=[];
       fields.push('摇卦：'+(flowerLabels[line.flowers]||'未记录'));
       if(line.branch) fields.push('纳甲地支：'+line.branch);
       if(line.relation) fields.push('六亲：'+line.relation);
       if(line.shen) fields.push('六神：'+line.shen);
-      if(line.changeBranch) fields.push('变爻地支：'+line.changeBranch);
-      if(line.changeRelation) fields.push('变爻六亲：'+line.changeRelation);
-      if(line.effect) fields.push('生克关系：'+line.effect);
+      if(isMoving&&line.changeBranch) fields.push('变爻地支：'+line.changeBranch);
+      if(isMoving&&line.changeRelation) fields.push('变爻六亲：'+line.changeRelation);
+      if(isMoving&&line.effect) fields.push('生克关系：'+line.effect);
+      if(isBrightMoving) fields.push('状态：明动');
+      else if(isDarkMoving) fields.push('状态：暗动');
       return '第'+(index+1)+'爻（'+(['初爻','二爻','三爻','四爻','五爻','上爻'][index]||'')+'）：'+fields.join('；');
     });
     const calendar=record.calendarAssignments||{};
@@ -2867,7 +2894,20 @@
       '保存时间：'+(record.savedAt||'未记录'),
       '',
       '【原始记录 JSON】',
-      JSON.stringify(record,null,2)
+      JSON.stringify({
+        ...record,
+        lines:recordLines.map((line,index)=>{
+          const isBrightMoving=!!mapping[line.flowers]?.moving;
+          const isDarkMoving=!hasExplicitMoving&&!isBrightMoving&&!!recordClashBranch&&line.branch===recordClashBranch;
+          const isMoving=isBrightMoving||isDarkMoving;
+          return {
+            ...line,
+            changeBranch:isMoving?(line.changeBranch||null):null,
+            changeRelation:isMoving?(line.changeRelation||null):null,
+            effect:isMoving?(line.effect||''):''
+          };
+        })
+      },null,2)
     ].filter(value=>value!==''||value===0);
     return result.join('\n');
   }
