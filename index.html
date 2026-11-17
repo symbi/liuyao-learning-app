@@ -783,10 +783,10 @@
     column-gap:14px;
     align-items:stretch;
   }
-  .worksheet-subhead{grid-column:1;grid-row:1;min-width:0;min-height:34px;padding-right:118px;}
-  .worksheet-tools{position:absolute;right:0;top:0;z-index:30;margin:0;}
+  .worksheet-subhead{grid-column:1;grid-row:1;min-width:0;}
+  .worksheet-tools{position:absolute;right:12px;top:10px;z-index:30;margin:0;}
   .worksheet-tools .small-action{padding:5px 8px;font-size:11px;}
-  @media(max-width:460px){.worksheet-subhead{min-height:30px;padding-right:110px;}.worksheet-tools .small-action{padding:5px 6px;font-size:10px;}}
+  @media(max-width:460px){.worksheet-tools{right:10px;top:9px;}.worksheet-tools .small-action{padding:5px 6px;font-size:10px;}}
   .worksheet > .rows{grid-column:1;grid-row:2;min-width:0;}
   .worksheet-memo{
     grid-column:2;grid-row:1 / span 2;
@@ -894,8 +894,8 @@
   <section class="card worksheet" aria-label="六爻输入区">
     <div class="worksheet-subhead">
       <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-element-badge" id="hexagram-element-badge" aria-label="卦宫五行"></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
-      <div class="worksheet-tools"><button type="button" class="small-action" id="clear-current-entry">清空本次输入</button></div>
     </div>
+    <div class="worksheet-tools"><button type="button" class="small-action" id="clear-current-entry">清空本次输入</button></div>
     <div class="rows" id="rows"></div>
     <aside class="worksheet-memo" aria-label="每日记录">
       <div class="worksheet-memo-header"><strong>每日记录</strong></div>
@@ -2786,7 +2786,7 @@
     });
     updateRecordSelectionUI(records);
   }
-  function exportRecords(records,mode='selected'){
+  function exportRecords(records){
     if(!Array.isArray(records)||!records.length){showToast('请先勾选要导出的卦例');return;}
     const payload={app:'liuyao-learning-app',schemaVersion:10,exportedAt:new Date().toISOString(),records};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
