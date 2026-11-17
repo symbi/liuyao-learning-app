@@ -648,6 +648,13 @@
   }
   .date-branch-item{display:flex;align-items:center;gap:4px;padding:2px 5px 2px 4px;border:1px solid #e7dfd1;border-radius:18px;background:rgba(255,253,247,.98);box-shadow:0 1px 2px rgba(45,42,34,.06);}
   .date-branch-label{font-size:10px;line-height:1;color:#777264;font-weight:750;white-space:nowrap;}
+  .kin-presence-summary{
+    display:flex;flex-direction:column;justify-content:center;gap:2px;
+    max-width:205px;min-width:0;padding:3px 7px;border:1px solid #e7dfd1;
+    border-radius:8px;background:rgba(255,253,247,.98);color:#68695f;
+    font-size:10px;line-height:1.2;white-space:normal;font-weight:700;
+  }
+  .kin-presence-summary span{display:block;}
   .date-branch-token{width:27px;height:27px;min-width:27px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;box-sizing:border-box;font-size:15px;line-height:1;font-weight:900;border:1.5px solid currentColor;background:#fffdf7;}
   .date-branch-token.element-water{color:#2677b8;background:#eaf3fb;}
   .date-branch-token.element-wood{color:#32844b;background:#edf6ed;}
@@ -664,6 +671,7 @@
   @media(max-width:560px){
     .rows{padding-top:0;}
     .date-branch-sidecar{gap:5px;}
+    .kin-presence-summary{max-width:156px;padding:2px 5px;font-size:9px;}
     .date-branch-item{gap:3px;padding:2px 4px 2px 3px;}
     .date-branch-label{font-size:9px;}
     .date-branch-token{width:25px;height:25px;min-width:25px;font-size:14px;}
@@ -990,7 +998,7 @@
   const sixGodClasses = {'青龙':'god-qinglong','朱雀':'god-zhuque','勾陈':'god-gouchen','螣蛇':'god-tengshe','白虎':'god-baihu','玄武':'god-xuanwu'};
   const dayStemFirstGod = {'甲':'青龙','乙':'青龙','丙':'朱雀','丁':'朱雀','戊':'勾陈','己':'螣蛇','庚':'白虎','辛':'白虎','壬':'玄武','癸':'玄武'};
   let expectedDayGod = null;
-  const effects = ['克','回头生','回头克','泄','化进','化退'];
+  const effects = ['克','生','回头生','回头克','泄','化进','化退'];
 
   // v64: beginner-friendly question categories in one dropdown, with compact 六亲 reminders.
   const QUESTION_CATALOG = [
@@ -2032,12 +2040,7 @@
   }
   function getDarkMovementInfo(item){
     if(!item || item.flowers===null || !item.branch || !currentDayBranch) return null;
-    // 本课堂口径：卦中只要已有明动，就不再另取暗动。
-    const hasExplicitMoving=state.some(line=>{
-      if(!line || line.flowers===null || line.flowers===undefined) return false;
-      return !!mapping[line.flowers]?.moving;
-    });
-    if(hasExplicitMoving) return null;
+    // 第十一课逐爻判断：本爻静止且被日辰冲，可论暗动；其他爻明动不取消本爻的暗动资格。
     const cast=mapping[item.flowers];
     if(!cast || cast.moving) return null;
     const clashBranch=sixClashes[currentDayBranch];
@@ -2078,6 +2081,35 @@
       token.setAttribute('aria-label',label+' '+branch);
       item.append(caption,token);dateBranchSidecar.appendChild(item);
     });
+
+    // 按用户约定统计月支、日支和六爻中的六亲；年柱不计入这项统计。
+    const kinValues=[
+      calendarAssignments.monthRelation,
+      calendarAssignments.dayRelation,
+      ...state.map(line=>line.relation)
+    ];
+    const knownKinValues=kinValues.filter(value=>relations.includes(value));
+    const missingCount=8-knownKinValues.length;
+    const kinCounts=relations.map(relation=>({
+      relation,
+      count:knownKinValues.filter(value=>value===relation).length
+    }));
+    const repeated=kinCounts.filter(item=>item.count>=2);
+    const absent=missingCount===0?kinCounts.filter(item=>item.count===0):[];
+
+    const summary=document.createElement('span');
+    summary.className='kin-presence-summary';
+    summary.setAttribute('aria-label','六亲出现次数统计：仅统计月支、日支和六爻，不统计年柱');
+    const repeatedLine=document.createElement('span');
+    repeatedLine.textContent=repeated.length
+      ?'多现：'+repeated.map(item=>item.relation+'×'+item.count).join('、')
+      :(missingCount===0?'多现：无':'多现：目前未见');
+    const absentLine=document.createElement('span');
+    absentLine.textContent=missingCount>0
+      ?'未录全：'+knownKinValues.length+'/8，暂不判断不上卦'
+      :(absent.length?'不上卦：'+absent.map(item=>item.relation).join('、'):'不上卦：无');
+    summary.append(repeatedLine,absentLine);
+    dateBranchSidecar.appendChild(summary);
     dateBranchSidecar.appendChild(clearCurrentEntryButton);
   }
 
@@ -2847,12 +2879,12 @@
       3:'X（三花，老阴／动爻）'
     };
     const recordLines=Array.isArray(record.lines)?record.lines:[];
-    const hasExplicitMoving=recordLines.some(line=>!!mapping[line.flowers]?.moving);
+
     const recordDayBranch=String(record.pillars?.day||'').slice(-1);
     const recordClashBranch=recordDayBranch?sixClashes[recordDayBranch]:null;
     const lines=recordLines.map((line,index)=>{
       const isBrightMoving=!!mapping[line.flowers]?.moving;
-      const isDarkMoving=!hasExplicitMoving&&!isBrightMoving&&!!recordClashBranch&&line.branch===recordClashBranch;
+      const isDarkMoving=!isBrightMoving&&!!recordClashBranch&&line.branch===recordClashBranch;
       const isMoving=isBrightMoving||isDarkMoving;
       const fields=[];
       fields.push('摇卦：'+(flowerLabels[line.flowers]||'未记录'));
@@ -2898,7 +2930,7 @@
         ...record,
         lines:recordLines.map((line,index)=>{
           const isBrightMoving=!!mapping[line.flowers]?.moving;
-          const isDarkMoving=!hasExplicitMoving&&!isBrightMoving&&!!recordClashBranch&&line.branch===recordClashBranch;
+          const isDarkMoving=!isBrightMoving&&!!recordClashBranch&&line.branch===recordClashBranch;
           const isMoving=isBrightMoving||isDarkMoving;
           return {
             ...line,
