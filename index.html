@@ -784,9 +784,8 @@
     align-items:stretch;
   }
   .worksheet-subhead{grid-column:1;grid-row:1;min-width:0;}
-  .worksheet-tools{position:absolute;right:12px;top:10px;z-index:30;margin:0;}
-  .worksheet-tools .small-action{padding:5px 8px;font-size:11px;}
-  @media(max-width:460px){.worksheet-tools{right:10px;top:9px;}.worksheet-tools .small-action{padding:5px 6px;font-size:10px;}}
+  .date-branch-clear{pointer-events:auto;flex:0 0 auto;margin-left:2px;padding:5px 8px;font-size:11px;line-height:1.15;}
+  @media(max-width:560px){.date-branch-clear{padding:5px 6px;font-size:10px;}}
   .worksheet > .rows{grid-column:1;grid-row:2;min-width:0;}
   .worksheet-memo{
     grid-column:2;grid-row:1 / span 2;
@@ -895,7 +894,6 @@
     <div class="worksheet-subhead">
       <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-element-badge" id="hexagram-element-badge" aria-label="卦宫五行"></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
     </div>
-    <div class="worksheet-tools"><button type="button" class="small-action" id="clear-current-entry">清空本次输入</button></div>
     <div class="rows" id="rows"></div>
     <aside class="worksheet-memo" aria-label="每日记录">
       <div class="worksheet-memo-header"><strong>每日记录</strong></div>
@@ -1590,8 +1588,14 @@
   rowsHost.appendChild(liuheOverlay);
   const dateBranchSidecar=document.createElement('div');
   dateBranchSidecar.className='date-branch-sidecar';
-  dateBranchSidecar.setAttribute('aria-label','月支与日支，作为三合候选参与点');
+  dateBranchSidecar.setAttribute('aria-label','月支与日支及清空本次输入');
   rowsHost.appendChild(dateBranchSidecar);
+  const clearCurrentEntryButton=document.createElement('button');
+  clearCurrentEntryButton.type='button';
+  clearCurrentEntryButton.id='clear-current-entry';
+  clearCurrentEntryButton.className='small-action date-branch-clear';
+  clearCurrentEntryButton.textContent='清空本次输入';
+  clearCurrentEntryButton.title='清空当前未保存的排卦与每日输入，不删除已保存记录';
 
   function showToast(message){
     toast.textContent = message; toast.classList.add('show');
@@ -2050,6 +2054,7 @@
       token.setAttribute('aria-label',label+' '+branch);
       item.append(caption,token);dateBranchSidecar.appendChild(item);
     });
+    dateBranchSidecar.appendChild(clearCurrentEntryButton);
   }
 
   // 日月参与三合候选：
@@ -2124,8 +2129,14 @@
     const groupRect=topGroup.getBoundingClientRect();
     const targetRect=topBranchSlot.getBoundingClientRect();
     const sideRect=dateBranchSidecar.getBoundingClientRect();
+    const branchItems=[...dateBranchSidecar.querySelectorAll('.date-branch-item')];
+    const firstBranchRect=branchItems[0]?.getBoundingClientRect();
+    const lastBranchRect=branchItems[branchItems.length-1]?.getBoundingClientRect();
     const desiredCenter=targetRect.left-groupRect.left+targetRect.width/2;
-    dateBranchSidecar.style.left=(desiredCenter-sideRect.width/2)+'px';
+    const branchGroupWidth=firstBranchRect&&lastBranchRect
+      ?lastBranchRect.right-firstBranchRect.left
+      :sideRect.width;
+    dateBranchSidecar.style.left=(desiredCenter-branchGroupWidth/2)+'px';
     dateBranchSidecar.style.top=(-sideRect.height-7)+'px';
     return combination||null;
   }
