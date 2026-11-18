@@ -6,7 +6,9 @@ Phase 1 是验证每日排卦、记录、保存和 AI 分析流程是否好用�
 
 - **Public `symbi/liuyao-learning-app`**：保存 HTML 应用、Cloudflare Pages Functions、课程整理笔记、规则、课堂案例，以及 Phase 1 每日卦例 JSON。
 - **Private `symbi/liuyao-learning-raw`**：继续保存课堂原始录音、ASR 转录、原始 PDF 和未整理来源资料。每日卦例不再写入这里。
-- **暂不引入 Supabase**：Phase 1 直接使用 GitHub Contents API 保存 JSON；等验证产品流程后，再做 Phase 2 登录与数据库迁移。
+- **当前 HTML 记录存储**：继续使用 GitHub Contents API 保存每日 JSON。
+- **知识图谱数据库**：Phase 1 另行建立 Neo4j AuraDB，Importer 将整理后的课程资料、案例和选定参考项目增量同步进去。Neo4j 是图数据库，可以保存 Case、Lesson、Chunk、Concept、Rule 节点和关系；不需要为知识库再部署 Supabase/PostgreSQL。
+- **Supabase 不是必选项**：只有将来需要多用户身份、严格用户隔离或典型关系型业务数据时才重新评估。实际职责见 `docs/phase1-operating-model.md`。
 
 每日卦例和 Memo 会公开。Public 文件可能被任何人查看、复制或 Fork；即使日后删除，也无法保证其他副本消失。不要在 Memo 写入密码、访问令牌、公司机密或不希望公开的个人信息。
 
