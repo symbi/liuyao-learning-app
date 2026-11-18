@@ -2835,7 +2835,6 @@
     return JSON.parse(JSON.stringify(doc));
   }
   async function saveCurrentRecord(){
-    const wasNewEntry=forceNewRecord;
     const record=makeRecordSnapshot();
     const date=record.date;
     let doc;
@@ -2850,7 +2849,7 @@
     const existingAdditionalIndex=list.findIndex(item=>item.id===record.id);
     const existingAdditional=existingAdditionalIndex>=0?list[existingAdditionalIndex]:null;
     const existingDaily=doc.dailyFortune?.id===record.id?doc.dailyFortune:null;
-    const shouldSaveAsDaily=!record.isCase&&category==='daily'&&!wasNewEntry&&(
+    const shouldSaveAsDaily=!record.isCase&&category==='daily'&&(
       !!existingDaily||(!editingRecordId&&!doc.dailyFortune&&!existingAdditional)
     );
     if(shouldSaveAsDaily){
