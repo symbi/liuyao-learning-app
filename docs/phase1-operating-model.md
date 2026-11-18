@@ -93,25 +93,47 @@ Pages Functions 是 Cloudflare 托管的执行环境，不是我们维护的 Doc
 
 ### 输入
 
-1. **整理后的课堂笔记**：`docs/lessons/` 中由课堂材料整理、校对后保存的 Markdown。
-2. **HTML 录入的卦例**：GitHub `daily-records/` 中的 JSON，以及后续整理成独立案例的 JSON。包含课堂案例/个人练习标签、卦盘快照、Memo 和日期等。
-3. **外部 GitHub 参考项目**：只导入明确选择的项目 README、文档或指定代码文件。记录仓库 URL、作者、License 和来源类别，不把外部项目内容混成老师课堂规则。
-4. **Private raw 来源**：默认只保留来源引用。只有在确实需要回查并明确配置了私有仓库访问时，才选择性读取原始转写/资料；不把 Private raw 内容直接复制到 Public 仓库。
+Phase 1 必须把课程资料的两个来源轨道分开保存，不能把原始 ASR 和整理后的课堂笔记当成同一份 Document。
+
+**Source A：Raw ASR（Private raw）**
+
+- 原始课堂录音保存在 `liuyao-learning-raw`，作为音频来源文件，不直接切成文本 Chunk。
+- ASR 转写文字也保存在 Private raw，当前识别质量有限（用户估计约 70%），标记为 `raw_asr / low_confidence / unverified`。
+- 初期默认只保留原文、版本、课程 ID 和回查位置；不进入主要规则抽取，也不作为老师确认规则的证据。
+- 未来确实需要查找原话时，可以单独生成 RawChunk 和低置信度向量索引，查询时与整理笔记分开显示、分开过滤。
+
+**Source B：Curated Lesson Notes（Learning）**
+
+- ChatGPT 根据课堂上下文整理、修订后的正式笔记，保存在 `docs/lessons/`。
+- 这是 Phase 1 默认执行 Chunk、Embedding 和候选知识抽取的主要课堂来源。
+- 每个文件保留 lessonId、文件路径、标题、段落位置，以及能够回查 Raw 来源的引用。
+
+另外还有：
+
+1. **HTML 卦例 JSON**：从 `daily-records/` 或后续案例目录读取。用 Case Mapper 按结构化字段写入 Case 节点，不让 LLM 重新猜测卦盘字段。
+2. **外部 GitHub 参考项目**：只导入明确选择的 README、文档或代码文件，标记为 External Reference，并记录 URL、作者和 License，不与老师课程口径混为一谈。
 
 ### 处理
 
 ```text
-新文件 / 修改过的文件
-  -> 识别来源（repo + path + revision）
-  -> 计算 content hash
-  -> 读取文本 / JSON
-  -> 文本切块（Chunk）并保留页码、标题或段落定位
-  -> Gemini Generative Model：抽取候选概念、关系、规则和摘要
-  -> Gemini Embedding Model：为文本片段生成向量
-  -> 规范化 ID、实体去重、检查来源链
-  -> Neo4j MERGE / 更新版本 / 标记过期片段
+新增 / 修改文件
+  -> Source Scanner：识别仓库、路径和稳定 documentId
+  -> Sync Manifest：计算 revisionHash / contentHash
+  -> Source Gate：按 sourceType / trustLevel 分流
+       ├─ Raw ASR：默认只登记来源与版本，不进入主抽取流程
+       ├─ Curated Notes：Markdown Parser -> Chunker -> Curated Chunks
+       ├─ Case JSON：Case Mapper -> 结构化 Case
+       └─ External GitHub：仅处理选定文件，标记 external
+  -> 对 Curated Chunk 并行执行两条路径：
+       ├─ Embedding Model：Chunk -> Vector -> 写入 Chunk / Vector Index
+       └─ Generative LLM：Chunk -> 候选 Concept / Entity / Relation / RuleCandidate
+  -> 把抽取结果连接回来源 Chunk / DocumentRevision
+  -> Neo4j MERGE / 更新版本 / 标记 superseded
 ```
 
+Chunk 是共同的基础文本单位。Embedding 和候选知识抽取不是二选一，而是同一 Chunk 的两条并行处理路径：
+- Embedding 路径产生数值向量，供语义相似检索。
+- Generative LLM 路径产生候选概念、实体、关系、规则陈述和摘要，并且必须保留来源 Chunk。
 ### 输出
 
 不是只有“节点和关系”。Neo4j 中至少会保存：
@@ -127,29 +149,29 @@ Pages Functions 是 Cloudflare 托管的执行环境，不是我们维护的 Doc
 
 每一条抽取的关系都应该保留来源 Chunk。检索结果能回到相应课次、文件和段落，而不是只留下一个脱离来源的 AI 结论。
 
-## 4. 增量更新：不是每次重新导入全部资料
+## 4. 增量更新与文档版本：不会每次重新导入全部资料
 
-Importer 必须设计成幂等（同一批数据重复运行不会无限复制），并维护同步清单：
+Importer 必须设计成幂等，并维护同步清单：
 
-- `sourceId`：稳定标识，例如 `repo/path`。
-- `contentHash`：识别文档内容是否变化。
-- `chunkId`：根据 sourceId、片段位置/内容生成稳定 ID。
+- `documentId`：稳定标识同一个来源文件（例如 repo/path）。
+- `revisionHash`：某一次文件内容的哈希；文件变化就产生新 revision。
+- `chunkId`：来源身份 + chunking 版本 + 规范化片段身份。
 - `recordId`：案例记录本身的稳定 ID。
-
-运行策略：
 
 | 情况 | Importer 行为 |
 |---|---|
-| 新增第 18 课 | 只解析、切分、抽取和写入第 18 课 |
+| 新增第 18 课 | 只处理第 18 课 |
 | 文件未变化 | 跳过，不重新请求 Embedding / LLM |
-| 文件有修改 | 只处理新增/改变的 Chunk；旧片段标记为 superseded 或按版本策略替换 |
-| 新增一条案例 | 按稳定 recordId 新增/更新一个 Case，并建立关系 |
+| 文件有修改 | 建立新 revision；变化的 Chunk 重新处理，未变化 Chunk 尽量复用 |
+| Raw ASR v1 升级为 v2 | 保留 v1，新建 v2；不覆盖原始版本 |
+| 旧版 Chunk 不再属于当前版本 | 标记 superseded，保留历史，默认检索时不优先返回 |
+| 新增一条案例 | 按稳定 recordId 新增 Case |
 | 案例 Memo 或卦盘修改 | 更新同一个 Case，不产生重复 Case |
-| 外部项目新增文档 | 只导入选定的新文件，标记为 external reference |
-| 规则被后续课程修订 | 保留旧来源和版本，建立修订/替代关系，不静默抹去历史 |
+| 外部项目新增文档 | 只导入选定的新文件，仍然标记 external |
 
-初版触发方式：用户在 Mac 手动运行同步命令。后续可以通过 GitHub Actions 在整理笔记或案例 JSON 更新后触发。**当前 HTML 的保存动作还不会自动触发 Importer。**
+举例：以后你用更好的模型重新转写第 17 课，Raw Transcript v2 会成为一个新版本。Importer 比较新旧文本，变化的 Chunk 才重新生成 Embedding 和候选知识；相同内容可以复用。旧版仍保留为历史，不与 Curated Lesson Notes 混源。
 
+初版由用户在 Mac 手动运行同步命令；后续可考虑 GitHub Actions 自动触发。当前 HTML 保存动作不会自动触发 Importer。
 ## 5. Gemini：Embedding 与内容生成是两种不同任务
 
 Importer 会使用两个独立的模型能力：
@@ -185,16 +207,19 @@ Neo4j LLM Knowledge Graph Builder 在线工具可以：
 
 ## 7. “谁来分析卦？”——Phase 1 和 Phase 2 的区别
 
-### Phase 1：仍然由当前 ChatGPT 对话负责最终分析
+### Phase 1：可以进行知识辅助分析，但采用半自动交接
 
-Phase 1 的重点是把知识库建起来，不是自动分析服务。
+Phase 1 不只是建库，也可以逐步做出可用的知识检索流程：
 
-- 用户照常在 HTML 排卦和保存。
-- Importer 把整理资料和案例同步进 AuraDB。
-- 用户仍可以把卦例和需要的课程资料交给 ChatGPT，由 ChatGPT 生成最终分析。
-- **此时 ChatGPT 网页版不会自动连接我们新建的 AuraDB。** 除非另行做查询工具/连接器，否则不能声称它已经能直接读取知识图谱。
+1. HTML 保存卦例到 GitHub（现有流程）。
+2. Mac 上的 Python Query Tool 读取用户选定的卦盘/问题，并用同一个 Embedding 模型把问题向量化。
+3. Query Tool 连接 AuraDB，执行 Vector Search + Cypher 图关系查询，按来源等级优先返回整理后的课程笔记和课堂案例；个人练习、外部项目和 Raw ASR 分开标记。
+4. Query Tool 生成带课次、文件路径、原文片段和案例出处的 Evidence Pack。
+5. 用户把卦盘 + Evidence Pack 提供给 ChatGPT 网页版，由 ChatGPT 完成最终分析报告。
 
-因此 Phase 1 不需要 Gemini 来写最终报告，也不要求先做 Phase 2 才能继续请 ChatGPT 分析。
+也就是说 Phase 1 可以支持“基于知识库的卦例辅助分析”，不必等到 Phase 2；但 Query Tool 需要在 Importer 之后增加，而且用户要把检索结果交给 ChatGPT。**当前 ChatGPT 网页版不会自行直连 AuraDB，现有 HTML 也还没有自动触发这条查询链。**
+
+没有知识库检索时，你仍然可以像现在一样直接把卦例、笔记和问题交给 ChatGPT 分析；Phase 1 的价值是逐步让资料查找更系统、更可追溯。
 
 ### Phase 2：如果希望 HTML 页面里直接出现 AI 分析报告
 
@@ -220,18 +245,22 @@ HTML
 
 GraphRAG 是“检索相关知识 + 把上下文交给 LLM”的应用框架，不是独立大模型。要生成最终答案，仍必须配置一个生成模型。这个生成模型可以是 Gemini，也可以是 OpenAI API；ChatGPT 网页订阅和 API 调用是两种不同服务。
 
-## 8. Neo4j 是不是唯一数据库？要不要 Supabase？
+## 8. Neo4j 本地能否运行？为什么仍建议 AuraDB？
 
-Neo4j AuraDB 本身就是一个托管云数据库，只不过它是**图数据库**，不是关系型数据库：
+Neo4j **可以本地运行**，并不是只能使用云服务。可以安装 Neo4j Desktop，在 Mac 上创建本地数据库；也可以通过官方 Docker 镜像运行。Neo4j Desktop 官方定位为本地开发环境，可以管理本地数据库，也可以连接 Aura 等远程数据库。参考：[Neo4j Desktop](https://neo4j.com/docs/desktop/current/) 和 [Neo4j Deployment Center](https://neo4j.com/deployment-center/)。
 
-- 关系型数据库常见结构是表、行、列；
-- Neo4j 的核心结构是节点、关系和属性；
-- 一个 Case 节点可以保存日期、案例类型、问题、卦盘快照、Memo 等属性，再通过关系连接到 Lesson、Chunk、Rule 和 Concept。
+两种选择：
 
-**Phase 1 的知识库只需要 Neo4j AuraDB，不需要额外 PostgreSQL / Supabase。** 目前 HTML 的每日 JSON 仍暂存在 GitHub，这属于现有文件持久化方式；Importer 会把这些记录同步成 Neo4j 中的知识实体。原始录音/PDF 等大文件仍保留在 GitHub raw 或未来对象存储。
+- **本地 Neo4j Desktop**：适合学习 Cypher、试验节点/关系、测试导入脚本。数据库通常只在这台 Mac 可访问；以后要让 Cloud Run 访问，需要额外网络配置，或迁移数据到云端。
+- **Neo4j AuraDB Free**：适合作为这个项目的共享主库。Mac Importer、以后 Cloud Run Backend 和可选 Graph Builder 都能连接同一个数据库。官方当前列出的 Free 上限为 200,000 nodes、400,000 relationships、1GB storage；没有 SLA，备份为 on-demand。实际启用前仍需检查当时套餐与功能限制。
 
-未来如果需要多用户账号、严格用户隔离、私人日记、复杂交易式用户数据，再评估 Supabase/PostgreSQL。它不是开始 Phase 1 的前置条件。单用户知识图谱和课堂/练习案例本身可以先由 Neo4j 承载。
+**建议 AuraDB Free 作为唯一主知识库；Neo4j Desktop 可选用于本地学习，不长期维护两份不同步的主数据库。**
 
+### 是否需要 Supabase？
+
+Neo4j AuraDB 本身就是数据库，只是图数据库而不是关系型数据库。Phase 1 的知识实体（Lesson、Document、Chunk、Concept、RuleCandidate、Case）和关系都可以放在 Neo4j；当前 HTML 的每日 JSON 仍由现有 Cloudflare Pages Function 保存到 GitHub，Importer 再把其同步成 Case 节点。
+
+Phase 1 不需要额外部署 PostgreSQL / Supabase。只有将来需要多用户身份、严格用户数据隔离或典型关系型业务数据时，才重新评估 Supabase。
 ## 9. 不要求用户手工审核每一条 AI 抽取结果
 
 用户不需要理解每个节点或关系，也不需要逐条批准 Neo4j 图谱内容才能使用系统。
