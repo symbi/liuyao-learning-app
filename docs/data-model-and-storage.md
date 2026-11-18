@@ -90,6 +90,6 @@ GitHub Public Repository：symbi/liuyao-learning-app
 
 用户提出「分析今天的卦」或指定日期时，ChatGPT 通过已连接的 GitHub 连接器读取 `daily-records/YYYY/MM/YYYY-MM-DD.json`，再按 Category / Real Question 检索 Public Learning 中的课程笔记、规则和课堂案例。分析时区分课程明确、老师课堂案例、外部参考和 AI 综合推理。保存成功不会自动触发分析，用户发出请求后再读取。
 
-## 7. Phase 2 迁移原则
+## 7. 后续在线化原则
 
-Phase 2 再增加 Login 和数据库（例如 Supabase）。前端页面不直接依赖 GitHub Contents API；读写统一通过 `/api/records/:date` 这一层接口。以后只替换服务端存储实现和身份认证，不需要重写排盘、六爻计算和主要页面。
+当前 HTML 的每日记录仍由 Pages Function 写入 GitHub JSON；Phase 1 Importer 再把这些记录同步为 Neo4j 中的 Case 节点与知识关系。若后续希望 HTML 直接读写 Neo4j，并在页面内运行知识检索和 AI 分析，可在 Phase 2 增加 Python FastAPI 服务（初期一个 Cloud Run Container），由它统一处理 Case API、GraphRAG 检索、规则引擎和生成模型调用。Supabase 仍为可选项，不是默认必须迁移的目标。
