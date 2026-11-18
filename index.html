@@ -2845,6 +2845,7 @@
     const now=new Date().toISOString();
     doc.schemaVersion=1;doc.recordDate=date;doc.timezone=JAPAN_TZ;
     doc.createdAt=doc.createdAt||now;doc.updatedAt=now;
+    if(!record.isCase) doc.dailyMemo=memoTextarea.value.trim();
     const category=record.question?.category||'daily';
     const list=Array.isArray(doc.additionalQuestions)?doc.additionalQuestions:[];
     const existingAdditionalIndex=list.findIndex(item=>item.id===record.id);
