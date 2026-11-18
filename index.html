@@ -991,6 +991,17 @@
     </div>
   </div>
 </dialog>
+<dialog class="records-dialog import-dialog" id="unsaved-changes-dialog" aria-labelledby="unsaved-changes-title">
+  <div class="records-dialog-inner">
+    <div class="records-dialog-head"><h2 id="unsaved-changes-title">当前卦有尚未保存的修改</h2></div>
+    <p class="section-note" style="margin:0 0 14px">你修改了当前卦的爻位、纳甲、六亲、案例信息或 Memo。开始新卦之前，如何处理这些修改？</p>
+    <div class="record-actions" style="justify-content:flex-end;flex-wrap:wrap">
+      <button type="button" class="small-action primary" id="save-and-new-entry">先保存，再开始新卦</button>
+      <button type="button" class="small-action" id="discard-and-new-entry">放弃修改，开始新卦</button>
+      <button type="button" class="small-action" id="cancel-new-entry">取消，继续编辑</button>
+    </div>
+  </div>
+</dialog>
 <dialog class="records-dialog import-dialog" id="import-dialog" aria-labelledby="import-dialog-title">
   <div class="records-dialog-inner">
     <div class="records-dialog-head">
@@ -1613,6 +1624,7 @@
     if(!preserveAssignments){
       calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
       editingRecordId=null;
+      forceNewRecord=false;
       setCaseEditor(null);
       const memo=document.getElementById('daily-memo');
       if(memo) memo.value='';
@@ -1672,7 +1684,7 @@
   clearCurrentEntryButton.id='clear-current-entry';
   clearCurrentEntryButton.className='small-action date-branch-clear';
   clearCurrentEntryButton.textContent='清空本次输入';
-  clearCurrentEntryButton.title='清空当前未保存的排卦与每日输入，不删除已保存记录';
+  clearCurrentEntryButton.title='结束当前这一卦并开始新卦；如有未保存修改，会先询问如何处理';
 
   function showToast(message){
     toast.textContent = message; toast.classList.add('show');
@@ -2601,6 +2613,10 @@
   let selectedRecordKeys=new Set();
   let importCandidates=[];
   let editingRecordId=null;
+  let forceNewRecord=false;
+  let entryBaseline=null;
+  const unsavedChangesDialog=document.getElementById('unsaved-changes-dialog');
+  let resolveClearDecision=null;
   function readRecords(){
     try{const value=JSON.parse(localStorage.getItem(RECORDS_KEY)||'[]');return Array.isArray(value)?value:[];}
     catch(error){return [];}
@@ -2685,11 +2701,13 @@
       if(doc?.dailyFortune){openRecord({...doc.dailyFortune,date,recordType:'dailyFortune'});}
       else{
         editingRecordId=null;
+        forceNewRecord=false;
         setCaseEditor(null);
         restoreQuestion({category:'daily',text:''});
         document.getElementById('daily-memo').value=doc?.dailyMemo||'';
         state.forEach(item=>{item.flowers=null;item.branch=null;item.relation=null;item.shen=null;item.changeBranch=null;item.changeRelation=null;item.effect='';});
         selected=null;updateSelectedTiles();state.forEach((_,index)=>renderRow(index));renderTrigramNames();
+        markEntryClean();
       }
       setGitHubStatus('已从 GitHub 读取 '+date);
       return activeDayDocument;
@@ -2769,6 +2787,36 @@
       twentyEight:currentTwentyEightInfo?{...currentTwentyEightInfo,candidateYiji:{...currentTwentyEightInfo.candidateYiji}}:null
     };
   }
+  function editableEntryFingerprint(){
+    const record=makeRecordSnapshot();
+    // Exclude generated timestamps and calculated calendar snapshots; compare only editable form data.
+    return JSON.stringify({
+      date:record.date,
+      question:record.question,
+      isCase:record.isCase,
+      caseSource:record.isCase?record.caseSource:null,
+      caseReviewStatus:record.isCase?record.caseReviewStatus:null,
+      memo:record.isCase?record.caseMemo:record.dailyMemo,
+      pillars:record.pillars,
+      lines:record.lines,
+      calendarAssignments:record.calendarAssignments
+    });
+  }
+  function markEntryClean(){entryBaseline=editableEntryFingerprint();}
+  function isEntryDirty(){return entryBaseline!==null&&editableEntryFingerprint()!==entryBaseline;}
+  function askHowToHandleUnsavedChanges(){
+    return new Promise(resolve=>{resolveClearDecision=resolve;unsavedChangesDialog.showModal();});
+  }
+  function finishClearDecision(decision){
+    if(!resolveClearDecision)return;
+    const resolve=resolveClearDecision;resolveClearDecision=null;
+    if(unsavedChangesDialog.open) unsavedChangesDialog.close();
+    resolve(decision);
+  }
+  document.getElementById('save-and-new-entry').addEventListener('click',()=>finishClearDecision('save'));
+  document.getElementById('discard-and-new-entry').addEventListener('click',()=>finishClearDecision('discard'));
+  document.getElementById('cancel-new-entry').addEventListener('click',()=>finishClearDecision('cancel'));
+  unsavedChangesDialog.addEventListener('cancel',event=>{event.preventDefault();finishClearDecision('cancel');});
   function recordHexagramName(record){
     if(!record||!Array.isArray(record.lines)||record.lines.length!==6||record.lines.some(line=>line.flowers===null||line.flowers===undefined)) return '未完成六爻';
     const pattern=record.lines.map(line=>mapping[line.flowers]?.yang?'1':'0').join('');
@@ -2777,58 +2825,62 @@
   function recordThrowText(record){
     return (record.lines||[]).map(line=>line.flowers===null||line.flowers===undefined?'·':mapping[line.flowers]?.label||'·').join(' ');
   }
+  async function getDayDocumentForSave(date){
+    if(activeDayDocument&&activeDayDocument.recordDate===date) return JSON.parse(JSON.stringify(activeDayDocument));
+    if(!githubAuthenticated&&!await refreshGitHubAuth()) throw new Error('请先连接 GitHub');
+    const result=await githubRequest('/records/'+date,{method:'GET'});
+    githubShaByDate.set(date,result.sha||null);
+    const empty={schemaVersion:1,recordDate:date,timezone:JAPAN_TZ,dailyFortune:null,additionalQuestions:[],dailyMemo:'',createdAt:null,updatedAt:null};
+    const doc=result.record||empty;
+    activeDayDocument=JSON.parse(JSON.stringify(doc));
+    return JSON.parse(JSON.stringify(doc));
+  }
   async function saveCurrentRecord(){
+    const wasNewEntry=forceNewRecord;
     const record=makeRecordSnapshot();
     const date=record.date;
-    let doc=activeDayDocument&&activeDayDocument.recordDate===date?JSON.parse(JSON.stringify(activeDayDocument)):null;
-    if(!doc){doc=await loadDayFromGitHub(date);doc=doc?JSON.parse(JSON.stringify(doc)):{schemaVersion:1,recordDate:date,timezone:JAPAN_TZ,dailyFortune:null,additionalQuestions:[],dailyMemo:'',createdAt:null,updatedAt:null};}
+    let doc;
+    try{doc=await getDayDocumentForSave(date);}
+    catch(error){setGitHubStatus('未同步：'+error.message);showToast('GitHub 读取失败，未保存：'+error.message);return false;}
     const now=new Date().toISOString();
     doc.schemaVersion=1;doc.recordDate=date;doc.timezone=JAPAN_TZ;
     doc.createdAt=doc.createdAt||now;doc.updatedAt=now;
-    // Daily notes remain date-level; a marked case keeps its own memo on the case record.
-    if(!record.isCase) doc.dailyMemo=record.dailyMemo||'';
     const category=record.question?.category||'daily';
     const list=Array.isArray(doc.additionalQuestions)?doc.additionalQuestions:[];
     const existingAdditionalIndex=list.findIndex(item=>item.id===record.id);
     const existingAdditional=existingAdditionalIndex>=0?list[existingAdditionalIndex]:null;
     const existingDaily=doc.dailyFortune?.id===record.id?doc.dailyFortune:null;
-    if(category==='daily'&&!record.isCase){
-      if(existingAdditionalIndex>=0) list.splice(existingAdditionalIndex,1);
-      const previous=existingDaily||doc.dailyFortune;
-      if(!existingDaily&&!existingAdditional){
-        record.id=previous?.id||('daily-'+date);
-        record.createdAt=previous?.createdAt||previous?.savedAt||now;
-      }else{
-        record.createdAt=(existingDaily||existingAdditional)?.createdAt||(existingDaily||existingAdditional)?.savedAt||now;
-      }
+    const shouldSaveAsDaily=!record.isCase&&category==='daily'&&!wasNewEntry&&(
+      !!existingDaily||(!editingRecordId&&!doc.dailyFortune&&!existingAdditional)
+    );
+    if(shouldSaveAsDaily){
+      if(!existingDaily){record.id='daily-'+date;record.createdAt=now;}
+      else record.createdAt=existingDaily.createdAt||existingDaily.savedAt||now;
       record.updatedAt=now;record.savedAt=now;record.recordType='dailyFortune';
       delete record.dailyMemo;delete record.caseSource;delete record.caseReviewStatus;delete record.caseMemo;
-      doc.dailyFortune=record;
-      doc.additionalQuestions=list;
+      doc.dailyFortune=record;doc.additionalQuestions=list;
+      doc.dailyMemo=memoTextarea.value.trim();
     }else{
-      if(existingDaily) doc.dailyFortune=null;
-      const index=list.findIndex(item=>item.id===record.id);
-      if(index>=0){
-        record.createdAt=list[index].createdAt||list[index].savedAt||now;
-        record.updatedAt=now;list[index]=record;
+      if(existingDaily&&record.isCase) doc.dailyFortune=null;
+      if(existingAdditional){
+        record.createdAt=existingAdditional.createdAt||existingAdditional.savedAt||now;
+        record.updatedAt=now;list[existingAdditionalIndex]=record;
       }else{
-        if(!existingDaily) record.id='question-'+(crypto.randomUUID?crypto.randomUUID():String(Date.now()));
-        record.createdAt=existingDaily?.createdAt||existingDaily?.savedAt||now;
-        record.updatedAt=now;list.unshift(record);
+        // New entries and imported records never take over another record's daily slot.
+        if(!record.id||record.id==='daily-'+date&&doc.dailyFortune?.id!==record.id) record.id='question-'+(crypto.randomUUID?crypto.randomUUID():String(Date.now()));
+        record.createdAt=now;record.updatedAt=now;list.unshift(record);
       }
       record.savedAt=now;record.recordType='additionalQuestion';delete record.dailyMemo;
       doc.additionalQuestions=list;
     }
     try{
       await saveDayToGitHub(date,doc);
-      editingRecordId=record.id;
-      replaceDayCache(date,doc);
-      const savedLabel=record.isCase?(record.caseSource==='practice'?'个人练习案例已保存：':'课堂案例已保存：'):(category==='daily'?'每日卦已保存：':'额外问题已保存：');
+      editingRecordId=record.id;forceNewRecord=false;
+      replaceDayCache(date,doc);markEntryClean();
+      const savedLabel=record.isCase?(record.caseSource==='practice'?'个人练习案例已保存：':'课堂案例已保存：'):(shouldSaveAsDaily?'每日卦已保存：':(category==='daily'?'新卦例已另存：':'额外问题已保存：'));
       showToast(savedLabel+recordHexagramName(record));
-    }catch(error){
-      setGitHubStatus('未同步：'+error.message);
-      showToast('GitHub 保存失败，尚未同步：'+error.message);
-    }
+      return true;
+    }catch(error){setGitHubStatus('未同步：'+error.message);showToast('GitHub 保存失败，尚未同步：'+error.message);return false;}
   }
   function openRecord(record){
     if(!record||!Array.isArray(record.lines)||record.lines.length!==6){showToast('卦例数据格式不正确');return;}
@@ -2837,6 +2889,7 @@
       if(!chooseCalendarDate(date,true)) return;
     }
     editingRecordId=record.id||null;
+    forceNewRecord=false;
     // Old records without a 建除 snapshot are recalculated from their saved date.
     renderJianChuInfo(record.jianchu&&typeof record.jianchu.name==='string'?record.jianchu:calculateJianChu(currentMonthBranch,currentDayBranch));
     if(record.twentyEight&&Number.isInteger(record.twentyEight.index)) renderTwentyEightInfo(parseDateInput(typeof date==='string'?date:selectedDateKey)||getJapanDateParts(),record.twentyEight);
@@ -2871,6 +2924,7 @@
     state.forEach((_,index)=>renderRow(index));
     renderTrigramNames();
     recordsDialog.close();
+    markEntryClean();
     showToast('已打开：'+recordHexagramName(record));
     window.scrollTo({top:0,behavior:'smooth'});
   }
@@ -3131,22 +3185,23 @@
     }
   }
   document.getElementById('save-record').addEventListener('click',saveCurrentRecord);
-  function clearCurrentEntry(){
-    if(!window.confirm('确定清空本次页面中的所有输入吗？这不会删除已经保存到 GitHub 的卦例。')) return;
+  function resetToNewEntry(){
     state=Array.from({length:6},()=>({flowers:null,branch:null,relation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}));
     calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
-    selected=null;
-    editingRecordId=null;
-    setCaseEditor(null);
-    setQuestionCategory('daily');
-    questionTextEl.value='';
-    document.getElementById('daily-memo').value='';
-    updateSelectedTiles();
-    renderCalendarDropSlots();
-    state.forEach((_,index)=>renderRow(index));
-    refreshBranchStatusTokens();
-    renderTrigramNames();
-    showToast('本次输入已清空；已保存的卦例未受影响');
+    selected=null;editingRecordId=null;forceNewRecord=true;
+    setCaseEditor(null);setQuestionCategory('daily');questionTextEl.value='';memoTextarea.value='';
+    updateSelectedTiles();renderCalendarDropSlots();
+    state.forEach((_,index)=>renderRow(index));refreshBranchStatusTokens();renderTrigramNames();
+    markEntryClean();showToast('已开启新卦；之前的记录保持不变');
+  }
+  async function clearCurrentEntry(){
+    if(isEntryDirty()){
+      const decision=await askHowToHandleUnsavedChanges();
+      if(decision==='cancel') return;
+      if(decision==='save'&&!await saveCurrentRecord()) return;
+      // Discard means the edited form is abandoned; the saved/imported source record is untouched.
+    }
+    resetToNewEntry();
   }
   document.getElementById('clear-current-entry').addEventListener('click',clearCurrentEntry);
   document.getElementById('github-login').addEventListener('click',async()=>{
@@ -3182,6 +3237,7 @@
   document.getElementById('cancel-import').addEventListener('click',()=>importDialog.close());
   recordsDialog.addEventListener('click',event=>{if(event.target===recordsDialog)recordsDialog.close();});
   renderRecords();
+  markEntryClean();
   refreshGitHubAuth().then(ok=>{if(ok)loadDayFromGitHub(selectedDateKey);});
 
 })();
