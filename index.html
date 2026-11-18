@@ -2861,7 +2861,7 @@
       doc.dailyFortune=record;doc.additionalQuestions=list;
       doc.dailyMemo=memoTextarea.value.trim();
     }else{
-      if(existingDaily&&record.isCase) doc.dailyFortune=null;
+      if(existingDaily) doc.dailyFortune=null;
       if(existingAdditional){
         record.createdAt=existingAdditional.createdAt||existingAdditional.savedAt||now;
         record.updatedAt=now;list[existingAdditionalIndex]=record;
