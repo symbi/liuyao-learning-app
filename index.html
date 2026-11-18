@@ -2797,7 +2797,6 @@
       caseSource:record.isCase?record.caseSource:null,
       caseReviewStatus:record.isCase?record.caseReviewStatus:null,
       memo:record.isCase?record.caseMemo:record.dailyMemo,
-      pillars:record.pillars,
       lines:record.lines,
       calendarAssignments:record.calendarAssignments
     });
@@ -2855,7 +2854,11 @@
       !!existingDaily||(!editingRecordId&&!doc.dailyFortune&&!existingAdditional)
     );
     if(shouldSaveAsDaily){
-      if(!existingDaily){record.id='daily-'+date;record.createdAt=now;}
+      if(!existingDaily){
+        const defaultDailyId='daily-'+date;
+        record.id=list.some(item=>item.id===defaultDailyId)?'daily-'+date+'-'+(crypto.randomUUID?crypto.randomUUID():String(Date.now())):defaultDailyId;
+        record.createdAt=now;
+      }
       else record.createdAt=existingDaily.createdAt||existingDaily.savedAt||now;
       record.updatedAt=now;record.savedAt=now;record.recordType='dailyFortune';
       delete record.dailyMemo;delete record.caseSource;delete record.caseReviewStatus;delete record.caseMemo;
@@ -2868,7 +2871,7 @@
         record.updatedAt=now;list[existingAdditionalIndex]=record;
       }else{
         // New entries and imported records never take over another record's daily slot.
-        if(!record.id||record.id==='daily-'+date&&doc.dailyFortune?.id!==record.id) record.id='question-'+(crypto.randomUUID?crypto.randomUUID():String(Date.now()));
+        if(!record.id) record.id='question-'+(crypto.randomUUID?crypto.randomUUID():String(Date.now()));
         record.createdAt=now;record.updatedAt=now;list.unshift(record);
       }
       record.savedAt=now;record.recordType='additionalQuestion';delete record.dailyMemo;
