@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "recordDate": "2026-11-18",
+  "timezone": "Asia/Tokyo",
+  "dailyFortune": {
+    "schemaVersion": 11,
+    "id": "daily-2026-11-18",
+    "savedAt": "2026-11-18T08:35:10.664Z",
+    "date": "2026-11-18",
+    "timezone": "Asia/Tokyo",
+    "question": {
+      "category": "daily",
+      "categoryLabel": "今日运势（每日卦）",
+      "mainUseGod": "世爻",
+      "hint": "先看世爻，再结合日月、动爻与全卦关系。",
+      "text": ""
+    },
+    "isCase": false,
+    "pillars": {
+      "year": "丙午",
+      "month": "己亥",
+      "day": "丙申"
+    },
+    "lines": [
+      {
+        "flowers": 1,
+        "branch": "卯",
+        "relation": "父母",
+        "shen": "朱雀",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 2,
+        "branch": "丑",
+        "relation": "子孙",
+        "shen": "勾陈",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 1,
+        "branch": "亥",
+        "relation": "官鬼",
+        "shen": "螣蛇",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 1,
+        "branch": "午",
+        "relation": "兄弟",
+        "shen": null,
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 1,
+        "branch": "申",
+        "relation": "妻财",
+        "shen": null,
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 0,
+        "branch": "戌",
+        "relation": "子孙",
+        "shen": "青龙",
+        "changeBranch": "未",
+        "changeRelation": "子孙",
+        "effect": "化退"
+      }
+    ],
+    "calendarAssignments": {
+      "yearRelation": null,
+      "monthRelation": "官鬼",
+      "dayRelation": "妻财",
+      "dayGod": "朱雀",
+      "xunkong1": "午",
+      "xunkong2": "未"
+    },
+    "jianchu": {
+      "name": "收",
+      "tone": "black",
+      "kind": "黑色标记",
+      "yi": "抓捕、收回",
+      "ji": "远行、长途出行",
+      "guidance": "宜：抓捕、收回；忌：远行、长途出行",
+      "offset": 9,
+      "monthBranch": "亥",
+      "dayBranch": "申",
+      "ruleId": "JIANCHU-EXT-001",
+      "algorithm": "(日支序号 - 月建序号 + 12) mod 12",
+      "guidanceSnapshot": "宜：抓捕、收回；忌：远行、长途出行",
+      "savedAt": "2026-11-18T08:35:10.664Z"
+    },
+    "twentyEight": {
+      "index": 6,
+      "name": "箕水豹",
+      "short": "箕",
+      "symbol": "青龙",
+      "direction": "东方",
+      "ruleId": "TWENTY_EIGHT_DAILY_ROTATION_CNLUNAR_2019",
+      "anchorDate": "2019-01-17",
+      "anchorMansion": "角木蛟",
+      "candidateYiji": {
+        "yi": "开市、嫁娶、出行、建造",
+        "ji": "安葬"
+      },
+      "source": "OPN48/cnlunar + donma/LunarData (candidate)",
+      "savedAt": "2026-11-18T08:24:05.471Z"
+    },
+    "createdAt": "2026-11-18T08:35:10.664Z",
+    "updatedAt": "2026-11-18T08:35:10.664Z",
+    "recordType": "dailyFortune"
+  },
+  "additionalQuestions": [],
+  "dailyMemo": "在家办公，中午肚子饿了，下楼去店里点了午饭吃。\n做蛋糕\n经理继续要我更改一下token 使用的报告\n同事找我问工作情况，我简单说了一下",
+  "createdAt": "2026-11-18T08:35:10.664Z",
+  "updatedAt": "2026-11-18T08:35:10.664Z"
+}
