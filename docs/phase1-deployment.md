@@ -60,6 +60,8 @@ Cloudflare Pages 同时托管 `index.html` 和 `/api/*` Functions，页面与 AP
 - GitHub 保存失败时页面显示失败状态，不应显示保存成功。
 - 如果两台设备同时修改同一天记录，SHA 不匹配会返回冲突；当前版本不会静默覆盖。重新加载最新版本后再编辑保存。
 
-## Phase 1 暂不做
+## 当前 HTML 保存服务的边界
 
-不接 Supabase、不加独立数据库、不做多用户账号系统、不做 Embedding/RAG。等每日记录和分析流程实际使用一段时间，再确定 Phase 2 的用户登录和数据库结构。
+当前 Cloudflare Pages + Pages Functions 只负责网页托管、GitHub OAuth 和每日 JSON 文件读写；这部分不包含 Neo4j、Embedding、GraphRAG 或最终分析模型。
+
+知识库建设是独立的 Phase 1 工作流：在用户 Mac 运行 Python Importer，调用 Gemini 生成模型做候选结构抽取、调用 Embedding 模型生成向量，并写入 Neo4j AuraDB。实施细节与后续在线分析服务见 [Phase 1 实际运行架构](phase1-operating-model.md)。本阶段不需要部署自有 Backend Container 或 Supabase。
