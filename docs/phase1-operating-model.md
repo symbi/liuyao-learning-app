@@ -173,7 +173,7 @@ Neo4j LLM Knowledge Graph Builder 在线工具可以：
 - 在界面里预览 lexical graph、entity graph 和 full graph；
 - 提供基于已导入数据的 RAG 聊天入口。
 
-它的在线前端/后端由 Neo4j Labs 托管，连接到我们自己的 AuraDB；它不是只负责画图的插件，也不是我们自建 App 的后端。
+它的在线 React 前端和 Python FastAPI 后端由 Neo4j Labs 托管（后端运行在 Google Cloud Run），连接到我们自己的 AuraDB；这不需要部署在你的 Google Cloud 账户里。它不是只负责画图的插件，也不是我们自建 App 的后端。Neo4j 当前开发者资料将其标注为 Labs/社区工具，而不是官方支持的生产级托管产品，因此我们只把它作为可选试验工具。
 
 但 Neo4j 将它定位为 Labs 项目/社区工具，官方资料对生产场景也介绍了 Aura Document Intelligence 等其他方案。因此本项目建议：
 
