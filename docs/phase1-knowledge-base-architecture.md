@@ -1,6 +1,6 @@
 # Phase 1：知识库与课堂案例架构规划
 
-> 本文记录 Phase 1 的知识库建设方向，作为后续开发的共同基准。它补充现有每日排卦保存方案，不替代 `docs/master-plan.md`、`docs/data-model-and-storage.md` 或现有 Cloudflare 部署设计。
+> 本文记录知识库的概念模型。2026-11-18 起，关于实际部署位置、Importer 增量策略、Gemini 的两种模型职责、Graph Builder 是否必须、谁负责最终分析及是否需要 Supabase，以 [Phase 1 实际运行架构与工作流](phase1-operating-model.md) 为最新执行决策。
 
 ## 1. 目标与边界
 
