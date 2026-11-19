@@ -34,6 +34,7 @@
 - [第十六课外部参考](../references/lesson-16-external-sources.md)
 - [第十七课外部参考](../references/lesson-17-external-sources.md)
 - [第十八课外部参考](../references/lesson-18-external-sources.md)
+- [第十八课外部参考](../references/lesson-18-external-sources.md)
 
 规则卡片位于 [docs/rules](../rules/)；每条规则均保留课次来源、状态、适用边界及实现要求。
 
