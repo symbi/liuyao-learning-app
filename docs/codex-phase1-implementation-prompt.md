@@ -110,7 +110,18 @@ Raw ASR adapter 可扫描文件元数据，但默认不读内容、不生成 Chu
 
 节点/关系至少覆盖 implementation plan 的 SourceDocument、DocumentRevision、Chunk、Lesson、CastRecord/Case、Concept、RuleCandidate、ExternalProject。JSON 的嵌套 casting 用 JSON string 或明确扁平字段保存，不能直接写任意嵌套对象作为 Neo4j property。
 
-### M4：Gemini 双路径
+### M4：增量 Importer 核心
+
+在不调用 Gemini 的情况下先完成：
+- 来源扫描、Parser、Chunker、稳定 ID、content/revision/chunk hash；
+- Neo4j Document / Revision / Chunk 的幂等 MERGE；
+- Neo4j-backed Sync Manifest；
+- dry-run、日志、重试和失败恢复；
+- 重复运行不产生重复 Document / Revision / Chunk。
+
+此阶段可把 embedding 标记为待生成，但不能伪造向量或将无向量 Chunk 放入语义检索结果。
+
+### M5：Gemini 双路径
 
 对允许处理的 Curated Chunk 并行执行：
 
@@ -131,7 +142,13 @@ Gemini 的 gemini-embedding-001 与 gemini-embedding-2 向量空间不兼容。�
 
 调用前检查当时 Gemini API 条款。Free tier 的内容可能用于改进 Google 产品；默认只发送用户允许发送到 Google 的整理笔记/测试材料。Private raw 和私人记录不得默认发送。
 
-### M5：增量 Importer
+### M6：外部参考源启用
+
+在用户确认来源/License 后：
+- 添加一个外部 GitHub Repository allowlist；
+- 第一轮导入 README、Markdown、docs，并记录 URL、commit SHA、作者和 License；
+- 后续再为选定的 Python / JavaScript / TypeScript 源码实现按 AST / 符号边界切分；
+- PDF 读取只处理用户选定的文件，保留页码；没有真实 PDF 时使用 parser fixture，不能伪造用户资料。### M5：增量 Importer
 
 提供：
 - liuyao-kb ingest --dry-run
@@ -142,7 +159,7 @@ Gemini 的 gemini-embedding-001 与 gemini-embedding-2 向量空间不兼容。�
 
 第二次重复执行相同来源必须跳过所有不变内容，不产生重复节点，不再次请求 Embedding/LLM。文档有修改时仅重处理变化 Chunk。写入失败重试后不能产生重复数据。
 
-### M6：Query Tool / Evidence Pack
+### M7：Query Tool / Evidence Pack
 
 提供：
 - liuyao-kb evidence --question "..."
@@ -152,7 +169,7 @@ Gemini 的 gemini-embedding-001 与 gemini-embedding-2 向量空间不兼容。�
 
 输出本地 Markdown Evidence Pack，含问题/卦盘事实、课程号、路径、标题/页码、原文短摘录、课堂案例 Memo、外部项目 URL/commit/license、不确定性和可直接交给 ChatGPT Web 的任务提示。它不是最终分析报告。
 
-### M7：端到端验收
+### M8：端到端验收
 
 至少跑以下测试：
 1. 解析 lesson-11 或其他实际可用的课程 Markdown，保留课次/标题/出处。
