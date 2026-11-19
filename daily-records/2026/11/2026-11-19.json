@@ -120,8 +120,127 @@
     "updatedAt": "2026-11-19T06:15:54.360Z",
     "recordType": "dailyFortune"
   },
-  "additionalQuestions": [],
-  "dailyMemo": "上级找我谈话，工作的feedback，我的整体感受。说可能会换组，在等客户做决定\n要我写接下来的学习计划",
+  "additionalQuestions": [
+    {
+      "schemaVersion": 11,
+      "id": "91818419-6e4b-43f5-a4c7-a031fda4b40b",
+      "savedAt": "2026-11-19T06:28:38.934Z",
+      "date": "2026-11-19",
+      "timezone": "Asia/Tokyo",
+      "question": {
+        "category": "male-marriage",
+        "categoryLabel": "男性自问婚姻",
+        "mainUseGod": "妻财",
+        "hint": "妻财代表所问的女方／妻子。",
+        "text": "男，圣诞节能不能有date（无对象目前）"
+      },
+      "isCase": false,
+      "pillars": {
+        "year": "丙午",
+        "month": "己亥",
+        "day": "丁酉"
+      },
+      "lines": [
+        {
+          "flowers": 1,
+          "branch": "巳",
+          "relation": "妻财",
+          "shen": "朱雀",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 0,
+          "branch": "卯",
+          "relation": "子孙",
+          "shen": "勾陈",
+          "changeBranch": "寅",
+          "changeRelation": "子孙",
+          "effect": "化退"
+        },
+        {
+          "flowers": 2,
+          "branch": "丑",
+          "relation": "官鬼",
+          "shen": "螣蛇",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 3,
+          "branch": "申",
+          "relation": "父母",
+          "shen": "白虎",
+          "changeBranch": "亥",
+          "changeRelation": "兄弟",
+          "effect": "生"
+        },
+        {
+          "flowers": 1,
+          "branch": "戌",
+          "relation": "官鬼",
+          "shen": "玄武",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 2,
+          "branch": "子",
+          "relation": "兄弟",
+          "shen": "青龙",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        }
+      ],
+      "calendarAssignments": {
+        "yearRelation": null,
+        "monthRelation": "兄弟",
+        "dayRelation": "父母",
+        "dayGod": "朱雀",
+        "xunkong1": "未",
+        "xunkong2": "申"
+      },
+      "jianchu": {
+        "name": "开",
+        "tone": "yellow",
+        "kind": "黄道吉日",
+        "yi": "诸事",
+        "ji": "暂无统一的现代日常禁项，仍须结合其他神煞",
+        "guidance": "宜：诸事；忌：暂无统一的现代日常禁项，仍须结合其他神煞",
+        "offset": 10,
+        "monthBranch": "亥",
+        "dayBranch": "酉",
+        "ruleId": "JIANCHU-EXT-001",
+        "algorithm": "(日支序号 - 月建序号 + 12) mod 12",
+        "guidanceSnapshot": "宜：诸事；忌：暂无统一的现代日常禁项，仍须结合其他神煞",
+        "savedAt": "2026-11-19T06:28:38.934Z"
+      },
+      "twentyEight": {
+        "index": 7,
+        "name": "斗木獬",
+        "short": "斗",
+        "symbol": "玄武",
+        "direction": "北方",
+        "ruleId": "TWENTY_EIGHT_DAILY_ROTATION_CNLUNAR_2019",
+        "anchorDate": "2019-01-17",
+        "anchorMansion": "角木蛟",
+        "candidateYiji": {
+          "yi": "建造、嫁娶、开市、出行",
+          "ji": "安葬"
+        },
+        "source": "OPN48/cnlunar + donma/LunarData (candidate)",
+        "savedAt": "2026-11-19T06:16:22.683Z"
+      },
+      "createdAt": "2026-11-19T06:28:38.934Z",
+      "updatedAt": "2026-11-19T06:28:38.934Z",
+      "recordType": "additionalQuestion"
+    }
+  ],
+  "dailyMemo": "",
   "createdAt": "2026-11-19T02:30:40.690Z",
-  "updatedAt": "2026-11-19T06:15:54.360Z"
+  "updatedAt": "2026-11-19T06:28:38.934Z"
 }
