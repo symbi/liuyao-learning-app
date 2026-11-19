@@ -27,15 +27,16 @@
 - 写入时核对 GitHub blob SHA；冲突时不静默覆盖。
 - ChatGPT 在用户提出分析请求时，通过 GitHub 连接器读取当天文件，再关联 Public Learning 的课程笔记和案例。
 
-## 4. Phase 2：正式用户系统与数据库
+## 4. Phase 2：把知识辅助分析在线化
 
-Phase 1 验证好用后，再加入用户 Login 和数据库，例如 Supabase：
+Phase 2 的主要目的不是迁移 Phase 1 数据库，而是把 Mac 本地已经验证过的 Query / Evidence Pack 流程部署成在线服务，让 HTML 可以一键分析。
 
-- 每个用户有自己的每日卦例、额外问事和 Memo。
-- 由用户身份控制数据访问权限。
-- 将 `/api/records/:date` 的 GitHub 存储适配器替换为 Supabase 实现。
-- 尽量保持前端排盘、六爻计算和记录界面不变。
-- 根据真实使用情况再决定是否需要搜索、Embedding 或 RAG。
+- 在 Google Cloud Run 部署一个 Python FastAPI Service（初期一个 Service / 一个 Container）。
+- 内部模块包括 Case/Record 读取适配、GraphRAG Retriever、确定性 Rule Engine、LLM Orchestrator。
+- Backend 连接 **同一个 Neo4j AuraDB**，继续使用 Phase 1 已有 Document、Chunk、Embedding、Case 和关系；不重新 Chunk、不重新 Embedding、不重建知识库。
+- 后端以 Gemini 或 OpenAI API 的 Generative LLM 生成最终分析报告，再返回 HTML。
+- 当前 HTML 的每日 JSON 仍可继续保存在 GitHub；不因为上 Cloud Run 就必须迁移记录数据。
+- Supabase/PostgreSQL 仅在未来真正需要多用户身份、私人数据隔离或关系型业务数据时重新评估；不是 Phase 2 的必需组件。
 
 ## 5. ChatGPT 辅助分析流程
 
