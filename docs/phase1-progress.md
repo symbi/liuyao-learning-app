@@ -8,7 +8,8 @@
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
 - Status: not_started
 - Current milestone: M0 — AuraDB setup
-- Last reviewed/approved main commit at plan handoff: da2a0e98234c92b68550ce84498d9811b75384d8
+- Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
+- Implementation code status: not_started; planning and agent handoff documents are committed on main
 - Active implementation branch: none
 - Active PR: none
 - Last completed milestone: none
@@ -69,7 +70,7 @@
 
 ## 最近一次交接
 
-当前还没有 Phase 1 代码实现提交。下一位执行模型应先读取：
+当前还没有 Phase 1 代码实现提交。Phase 1 计划、Claude Code Prompt、通用 Agent 规则和本进度文件已提交到 main。下一位执行模型应先读取：
 
 1. AGENTS.md
 2. CLAUDE.md（若使用 Claude Code）
