@@ -295,14 +295,20 @@ Phase 1 不需要额外部署 PostgreSQL / Supabase。只有将来需要多用�
 
 ## 11. 实施顺序
 
-1. 完成 HTML 清空/新建/保存保护，确保旧卦不会被静默覆盖。
-2. 创建 AuraDB Free，并用少量手工数据验证节点/关系、访问凭据和连接。
-3. 编写本地 Python Importer，从 1–2 篇整理后的课程笔记与少量案例开始。
-4. 实现 manifest / contentHash / chunkId，证明重复运行会跳过不变文件、更新只影响变更内容。
-5. 添加 Gemini 生成模型抽取与 Embedding，检查中文六爻术语与来源保留质量。
-6. 再导入选定的外部 GitHub 项目资料，并始终分开标记外部来源。
-7. 最后决定是否要用 Cloud Run 建立在线分析 API；无需现在决定 Supabase。
+具体里程碑、代码目录、配置、安全边界和验收标准已经整理为独立的 [Phase 1 工程实施计划](phase1-implementation-plan.md)，Codex 本机执行说明见 [Codex Phase 1 Prompt](codex-phase1-implementation-prompt.md)。
 
+执行顺序如下：
+
+1. M0：用户创建 Neo4j AuraDB Free，在 Mac 本机安全配置凭据；先做连接与 Vector Index smoke test。
+2. M1–M3：建立 Python CLI、来源 Parser、Chunker、Neo4j Schema 和唯一约束。
+3. M4：先完成不依赖模型调用的增量 Importer 核心，验证 Hash、Revision、Chunk ID、MERGE 和重复运行。
+4. M5：对 Curated Chunk 并行执行 Gemini Embedding 和 Generative LLM 候选知识抽取。
+5. M6：按 allowlist 导入用户选定的 PDF / GitHub 外部项目，保留来源和 License。
+6. M7：实现本地 Query Tool，生成可交给 ChatGPT 网页版的 Evidence Pack。
+7. M8：用真实课程、真实课堂案例和用户允许的参考资料完成端到端验收。
+
+Phase 2 的 Cloud Run 在线 API 不属于本阶段，不阻塞 Phase 1 的知识库辅助分析。
+ 
 ## 官方技术参考
 
 - Neo4j Graph Database：<https://neo4j.com/docs/getting-started/graph-database/>
