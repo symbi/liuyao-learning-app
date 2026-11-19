@@ -13,7 +13,7 @@
 - Active implementation branch: none
 - Active PR: none
 - Last completed milestone: none
-- Next action: 用户创建 Neo4j AuraDB Free，并在 Mac 本地保存连接凭据；之后开始 M1，或先做 M0 doctor 验证。
+- Next action: 用户先在 Aura Console 完成 onboarding 并创建 AuraDB Free；用户通知实例已创建后，Claude 只执行 M0 smoke test。M0 审核通过前不创建实现分支、不启动 M1。
 - Last updated: 2026-11-19
 
 ## 已冻结的架构决定
@@ -69,6 +69,8 @@
 不得写入 API Key、Neo4j password、GitHub token、私密录音内容、私人记录全文或用户本机敏感路径。
 
 ## 最近一次交接
+
+- 2026-11-19：用户明确选择先创建 AuraDB Free，再进行 M0 smoke test。Claude Code 已确认目前没有修改代码、没有创建分支、没有推进任何里程碑。跨窗口总览见 [docs/workspace-handoff.md](workspace-handoff.md)；HTML 维护进度单独记录在 [docs/html-maintenance-progress.md](html-maintenance-progress.md)。
 
 当前还没有 Phase 1 代码实现提交。Phase 1 计划、Claude Code Prompt、通用 Agent 规则和本进度文件已提交到 main。下一位执行模型应先读取：
 
