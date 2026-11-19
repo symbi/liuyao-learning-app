@@ -124,7 +124,7 @@
     {
       "schemaVersion": 11,
       "id": "5665e578-594b-4099-9a4d-fa60618e1d21",
-      "savedAt": "2026-11-19T08:45:19.948Z",
+      "savedAt": "2026-11-19T09:00:15.216Z",
       "date": "2026-11-19",
       "timezone": "Asia/Tokyo",
       "question": {
@@ -165,8 +165,8 @@
           "relation": "妻财",
           "shen": "螣蛇",
           "changeBranch": "戌",
-          "changeRelation": "兄弟",
-          "effect": "回头克"
+          "changeRelation": "妻财",
+          "effect": "化进"
         },
         {
           "flowers": 1,
@@ -217,7 +217,7 @@
         "ruleId": "JIANCHU-EXT-001",
         "algorithm": "(日支序号 - 月建序号 + 12) mod 12",
         "guidanceSnapshot": "宜：诸事；忌：暂无统一的现代日常禁项，仍须结合其他神煞",
-        "savedAt": "2026-11-19T08:45:19.947Z"
+        "savedAt": "2026-11-19T09:00:15.215Z"
       },
       "twentyEight": {
         "index": 7,
@@ -233,10 +233,10 @@
           "ji": "安葬"
         },
         "source": "OPN48/cnlunar + donma/LunarData (candidate)",
-        "savedAt": "2026-11-19T08:37:20.182Z"
+        "savedAt": "2026-11-19T08:56:10.507Z"
       },
       "createdAt": "2026-11-19T08:45:19.948Z",
-      "updatedAt": "2026-11-19T08:45:19.948Z",
+      "updatedAt": "2026-11-19T09:00:15.216Z",
       "recordType": "additionalQuestion"
     },
     {
@@ -360,5 +360,5 @@
   ],
   "dailyMemo": "",
   "createdAt": "2026-11-19T02:30:40.690Z",
-  "updatedAt": "2026-11-19T08:45:19.948Z"
+  "updatedAt": "2026-11-19T09:00:15.216Z"
 }
