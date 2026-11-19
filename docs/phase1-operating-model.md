@@ -111,7 +111,8 @@ Phase 1 必须把课程资料的两个来源轨道分开保存，不能把原始
 另外还有：
 
 1. **HTML 卦例 JSON**：从 `daily-records/` 或后续案例目录读取。用 Case Mapper 按结构化字段写入 Case 节点，不让 LLM 重新猜测卦盘字段。
-2. **外部 GitHub 参考项目**：只导入明确选择的 README、文档或代码文件，标记为 External Reference，并记录 URL、作者和 License，不与老师课程口径混为一谈。
+2. **GitHub 中的 PDF / 古籍 / 外部文档**：可以作为独立 SourceDocument 导入。文字型 PDF 先抽取文字，再按页码、章节和段落切 Chunk；扫描版 PDF 需要 OCR，表格、卦图和复杂版面要保留页码并抽样检查。原始 PDF 仍留在 GitHub，Neo4j 存必要文本片段和来源定位。
+3. **外部 GitHub 参考项目**：可以参考，但不能把整个 Repository 当成一篇长文。先登记仓库 URL、作者、License、commit SHA，再选择 README、docs、规则文件和有价值源码。README/Markdown 按标题和段落切块；源码按文件、类、函数或符号边界切块。所有内容标记为 `external_reference`，不能混入老师课堂规则。
 
 ### 处理
 
@@ -174,6 +175,10 @@ Importer 必须设计成幂等，并维护同步清单：
 初版由用户在 Mac 手动运行同步命令；后续可考虑 GitHub Actions 自动触发。当前 HTML 保存动作不会自动触发 Importer。
 ## 5. Gemini：Embedding 与内容生成是两种不同任务
 
+这里的 Generative LLM 就是真正的大语言模型，不是一个专门“生成规则”的工具。导入阶段只是让它执行结构化抽取，因此输出通常是候选 Concept、Entity、Relationship、RuleCandidate 和摘要；相同类别的生成模型以后也可以在分析阶段阅读检索证据并写最终报告。Phase 1 先不让它承担最终卦象分析。
+
+
+
 Importer 会使用两个独立的模型能力：
 
 1. **Embedding Model**：输入文本，输出向量。用于把文档 Chunk 和之后的用户问题映射到可比较的向量空间。它不会写分析报告，也不会单独判断六爻规则。
@@ -181,7 +186,13 @@ Importer 会使用两个独立的模型能力：
 
 模型名称、维度、配额和数据使用条款在实际启用前再按当时官方文档确认。不要把 API Key 放入 HTML、浏览器代码或 Public GitHub。私人录音和含个人信息的资料，在确认数据处理条款前不要直接送入免费 API 服务。
 
-## 6. Knowledge Graph Builder 是否必须使用？
+## 6. Neo4j、Knowledge Graph Builder 和 GraphRAG 是三样不同的东西
+
+- **Neo4j** 是数据库产品。AuraDB Free 是 Neo4j 托管的云端图数据库，保存节点、关系、属性、文本 Chunk 和 Embedding。
+- **LLM Knowledge Graph Builder** 是可选的图谱构建应用。它可以加载 PDF/文档、切 Chunk、调用 Embedding、调用生成式 LLM 抽取节点和关系，并把结果写进 Neo4j。它不是 Neo4j 数据库本身。
+- **GraphRAG** 是检索增强生成框架/方法。它使用 Retriever 从 Neo4j 找相关节点、关系和文本上下文，再把上下文交给 Generative LLM 生成回答。它不是数据库，也不等于 Embedding。
+
+## 7. Knowledge Graph Builder 是否必须使用？
 
 **不必须。它不只是可视化器，但也不是我们必须依赖的基础设施。**
 
@@ -205,7 +216,9 @@ Neo4j LLM Knowledge Graph Builder 在线工具可以：
 
 在线入口：<https://llm-graph-builder.neo4jlabs.com/>
 
-## 7. “谁来分析卦？”——Phase 1 和 Phase 2 的区别
+Builder 是可选构建工具，不是 AuraDB，也不是 GraphRAG。我们可以完全不用 Builder，由 Python Importer + Neo4j Driver/Cypher 直接写入 Neo4j。Aura Console / Neo4j Browser 可以执行 Cypher、查看和可视化节点关系；但你日常分析卦不需要手动浏览整张图。
+
+## 8. “谁来分析卦？”——Phase 1 和 Phase 2 的区别
 
 ### Phase 1：可以进行知识辅助分析，但采用半自动交接
 
@@ -245,7 +258,7 @@ HTML
 
 GraphRAG 是“检索相关知识 + 把上下文交给 LLM”的应用框架，不是独立大模型。要生成最终答案，仍必须配置一个生成模型。这个生成模型可以是 Gemini，也可以是 OpenAI API；ChatGPT 网页订阅和 API 调用是两种不同服务。
 
-## 8. Neo4j 本地能否运行？为什么仍建议 AuraDB？
+## 9. Neo4j 本地能否运行？为什么仍建议 AuraDB？
 
 Neo4j **可以本地运行**，并不是只能使用云服务。可以安装 Neo4j Desktop，在 Mac 上创建本地数据库；也可以通过官方 Docker 镜像运行。Neo4j Desktop 官方定位为本地开发环境，可以管理本地数据库，也可以连接 Aura 等远程数据库。参考：[Neo4j Desktop](https://neo4j.com/docs/desktop/current/) 和 [Neo4j Deployment Center](https://neo4j.com/deployment-center/)。
 
@@ -256,12 +269,14 @@ Neo4j **可以本地运行**，并不是只能使用云服务。可以安装 Neo
 
 **建议 AuraDB Free 作为唯一主知识库；Neo4j Desktop 可选用于本地学习，不长期维护两份不同步的主数据库。**
 
+AuraDB Free 支持建立基础 Vector Index 并执行向量检索；Professional 等付费层额外提供 Vector Optimization 性能优化。我们先用 Free 验证 Chunk + 向量索引 + Cypher 关系查询即可，不要把免费层没有性能优化误解为完全不能用 Vector Index。正式创建时仍应在 Aura Console 核对当前套餐能力。
+
 ### 是否需要 Supabase？
 
 Neo4j AuraDB 本身就是数据库，只是图数据库而不是关系型数据库。Phase 1 的知识实体（Lesson、Document、Chunk、Concept、RuleCandidate、Case）和关系都可以放在 Neo4j；当前 HTML 的每日 JSON 仍由现有 Cloudflare Pages Function 保存到 GitHub，Importer 再把其同步成 Case 节点。
 
 Phase 1 不需要额外部署 PostgreSQL / Supabase。只有将来需要多用户身份、严格用户数据隔离或典型关系型业务数据时，才重新评估 Supabase。
-## 9. 不要求用户手工审核每一条 AI 抽取结果
+## 10. 不要求用户手工审核每一条 AI 抽取结果
 
 用户不需要理解每个节点或关系，也不需要逐条批准 Neo4j 图谱内容才能使用系统。
 
@@ -278,7 +293,7 @@ Phase 1 不需要额外部署 PostgreSQL / Supabase。只有将来需要多用�
 
 最终分析需要优先引用课程笔记和课堂案例，指出它来自哪一课、哪一段；若不同来源冲突或 ASR 不确定，报告中直接说明分歧。用户只需在 HTML 中标记“课堂案例”还是“个人练习”，不需要承担数据库知识审核工作。
 
-## 10. 实施顺序
+## 11. 实施顺序
 
 1. 完成 HTML 清空/新建/保存保护，确保旧卦不会被静默覆盖。
 2. 创建 AuraDB Free，并用少量手工数据验证节点/关系、访问凭据和连接。
