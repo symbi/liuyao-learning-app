@@ -14,7 +14,7 @@
 - **本仓库（Public，Learning）**：放应用代码、项目文档、整理好的课程摘要、术语表、规则索引、老师课堂案例，以及 Phase 1 每日卦例。
 - **现有 raw 仓库（Private）**：继续存放原始课程录音、未经整理的转录稿、原始 PDF 和未整理来源资料。
 - **每日卦例**：Phase 1 暂存在本 Public 仓库的 `daily-records/YYYY/MM/YYYY-MM-DD.json`。卦例和 Memo 公开可见，可能被复制或 Fork；不要写入敏感信息。
-- **Phase 1 知识库**：用 Mac 本地 Python Importer 增量同步到 Neo4j AuraDB；Importer、Gemini 模型与 Neo4j 的职责和部署边界见 [Phase 1 实际运行架构](docs/phase1-operating-model.md)。
+- **Phase 1 知识库（待实施）**：计划用 Mac 本地 Python Importer 增量同步到 Neo4j AuraDB；工程步骤、里程碑和验收标准见 [Phase 1 实施计划](docs/phase1-implementation-plan.md)。
 - **Phase 2**：未来若要在 HTML 内直接检索知识并生成 AI 报告，再部署一个 Python Backend API；Supabase 仅在需要多用户身份或关系型用户数据时才考虑，不是必选数据库。
 
 ## Phase 1 部署
