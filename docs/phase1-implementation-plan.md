@@ -367,16 +367,39 @@ Phase 2 不是把 Phase 1 数据库搬上云。AuraDB 从 Phase 1 开始就是�
 - 继续使用同一个 AuraDB；不重新导入、不重建 Chunk/Embedding。
 - 当前 GitHub 每日记录流程可以继续保留；只有明确需要多用户隔离时，才重新评估 Supabase。
 
-## 14. 谁来实现
+## 14. 谁来实现、阶段审核与跨模型记忆
 
-推荐协作分工：
+采用“Claude Code 本地执行 + ChatGPT 阶段审核 + 用户验收”的协作方式；用户也可以在不同阶段切换 Claude 模型、Codex 或其他 coding agent。**模型可以切换，项目状态不能只留在某个聊天窗口。**
 
-- **ChatGPT**：维护架构与实施计划、编写/审阅关键文件和 Schema、检查 Codex 的 diff、帮助解释错误并设计验收。
-- **Codex（Mac 本机）**：在本地 checkout 中创建 Python 项目、运行测试、建立 virtualenv、连接用户本机配置的 AuraDB/Gemini API、修复实际运行问题。
-- **用户**：创建 AuraDB Free、在本机安全保存凭据、选择愿意导入的 PDF/外部项目、逐个验收里程碑。
+### 角色分工
 
-ChatGPT 可以直接修改 GitHub 仓库文件，但无法代替用户在 Mac 上完成 Neo4j 控制台操作，也不应要求用户把数据库密码或 API Key 发到聊天中。最稳妥的路径是 Codex 在 Mac 执行实施，ChatGPT 负责审查计划、diff 和验收结果。
+- **Claude Code（Mac 本机主执行者）**：在本地 checkout 中实现当前 milestone、运行测试、建立 virtualenv、连接用户在本机配置的 AuraDB/Gemini API、提交分支并创建 Draft PR。
+- **ChatGPT（架构审查与验收者）**：维护实施计划、检查 GitHub PR diff、审查数据模型/安全/来源追溯/增量逻辑、解释错误、给出修改要求；审核通过后由用户决定合并，或明确授权 ChatGPT 合并。
+- **用户**：创建 AuraDB Free、在本机安全保存凭据、选择愿意导入的 PDF/外部项目、逐个验收里程碑。不要把数据库密码或 API Key 发给 ChatGPT。
 
+### 强制 GitHub checkpoint 流程
+
+1. 每个 milestone 使用单独分支，例如 `phase1/m1-python-skeleton`、`phase1/m2-source-parsers`。
+2. 分支从最近一个已审核并合并到 main 的版本创建；不能直接在 main 开发或推送。
+3. 一个 PR 只完成一个 milestone，不把 M1–M8 一次性提交。
+4. 完成后运行测试、lint、`git diff --check` 和 Secret 检查；更新 `docs/phase1-progress.md`。
+5. Commit 并推送分支，创建 Draft PR 指向 main；PR 中写明改动、测试命令/结果、限制和下一阶段。
+6. 把 PR URL 交给用户，再由 ChatGPT 检查 diff。审核未通过则在同一分支修复，不创建无关的新分支。
+7. **未经 ChatGPT 审核和用户确认，不得合并，不得开始下一 milestone。**
+8. 审核通过并合并后，更新 progress 文件中的 merge commit、状态和下一里程碑。
+
+### 跨模型持久化记忆
+
+- 仓库根目录 `AGENTS.md`：所有 coding agent 通用约束。
+- 仓库根目录 `CLAUDE.md`：Claude Code 的入口指引。
+- `docs/phase1-progress.md`：当前 milestone、已批准 main SHA、分支/PR、测试结果、阻塞项和下一步；这是模型切换时的主要记忆文件。
+- `docs/claude-code-phase1-execution-prompt.md`：Claude Code 可直接使用的执行 Prompt。
+- 新模型开始工作前必须先读以上文件；不得依赖旧模型的聊天摘要或声称。
+
+详细的 checkpoint 模板和停止规则见 [AGENTS.md](../AGENTS.md)、[CLAUDE.md](../CLAUDE.md)、[Phase 1 Progress](phase1-progress.md) 与 [Claude Code 执行 Prompt](claude-code-phase1-execution-prompt.md)。
+
+ChatGPT 可以直接检查 GitHub 上已推送的分支/PR，但无法代替用户在 Mac 上操作 Aura Console 或读取未提交的本地工作区。没有推送到 GitHub 的代码，ChatGPT 无法做完整 diff review。
+  
 ## 15. 官方技术参考
 
 - [Neo4j AuraDB quotas and limits](https://neo4j.com/docs/aura/quotas-and-limits/)
