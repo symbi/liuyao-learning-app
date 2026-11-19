@@ -90,6 +90,19 @@ GitHub Public Repository：symbi/liuyao-learning-app
 
 用户提出「分析今天的卦」或指定日期时，ChatGPT 通过已连接的 GitHub 连接器读取 `daily-records/YYYY/MM/YYYY-MM-DD.json`，再按 Category / Real Question 检索 Public Learning 中的课程笔记、规则和课堂案例。分析时区分课程明确、老师课堂案例、外部参考和 AI 综合推理。保存成功不会自动触发分析，用户发出请求后再读取。
 
-## 7. 后续在线化原则
+## 7. HTML 课堂案例与原始课程的匹配
+
+HTML 保存的课堂案例需要与老师实际讲过的原始卦例建立可追溯关联。后续 ChatGPT 或 Importer 处理案例时，应执行以下流程：
+
+1. 读取 HTML 案例中的卦盘快照、占问内容、Category、备注和记录 ID。
+2. 在 `docs/lessons/` 的课程整理稿及 `materials/class-cases/lesson-XX/` 中寻找候选案例；优先比对卦名、上下卦、世应、六亲、纳甲地支、动爻、变爻、日月信息和问事背景。
+3. 再回查 Private raw 对应课次的原始 ASR/录音，确认老师讲解的上下文、原始表述和可用段落/时间戳。
+4. 匹配结果必须保留课程编号、课程笔记路径、原始来源仓库/路径及转录定位；有对应案例 JSON 时建立双向关联。
+5. 只有卦盘与问事背景足以确认是同一案例时，才标记 `verified`。相似但不能确认的标记 `needs_review`；不同来源存在冲突的标记 `disputed`；当前资料找不到的标记 `not_found`。
+6. 不得仅凭 Category、卦名相似或单一爻象强行匹配；不得把 ASR 识别错误、AI 推断或用户个人分析写成老师原话。
+
+关联链为：HTML 案例记录 → 课堂案例 JSON → 对应课程笔记 → Private raw 原始转录/录音位置 → 老师分析摘要。课程笔记保留整堂课的知识脉络，单个案例独立保存。课程案例的核对状态应在检索和分析结果中显示。
+
+## 8. 后续在线化原则
 
 当前 HTML 的每日记录仍由 Pages Function 写入 GitHub JSON；Phase 1 Importer 再把这些记录同步为 Neo4j 中的 Case 节点与知识关系。若后续希望 HTML 直接读写 Neo4j，并在页面内运行知识检索和 AI 分析，可在 Phase 2 增加 Python FastAPI 服务（初期一个 Cloud Run Container），由它统一处理 Case API、GraphRAG 检索、规则引擎和生成模型调用。Supabase 仍为可选项，不是默认必须迁移的目标。
