@@ -8,12 +8,12 @@ materials/class-cases/
 ├── lesson-05/
 │   ├── case-001.json
 │   └── case-002.json
-├── lesson-15/
+├── lesson-14/
 │   ├── case-001.json
 │   └── ...
-├── lesson-15/
+├── lesson-19/
 │   ├── case-001.json
-│   └── ...
+│   └── case-002.json
 ├── lesson-18/
 │   ├── case-001.json
 │   └── case-002.json
