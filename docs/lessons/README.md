@@ -16,10 +16,12 @@
 | 第十二课 | 旺相休囚、动爻作用、合中带克与六冲六合 | [lesson-12-notes-v0.1.md](lesson-12-notes-v0.1.md) |
 | 第十三课 | 流年年运、世爻主轴与六亲分项 | [lesson-13-notes-v0.1.md](lesson-13-notes-v0.1.md) |
 | 第十四课 | 婚姻占问、世应世用关系与求子胎爻 | [lesson-14-notes-v0.1.md](lesson-14-notes-v0.1.md) |
-| 第十五课 | 综合案例分析（案例课：工作调动、求财项目、创业合伙、健康、投资、婚姻等） | [lesson-15-notes-v0.1.md](lesson-15-notes-v0.1.md) |
+| 第十五课 | 健康占问（原始资料与课程笔记待补） | [lesson-15-notes-v0.1.md](lesson-15-notes-v0.1.md) |
 | 第十六课 | 求官、求职、升迁与岗位问题 | [lesson-16-notes-v0.1.md](lesson-16-notes-v0.1.md) |
 | 第十七课 | 求财、项目收益、资金链与三合判断 | [lesson-17-notes-v0.1.md](lesson-17-notes-v0.1.md) |
 | 第十八课 | 求学、考试、求名与择校/选专业 | [lesson-18-notes-v0.1.md](lesson-18-notes-v0.1.md) |
+| 第十九课 | 综合案例分析（工作调动、求财项目、创业合伙、健康、投资、婚姻等） | [lesson-19-notes-v0.1.md](lesson-19-notes-v0.1.md) |
+| 第二十课 | 课程总结、学习方法与核心规则回顾 | [lesson-20-notes-v0.1.md](lesson-20-notes-v0.1.md) |
 
 ## 规则总览
 
@@ -39,6 +41,6 @@
 
 ## 案例课的自动关联约定
 
-每一课的总结仍放在本目录，例如 `lesson-18-notes-v0.1.md`。这一课单独拆出的案例统一放在 [materials/class-cases/](../../materials/class-cases/)；原始 ASR 转录保存在 Private raw 仓库的 `lessons/lesson-18/`。
+每一课的总结仍放在本目录，例如 `lesson-18-notes-v0.1.md`。这一课单独拆出的案例统一放在 [materials/class-cases/](../../materials/class-cases/)；原始 ASR 转录按最终确认的课次编号保存在 Private raw 仓库对应目录 `lessons/lesson-XX/`；若某课原始资料未找到或最初直接粘贴于对话，索引中会明确标记，不伪造转录文件。
 
 后续整理或更新某一课总结时，按课次编号查找对应案例目录和原始转录，将案例摘要与链接放回该课总结中。不要要求用户手动重复粘贴案例，也不要把 ASR 中未经核实的识别结果当作老师最终结论。完整约定见[学习案例与每日卦例：课次关联方案](../data-model-and-storage.md)。
