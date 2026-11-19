@@ -1,6 +1,6 @@
 # Phase 1：实际运行架构与知识导入/分析工作流
 
-> 本文是 2026-11-18 对 Phase 1 部署边界的决策记录。它补充并澄清 `phase1-knowledge-base-architecture.md`、`phase1-deployment.md` 和 `data-model-and-storage.md`。本文件区分“当前已经运行”“Phase 1 要建设”和“Phase 2 才集成”的组件。不得把规划组件描述为已经部署。
+> 本文是 2026-11-18 起对 Phase 1 部署边界的决策记录。它补充并澄清 `phase1-knowledge-base-architecture.md`、`phase1-deployment.md` 和 `data-model-and-storage.md`。本文件区分“当前已经运行”“Phase 1 要建设”和“Phase 2 才集成”的组件。不得把规划组件描述为已经部署。具体执行顺序、代码目录、验收标准和 Codex 执行要求见 [Phase 1 实施计划](phase1-implementation-plan.md) 与 [Codex Prompt](codex-phase1-implementation-prompt.md)。
 
 ## 1. 一句话结论
 
