@@ -2,7 +2,8 @@
 
 > 整理版本：v0.1  
 > 来源：第十六课 ASR 转录（上传文件：Pasted text(20261107-135410).txt）  
-> 转录状态：未经人工校订；本课涉及官职、岗位、动变、年岁/月建等术语的识别错误较多。本文只整理能够辨认的课堂主线，疑似术语不直接改写成确定规则。
+> 转录状态：未经人工校订；本课涉及官职、岗位、动变、年岁/月建等术语的识别错误较多。本文只整理能够辨认的课堂主线，疑似术语不直接改写成确定规则。  
+> Private raw 原始转录：[lesson-16/transcript-asr-raw.txt](https://github.com/symbi/liuyao-learning-raw/blob/main/lessons/lesson-16/transcript-asr-raw.txt)。
 
 ## 1. 本课主线：先区分问的是什么“工作问题”
 
