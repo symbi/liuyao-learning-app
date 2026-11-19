@@ -27,6 +27,8 @@
 - [Phase 1 数据模型与每日卦例保存方案](docs/data-model-and-storage.md)
 - [Phase 1 知识库与课堂案例架构规划](docs/phase1-knowledge-base-architecture.md)
 - [Phase 1 实际运行架构、Importer、Neo4j、Gemini、GraphRAG 与分析流程](docs/phase1-operating-model.md)
+- [Phase 1 工程实施计划与验收标准](docs/phase1-implementation-plan.md)
+- [Codex 本机实施 Prompt](docs/codex-phase1-implementation-prompt.md)
 - [Phase 1 部署说明](docs/phase1-deployment.md)
 - [历法引擎方案与验证计划](docs/calendar-engine-plan.md)
 - [开源项目与古籍参考资料调查计划](docs/reference-research-plan.md)
