@@ -6,12 +6,12 @@
 
 - Project: `symbi/liuyao-learning-app`
 - Workstream: HTML maintenance
-- Status: planned
-- Current task: 等待用户在新 ChatGPT 窗口提供具体 HTML 问题 / 截图 / 复现步骤
-- Target branch: none
-- Active PR: none
-- Last completed task: none
-- Last updated: 2026-11-19
+- Status: In review (Draft PR open)
+- Current task: 三合发动支点优先级与旬空自动识别
+- Target branch: `fix/trine-anchor-auto-xunkong`
+- Active PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
+- Last completed task: HTML v81 source repair and focused logic checks
+- Last updated: 2026-11-20
 
 ## 开始任务前
 
@@ -60,6 +60,7 @@
 - Next step:
 
 ## 最近任务
+
 ## 2026-11-20 — 三合发动支点优先级与旬空自动识别
 
 - Date: 2026-11-20
@@ -73,7 +74,8 @@
 - Draft PR: [#1 Fix date-trine priority and calculate xunkong automatically](https://github.com/symbi/liuyao-learning-app/pull/1)
 - Base main SHA: `d34783bf05aa1db5af92e76f30e890e33133c1f0`
 - HTML implementation commit SHA: `285b1b8ccda43aa4eb396ae6a1009d6c3af08e66`
-- Files changed: `index.html`
+- Progress log commit SHA: `06b98e18a8dd5193ce4e14ea1b3d1535ba1d8a79`
+- Files changed: `index.html`, `docs/html-maintenance-progress.md`
 - Implementation summary:
   - 新增 Mode C：同一条动爻的本卦地支 + 变卦地支 + 日/月支组成三合；候选排序为 C > A > B。
   - 若同一三合局已有 Mode C，则不再绘制该局的 A/B 替代组合，并抑制该动爻对应的同局“另找第三爻”本卦内三角形。
