@@ -82,7 +82,7 @@ def doctor(
             False,
             "not configured",
             "Set NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD and NEO4J_DATABASE "
-            "in your local .env. The values come from the Aura Console instance "
+            "in ~/.config/liuyao-kb/m0.env. The values come from the Aura Console instance "
             "credentials file; never commit them.",
         )
     else:

@@ -4,6 +4,7 @@
 # Real environment files must never enter Git. The repository is PUBLIC.
 .env
 .env.*
+*.env
 !.env.example
 *.env.local
 *.credentials

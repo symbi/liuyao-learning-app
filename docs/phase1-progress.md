@@ -13,7 +13,7 @@
 - Active implementation branch: phase1/m1-python-skeleton
 - Active PR: PR #2
 - Last completed milestone: M0
-- Next action: resolve review comments and request another review
+- Next action: complete third-round fixes and request final review
 - Last updated: 2026-11-20
 
 ## 已冻结的架构决定
@@ -70,9 +70,9 @@
 
 ## 最近一次交接
 
-- 2026-11-19：用户明确选择先创建 AuraDB Free，再进行 M0 smoke test。Claude Code 已确认目前没有修改代码、没有创建分支、没有推进任何里程碑。跨窗口总览见 [docs/workspace-handoff.md](workspace-handoff.md)；HTML 维护进度单独记录在 [docs/html-maintenance-progress.md](html-maintenance-progress.md)。
+- **历史记录（2026-11-19）：** 当时用户明确选择先创建 AuraDB Free，再进行 M0 smoke test。Claude Code 记录当时没有修改代码、没有创建分支、没有推进任何里程碑；这是旧状态快照，不是 2026-11-20 的当前状态。跨窗口总览见 [docs/workspace-handoff.md](workspace-handoff.md)；HTML 维护进度单独记录在 [docs/html-maintenance-progress.md](html-maintenance-progress.md)。
 
-当前还没有 Phase 1 代码实现提交。Phase 1 计划、Claude Code Prompt、通用 Agent 规则和本进度文件已提交到 main。下一位执行模型应先读取：
+当前 M0 已完成环境验收，M1 骨架和第三轮小修正在现有 Draft PR #2 上等待最终审核。下一位执行模型应先读取：
 
 1. AGENTS.md
 2. CLAUDE.md（若使用 Claude Code）
@@ -82,7 +82,7 @@
 6. docs/codex-phase1-implementation-prompt.md（技术细节参考）
 7. docs/rules-status.md、docs/reference-research-plan.md
 
-首次执行前检查本地 git status，不得覆盖用户已有改动。
+首次执行前检查本地 git status，不得覆盖用户已有改动，不得开始 M2。
 
 ## 2026-11-20 — M1 ChatGPT 第二轮审核交接
 
@@ -102,3 +102,20 @@
 - Manual/security checks: `git diff --check` passed; no secret-like env file is tracked; only `.env.example` is tracked; no actual credentials or private `.env` values were copied into the repository or progress file.
 - Known limitations: M1 remains a scaffold; ingestion, embeddings, LLM extraction, GraphRAG, and evidence retrieval remain for later milestones.
 - Next step: resolve review comments only, update PR #2, and request another ChatGPT review. Do not merge or start M2.
+
+## 2026-11-20 — M1 第三轮小修与最终审核准备
+
+- Milestone: M1 — Python project skeleton and review fixes
+- Status: awaiting_chatgpt_review
+- Branch: `phase1/m1-python-skeleton`
+- Draft PR: https://github.com/symbi/liuyao-learning-app/pull/2
+- Latest reviewed checkpoint before this pass: `5d0e8e8`
+- Small fixes: expanded `*.env` ignore coverage; strengthened quoted/space redaction tests; corrected README links and doctor credential guidance; qualified M0-only driver observations; clarified instance-ID documentation; marked old 2026-11-19 handoff as historical.
+- Branch synchronization: rebased onto latest `origin/main` after fetching without resetting or overwriting the daily-record commit.
+- Secrets: no real credentials were read, printed, or committed; TLS certificate verification remains enabled.
+- Tests: `.venv/bin/python -m pytest` — 74 passed in 0.59s.
+- Lint: `.venv/bin/python -m ruff check .` — passed.
+- Format: `.venv/bin/python -m ruff format --check .` — passed; 13 files already formatted.
+- Types: `.venv/bin/python -m mypy` — passed with no issues in 8 source files.
+- Gitignore: `m0.env`, `local.env`, `production.env`, `.env`, and `.env.local` matched ignore rules; `.env.example` and `sources.example.yaml` remained tracked.
+- Next step: update PR #2 and wait for ChatGPT final approval. Do not merge or start M2.

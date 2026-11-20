@@ -98,7 +98,7 @@ GraphDatabase.driver(
 Certificate verification stays on. `TrustAll` is never used.
 
 Both the standard `neo4j+s://` form and this verified form are recorded in
-[docs/phase1-m0-validation.md](../../../docs/phase1-m0-validation.md).
+[docs/phase1-m0-validation.md](../../docs/phase1-m0-validation.md).
 
 ## Source policy
 
@@ -144,7 +144,7 @@ tools/liuyao-kb/
 
 ## Related documents
 
-- [Phase 1 implementation plan](../../../docs/phase1-implementation-plan.md)
-- [Phase 1 operating model](../../../docs/phase1-operating-model.md)
-- [M0 validation results](../../../docs/phase1-m0-validation.md)
-- [Phase 1 progress](../../../docs/phase1-progress.md)
+- [Phase 1 implementation plan](../../docs/phase1-implementation-plan.md)
+- [Phase 1 operating model](../../docs/phase1-operating-model.md)
+- [M0 validation results](../../docs/phase1-m0-validation.md)
+- [Phase 1 progress](../../docs/phase1-progress.md)

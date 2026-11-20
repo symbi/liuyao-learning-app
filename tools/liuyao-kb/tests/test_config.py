@@ -112,6 +112,27 @@ class TestRedaction:
         assert "host.databases.neo4j.io" in rendered
         assert settings.safe_uri.startswith(f"{scheme}://")
 
+    def test_masks_quoted_sensitive_values_with_spaces(self) -> None:
+        text = redact(
+            "password=\"my secret password\" password='another secret' "
+            'token="secret token with spaces"'
+        )
+        assert "my secret password" not in text
+        assert "another secret" not in text
+        assert "secret token with spaces" not in text
+        assert text.count("<redacted>") >= 3
+
+    def test_masks_consecutive_quoted_values_and_keeps_normal_config(self) -> None:
+        text = redact(
+            "log_level=DEBUG password=\"first secret\" token='second secret' "
+            'database=neo4j api_key="third secret with spaces"'
+        )
+        assert "first secret" not in text
+        assert "second secret" not in text
+        assert "third secret with spaces" not in text
+        assert "log_level=DEBUG" in text
+        assert "database=neo4j" in text
+
 
 class TestInstanceId:
     @pytest.mark.parametrize(

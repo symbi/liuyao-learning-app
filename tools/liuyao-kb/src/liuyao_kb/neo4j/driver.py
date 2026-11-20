@@ -6,20 +6,23 @@ importer, the query tool and the schema writer all go through
 
 Why the connection is not just ``neo4j+s://<host>``:
 
-* **AuraDB publishes no SRV records.** The routing driver resolves the
+The following are measured behavior of the current M0 GCP Singapore AuraDB
+Free instance. They are not asserted as universal behavior for every AuraDB
+instance:
+
+* **The M0 instance exposed no SRV record.** The routing driver resolves the
   host through DNS SRV lookup before it can connect, and with no SRV
   record the driver fails with "Unable to retrieve routing information".
   A custom resolver that returns the instance host directly removes that
   dependency.
-* **A direct ``bolt://`` connection to the public endpoint is unreliable.**
-  It intermittently fails with "Database not found" because the request
-  can land on a cluster member that has not yet registered the user
-  database. The routing scheme resolves the real member first.
-* **The certificate chain does not verify against the system trust
-  store.** The chain is rooted at an SSL.com root that the macOS
-  Keychain has but ``/private/etc/ssl/cert.pem`` does not, so Python's
-  default context rejects it with "self-signed certificate in certificate
-  chain". The ``certifi`` bundle contains that root.
+* **On the M0 instance, direct ``bolt://`` was unreliable.** It intermittently
+  failed with "Database not found" because the request could land on a cluster
+  member that had not yet registered the user database. The routing scheme
+  resolved the real member first.
+* **On the M0 instance, the certificate chain did not verify against the
+  system trust store.** The chain was rooted at an SSL.com root that the macOS
+  Keychain has but ``/private/etc/ssl/cert.pem`` does not, so Python's default
+  context rejected it. The ``certifi`` bundle carried that root.
 
 Certificate verification stays on. ``TrustAll`` is never used: it would
 make every connection an unauthenticated man-in-the-middle waiting to

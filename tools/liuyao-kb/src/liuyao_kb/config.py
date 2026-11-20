@@ -31,7 +31,8 @@ DEFAULT_CONFIG_DIR: Final[Path] = Path.home() / ".config" / "liuyao-kb"
 _SECRET_KEY_PATTERN: Final[re.Pattern[str]] = re.compile(
     r"(?P<key>password|passwd|pwd|secret|token|api[_-]?key|x[_-]?api[_-]?key|"
     r"client[_-]?secret|credential)"
-    r"\b\s*(?P<sep>[:=])\s*(?P<value>=*[\"']?[^\s,;'\"\]]+[\"']?)",
+    r"\b\s*(?P<sep>[:=])\s*"
+    r"(?P<value>=*(?:\"(?:[^\"\\]|\\.)*\"|'(?:[^'\\]|\\.)*'|[^\s,;\]\"']+))",
     re.IGNORECASE,
 )
 
@@ -83,10 +84,12 @@ def redact_uri(uri: str) -> str:
 
 
 def instance_id_from_uri(uri: str) -> str | None:
-    """Extract the Aura instance id from a connection URI.
+    """Extract the host's leading instance identifier when present.
 
-    AuraDB hosts look like ``<instance-id>.databases.neo4j.io``. The id is
-    also used as the instance's user name and user-database name.
+    This helper is useful for host identification only. It must not be used
+    as the basis for assuming an AuraDB username or user-database name:
+    always read those values from the instance Credentials file or external
+    configuration.
     """
     from urllib.parse import urlsplit
 
