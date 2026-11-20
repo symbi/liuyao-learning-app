@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v83</title>
+<title>六爻排卦与每日记录 v84</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -424,6 +424,29 @@
   .case-field{display:grid;gap:3px;color:#686b5d;font-size:11px;font-weight:750;}
   .case-field select{width:100%;min-width:0;padding:6px 7px;border:1px solid #ded5c2;border-radius:7px;background:#fffdf7;color:#34362f;font:inherit;font-size:12px;}
   .case-hint{margin:0;color:var(--muted);font-size:11px;line-height:1.4;}
+  .case-pillar-editor{
+    margin-top:9px;padding:9px 11px;border:1px solid #e5dcc9;border-radius:9px;
+    background:#fbf7ed;display:grid;gap:7px;
+  }
+  .case-pillar-editor[hidden],.manual-pillar-grid[hidden]{display:none;}
+  .manual-pillar-toggle{display:flex;align-items:center;gap:7px;color:#4e5b4d;font-size:12px;font-weight:800;cursor:pointer;}
+  .manual-pillar-toggle input{accent-color:var(--jade);width:15px;height:15px;margin:0;}
+  .manual-pillar-note{margin:0;color:var(--muted);font-size:11px;line-height:1.45;}
+  .manual-pillar-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+  .manual-pillar-item{min-width:0;padding:7px;border:1px solid #e5dcc9;border-radius:8px;background:#fffdf7;}
+  .manual-pillar-item>strong{display:flex;align-items:center;gap:5px;margin-bottom:5px;font-size:12px;color:#4b5d4f;}
+  .manual-pillar-item>strong small{font-size:10px;color:var(--muted);font-weight:600;}
+  .manual-pillar-pair{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+  .manual-pillar-pair label{display:grid;gap:2px;font-size:10px;color:var(--muted);font-weight:700;}
+  .manual-pillar-pair select{width:100%;min-width:0;padding:5px 3px;border:1px solid #ded5c2;border-radius:6px;background:#fff;color:var(--ink);font:inherit;font-size:12px;}
+  .manual-pillar-validation{margin:0;font-size:11px;line-height:1.4;color:#9f4e38;}
+  .manual-pillar-validation:empty{display:none;}
+  .pillar-source-indicator{margin-top:6px;color:#7c6640;font-size:11px;line-height:1.35;}
+  .pillar-source-indicator[hidden]{display:none;}
+  .date-card.manual-case-pillars #jianchu-name,
+  .date-card.manual-case-pillars #jianchu-guidance,
+  .date-card.manual-case-pillars #mansions-panel{display:none;}
+  @media(max-width:680px){.manual-pillar-grid{grid-template-columns:1fr;}}
   .record-case-tag{display:inline-flex;align-items:center;margin-left:6px;padding:2px 6px;border-radius:999px;background:var(--gold-soft);color:#80612b;font-size:10px;font-weight:800;vertical-align:middle;}
   .palette-stack{display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
   .sixgod-palette{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
@@ -854,7 +877,7 @@
         <div class="date-controls">
           <span class="today-stamp" id="calendar-date"></span>
           <span class="jianchu-glyph tone-neutral" id="jianchu-name" aria-label="建除值日计算中" title="">—</span>
-          <label class="date-picker-trigger" title="选择起卦日期" aria-label="选择起卦日期">▦<input id="record-date" type="date" aria-label="选择起卦日期"></label>
+          <label class="date-picker-trigger" title="选择记录日期" aria-label="选择记录日期">▦<input id="record-date" type="date" aria-label="选择记录/归档日期"></label>
           <div class="jianchu-guidance" id="jianchu-guidance" role="status" aria-live="polite" aria-label="当天宜忌"></div>
         </div>
         <div class="record-controls">
@@ -911,6 +934,38 @@
           </div>
         </div>
       </div>
+      <div class="case-pillar-editor" id="case-pillar-editor" hidden>
+        <label class="manual-pillar-toggle" for="manual-case-pillars">
+          <input id="manual-case-pillars" type="checkbox">
+          <strong>手动指定案例年月日干支</strong>
+        </label>
+        <p class="manual-pillar-note">上方日期只用于保存和归档，不代表老师案例的起卦日期。请按老师提供的干支填写；年柱不确定可以留空，月柱和日柱请填写完整。</p>
+        <div class="manual-pillar-grid" id="manual-pillar-grid" hidden>
+          <div class="manual-pillar-item">
+            <strong>年柱 <small>可留空</small></strong>
+            <div class="manual-pillar-pair">
+              <label>天干<select id="manual-year-stem" aria-label="手动指定年干"><option value="">未知</option></select></label>
+              <label>地支<select id="manual-year-branch" aria-label="手动指定年支"><option value="">未知</option></select></label>
+            </div>
+          </div>
+          <div class="manual-pillar-item">
+            <strong>月柱 <small>请填写</small></strong>
+            <div class="manual-pillar-pair">
+              <label>天干<select id="manual-month-stem" aria-label="手动指定月干"><option value="">请选择</option></select></label>
+              <label>地支<select id="manual-month-branch" aria-label="手动指定月支"><option value="">请选择</option></select></label>
+            </div>
+          </div>
+          <div class="manual-pillar-item">
+            <strong>日柱 <small>请填写</small></strong>
+            <div class="manual-pillar-pair">
+              <label>天干<select id="manual-day-stem" aria-label="手动指定日干"><option value="">请选择</option></select></label>
+              <label>地支<select id="manual-day-branch" aria-label="手动指定日支"><option value="">请选择</option></select></label>
+            </div>
+          </div>
+        </div>
+        <p class="manual-pillar-validation" id="manual-pillar-validation" aria-live="polite"></p>
+      </div>
+      <div class="pillar-source-indicator" id="pillar-source-indicator" hidden>当前按手动指定的干支计算；记录日期仅用于归档。</div>
     </div>
   </section>
 
@@ -1055,8 +1110,14 @@
   const caseMemoTitle=document.getElementById('memo-title');
   const caseMemoHint=document.getElementById('case-memo-hint');
   const memoTextarea=document.getElementById('daily-memo');
+  const casePillarEditor=document.getElementById('case-pillar-editor');
+  const manualPillarToggle=document.getElementById('manual-case-pillars');
+  const manualPillarGrid=document.getElementById('manual-pillar-grid');
+  const manualPillarValidation=document.getElementById('manual-pillar-validation');
+  const pillarSourceIndicator=document.getElementById('pillar-source-indicator');
   const CASE_REVIEW_LABELS={pending:'待核对',verified:'已核实',disputed:'存在分歧'};
   let isCaseRecord=false;
+  let manualPillarOverride={enabled:false,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
   function updateCaseEditor(){
     const source=caseSourceSelect.value==='practice'?'practice':'classroom';
     const isClassroom=isCaseRecord&&source==='classroom';
@@ -1065,19 +1126,48 @@
     caseToggleButton.setAttribute('aria-pressed',String(isCaseRecord));
     caseMetaEl.hidden=!isCaseRecord;
     caseReviewField.hidden=!isClassroom;
+    casePillarEditor.hidden=!isCaseRecord;
+    manualPillarToggle.checked=!!manualPillarOverride.enabled;
+    manualPillarGrid.hidden=!isCaseRecord||!manualPillarOverride.enabled;
     caseMemoTitle.textContent=!isCaseRecord?'每日记录 Memo':(isClassroom?'课堂案例 Memo':'个人练习 Memo');
     memoTextarea.setAttribute('aria-label',!isCaseRecord?'每日记录 Memo':(isClassroom?'课堂案例 Memo':'个人练习 Memo'));
     memoTextarea.placeholder=!isCaseRecord?'记录当天的观察和复盘…':(isClassroom?'记录老师的分析重点、判断依据和课堂结论…':'记录自己的分析过程与复盘…');
-    caseMemoHint.textContent=isClassroom?'课堂案例会单独保存老师的分析笔记；默认待核对，不会自动当成已确认规则。':'个人练习会单独保存，不会与老师课堂案例混在一起。';
+    caseMemoHint.textContent=isClassroom
+      ?'课堂案例单独保存老师的分析笔记。请确认年月日干支来自老师原始案例，而不是你录入案例时的日期。'
+      :'个人练习会单独保存，不会与老师课堂案例混在一起。';
   }
   function setCaseEditor(record=null){
     isCaseRecord=record?.isCase===true;
     caseSourceSelect.value=record?.caseSource==='practice'?'practice':'classroom';
     caseReviewStatusSelect.value=Object.prototype.hasOwnProperty.call(CASE_REVIEW_LABELS,record?.caseReviewStatus)?record.caseReviewStatus:'pending';
+    const saved=record?.pillarOverride;
+    manualPillarOverride={
+      enabled:saved?.enabled===true,
+      year:{stem:saved?.year?.stem||'',branch:saved?.year?.branch||''},
+      month:{stem:saved?.month?.stem||'',branch:saved?.month?.branch||''},
+      day:{stem:saved?.day?.stem||'',branch:saved?.day?.branch||''}
+    };
     updateCaseEditor();
   }
-  caseToggleButton.addEventListener('click',()=>{isCaseRecord=!isCaseRecord;updateCaseEditor();});
-  caseSourceSelect.addEventListener('change',updateCaseEditor);
+  caseToggleButton.addEventListener('click',()=>{
+    if(!isCaseRecord){
+      isCaseRecord=true;
+      if(caseSourceSelect.value!=='practice'){
+        manualPillarOverride={enabled:true,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
+      }
+    }else{
+      isCaseRecord=false;
+      manualPillarOverride.enabled=false;
+    }
+    updateCaseEditor();
+    if(typeof syncManualPillarInputs==='function') syncManualPillarInputs();
+    if(typeof applyPillarContext==='function') applyPillarContext();
+  });
+  caseSourceSelect.addEventListener('change',()=>{
+    updateCaseEditor();
+    renderManualPillarInputs();
+    applyPillarContext();
+  });
   setCaseEditor(null);
   const QUESTION_CATEGORY_BY_VALUE=new Map(QUESTION_CATALOG.map(item=>[item.value,item]));
   QUESTION_CATALOG.forEach(category=>{
@@ -1362,6 +1452,8 @@
   let currentDayBranch=null;
   let currentMonthBranch=null;
   let currentXunkongBranches=[];
+  let calculatedPillars={year:'',month:'',day:''};
+  let currentPillars={year:'',month:'',day:''};
   let currentJianChuInfo=null;
   let worksheetReady=false;
 
@@ -1475,6 +1567,18 @@
       algorithm:'(日支序号 - 月建序号 + 12) mod 12'
     };
   }
+  PILLAR_KEYS.forEach(key=>{
+    const stemSelect=document.getElementById('manual-'+key+'-stem');
+    const branchSelect=document.getElementById('manual-'+key+'-branch');
+    stemSelect.addEventListener('change',()=>readManualPillarInputs(key,'stem'));
+    branchSelect.addEventListener('change',()=>readManualPillarInputs(key,'branch'));
+  });
+  manualPillarToggle.addEventListener('change',()=>{
+    manualPillarOverride.enabled=manualPillarToggle.checked;
+    updateCaseEditor();
+    renderManualPillarInputs();
+    applyPillarContext();
+  });
   function renderJianChuInfo(info){
     const savedOffset=Number.isInteger(info?.offset)?info.offset:-1;
     const canonical=(savedOffset>=0&&savedOffset<12)?JIAN_CHU_STARS[savedOffset]:JIAN_CHU_STARS.find(item=>item.name===info?.name);
@@ -1625,23 +1729,105 @@
     const yearInfo=yearPillarForDate(date,referenceMs);
     const monthValue=monthPillarForDate(date,referenceMs,yearInfo);
     const dayValue=dayPillar(date.year,date.month,date.day);
-    currentXunkongBranches=calculateXunkongBranches(dayValue);
-    calendarAssignments.xunkong1=currentXunkongBranches[0]||null;
-    calendarAssignments.xunkong2=currentXunkongBranches[1]||null;
-    currentMonthBranch=String(monthValue||'').charAt(1)||null;
-    currentDayBranch=String(dayValue||'').charAt(1)||null;
-    renderJianChuInfo(calculateJianChu(currentMonthBranch,currentDayBranch));
+    calculatedPillars={year:yearInfo.value||'',month:monthValue||'',day:dayValue||''};
     renderTwentyEightInfo(date);
-    renderCalendarValue(document.getElementById('year-pillar'),yearInfo.value);
-    renderCalendarValue(document.getElementById('month-pillar'),monthValue);
-    renderCalendarValue(document.getElementById('day-pillar'),dayValue);
-    updateDailySixGod(dayValue);
     const stamp=document.getElementById('calendar-date');
     if(stamp) stamp.textContent=String(date.year)+'.'+String(date.month).padStart(2,'0')+'.'+String(date.day).padStart(2,'0');
     const dateInput=document.getElementById('record-date');
     if(dateInput) dateInput.value=dateKey;
-    // 旬空随完整日柱自动更新；日辰变化后立即刷新所有本卦、变卦纳甲标记。
+    applyPillarContext();
+  }
+  const PILLAR_KEYS=['year','month','day'];
+  function isValidGanzhiPair(stem,branch){
+    const stemIndex=GANZHI_STEMS.indexOf(stem),branchIndex=GANZHI_BRANCHES.indexOf(branch);
+    return stemIndex>=0&&branchIndex>=0&&(stemIndex%2)===(branchIndex%2);
+  }
+  function manualPillarValue(key){
+    const item=manualPillarOverride[key]||{};
+    return isValidGanzhiPair(item.stem,item.branch)?item.stem+item.branch:'';
+  }
+  function populatePillarSelect(select,values,value,placeholder){
+    select.replaceChildren();
+    const blank=document.createElement('option');blank.value='';blank.textContent=placeholder;select.appendChild(blank);
+    values.forEach(item=>{
+      const option=document.createElement('option');option.value=item;option.textContent=item;select.appendChild(option);
+    });
+    select.value=values.includes(value)?value:'';
+  }
+  function syncPillarPairControls(key,changed=null){
+    const item=manualPillarOverride[key];
+    const stemSelect=document.getElementById('manual-'+key+'-stem');
+    const branchSelect=document.getElementById('manual-'+key+'-branch');
+    if(!stemSelect||!branchSelect) return;
+    if(changed==='stem'&&item.branch&&!isValidGanzhiPair(item.stem,item.branch)) item.branch='';
+    if(changed==='branch'&&item.stem&&!isValidGanzhiPair(item.stem,item.branch)) item.stem='';
+    const allowedBranches=item.stem
+      ?GANZHI_BRANCHES.filter(branch=>isValidGanzhiPair(item.stem,branch))
+      :GANZHI_BRANCHES;
+    const allowedStems=item.branch
+      ?GANZHI_STEMS.filter(stem=>isValidGanzhiPair(stem,item.branch))
+      :GANZHI_STEMS;
+    populatePillarSelect(stemSelect,allowedStems,item.stem,key==='year'?'未知':'请选择');
+    populatePillarSelect(branchSelect,allowedBranches,item.branch,key==='year'?'未知':'请选择');
+    item.stem=stemSelect.value;item.branch=branchSelect.value;
+  }
+  function manualPillarProblem(){
+    if(!isCaseRecord||!manualPillarOverride.enabled) return '';
+    for(const key of ['month','day']){
+      const item=manualPillarOverride[key]||{};
+      if(!item.stem||!item.branch) return (key==='month'?'月柱':'日柱')+'尚未填写完整，请同时选择天干和地支。';
+      if(!isValidGanzhiPair(item.stem,item.branch)) return (key==='month'?'月柱':'日柱')+'干支组合无效，请重新选择。';
+    }
+    const year=manualPillarOverride.year||{};
+    if((year.stem&&!year.branch)||(!year.stem&&year.branch)) return '年柱请同时填写天干和地支，未知时两项都留空。';
+    if(year.stem&&year.branch&&!isValidGanzhiPair(year.stem,year.branch)) return '年柱干支组合无效，请重新选择。';
+    return '';
+  }
+  function renderManualPillarInputs(){
+    PILLAR_KEYS.forEach(key=>syncPillarPairControls(key));
+    if(manualPillarToggle) manualPillarToggle.checked=!!manualPillarOverride.enabled;
+    if(manualPillarGrid) manualPillarGrid.hidden=!isCaseRecord||!manualPillarOverride.enabled;
+    if(manualPillarValidation) manualPillarValidation.textContent=manualPillarProblem();
+  }
+  function readManualPillarInputs(key,changed){
+    const item=manualPillarOverride[key];
+    item.stem=document.getElementById('manual-'+key+'-stem').value;
+    item.branch=document.getElementById('manual-'+key+'-branch').value;
+    syncPillarPairControls(key,changed);
+    if(manualPillarValidation) manualPillarValidation.textContent=manualPillarProblem();
+    applyPillarContext();
+  }
+  function applyPillarContext(){
+    const manualActive=isCaseRecord&&manualPillarOverride.enabled;
+    const next=manualActive
+      ?{year:manualPillarValue('year'),month:manualPillarValue('month'),day:manualPillarValue('day')}
+      :{...calculatedPillars};
+    currentPillars={...next};
+    currentMonthBranch=GANZHI_BRANCHES.includes(String(next.month||'').charAt(1))?String(next.month).charAt(1):null;
+    currentDayBranch=GANZHI_BRANCHES.includes(String(next.day||'').charAt(1))?String(next.day).charAt(1):null;
+    currentXunkongBranches=next.day?calculateXunkongBranches(next.day):[];
+    calendarAssignments.xunkong1=currentXunkongBranches[0]||null;
+    calendarAssignments.xunkong2=currentXunkongBranches[1]||null;
+    renderCalendarValue(document.getElementById('year-pillar'),next.year||'— —');
+    renderCalendarValue(document.getElementById('month-pillar'),next.month||'— —');
+    renderCalendarValue(document.getElementById('day-pillar'),next.day||'— —');
+    renderJianChuInfo(calculateJianChu(currentMonthBranch,currentDayBranch));
+    updateDailySixGod(next.day||'');
+    const dateCard=document.querySelector('.date-card');
+    if(dateCard) dateCard.classList.toggle('manual-case-pillars',manualActive);
+    if(pillarSourceIndicator){
+      pillarSourceIndicator.hidden=!manualActive;
+      pillarSourceIndicator.textContent=manualActive
+        ?'当前使用手动指定的干支计算月令、日辰、旬空和六神；记录日期仅用于归档。'
+        :'';
+    }
+    const dateTrigger=document.querySelector('.date-picker-trigger');
+    const dateInput=document.getElementById('record-date');
+    if(dateTrigger) dateTrigger.title=manualActive?'选择记录/归档日期，不代表老师案例的起卦日期':'选择起卦日期';
+    if(dateInput) dateInput.setAttribute('aria-label',manualActive?'选择记录/归档日期（不参与案例干支计算）':'选择起卦日期');
+    if(manualPillarValidation) manualPillarValidation.textContent=manualPillarProblem();
     if(typeof renderCalendarDropSlots==='function') renderCalendarDropSlots();
+    if(typeof renderDateBranchSidecar==='function') renderDateBranchSidecar();
     if(worksheetReady){renderLineIndicators();refreshBranchStatusTokens();}
   }
   function updateCalendarForJapanToday(){
@@ -1659,6 +1845,7 @@
       editingRecordId=null;
       forceNewRecord=false;
       setCaseEditor(null);
+      renderManualPillarInputs();
       const memo=document.getElementById('daily-memo');
       if(memo) memo.value='';
     }
@@ -1673,6 +1860,7 @@
     const delay=Math.max(1000,nextJapanMidnightUtc-now.getTime()+250);
     window.setTimeout(()=>{updateCalendarForJapanToday();scheduleJapanMidnightRefresh();},delay);
   }
+  renderManualPillarInputs();
   updateCalendarForJapanToday();
   scheduleJapanMidnightRefresh();
   document.addEventListener('visibilitychange',()=>{if(!document.hidden) updateCalendarForJapanToday();});
@@ -2422,9 +2610,12 @@
     const dateCombinations=findDateTrineCombinations(recordLines,monthBranch,dayBranch);
     const dateTrines=dateCombinations.map(item=>serializeDateTrineCombination(item,recordLines,monthBranch,dayBranch));
     const intraTrines=findIntraHexagramTrines(recordLines,dayBranch,dateCombinations);
-    return {schemaVersion:2,calculatedAt:new Date().toISOString(),calculationSource:'saved-pillars-and-line-inputs',
-      calendar:{monthPillar:monthPillar||null,dayPillar:dayPillar||null,monthBranch,dayBranch,
-        monthWangXiangRule:monthRule?.label||null,xunkongBranches:[...xunkongBranches],xunkongKnown},
+    return {schemaVersion:3,calculatedAt:new Date().toISOString(),calculationSource:'saved-pillars-and-line-inputs',
+      calendar:{yearPillar:String(record?.pillars?.year||'')||null,monthPillar:monthPillar||null,dayPillar:dayPillar||null,
+        pillarSource:record?.pillarSource||'calendar-date',
+        monthBranch,dayBranch,monthWangXiangRule:monthRule?.label||null,
+        xunkongBranches:[...xunkongBranches],xunkongKnown},
+      pillarOverride:record?.pillarOverride?.enabled?JSON.parse(JSON.stringify(record.pillarOverride)):null,
       hexagram:hexagram?{name:hexagram.full,palace:hexagram.palace,element:hexagram.element,
         elementName:elementNames[hexagram.element]||null,stage:hexagram.stage,shiLineNumber,yingLineNumber}:null,
       lines:lineSnapshots,shiYing,trines:{dateBased:dateTrines,withinHexagram:intraTrines},
@@ -2954,13 +3145,20 @@
   }
   function makeRecordSnapshot(){
     const record={
-      schemaVersion:13,
+      schemaVersion:14,
       id:editingRecordId||(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(16).slice(2)),
       savedAt:new Date().toISOString(),date:document.getElementById('record-date').value||selectedDateKey,timezone:JAPAN_TZ,
       question:getQuestionSnapshot(),isCase:isCaseRecord,
       ...(isCaseRecord?{caseSource:caseSourceSelect.value,caseReviewStatus:caseSourceSelect.value==='classroom'?caseReviewStatusSelect.value:null,caseMemo:memoTextarea.value.trim()}:{}),
       dailyMemo:isCaseRecord?'':memoTextarea.value.trim(),
-      pillars:{year:document.getElementById('year-pillar').textContent,month:document.getElementById('month-pillar').textContent,day:document.getElementById('day-pillar').textContent},
+      pillars:{year:currentPillars.year||'',month:currentPillars.month||'',day:currentPillars.day||''},
+      pillarSource:isCaseRecord&&manualPillarOverride.enabled?'manual-case':'calendar-date',
+      pillarOverride:isCaseRecord&&manualPillarOverride.enabled?{
+        enabled:true,
+        year:{...manualPillarOverride.year},
+        month:{...manualPillarOverride.month},
+        day:{...manualPillarOverride.day}
+      }:null,
       // Keep user input separate from calculated analysis, so records can be independently re-evaluated.
       lines:state.map(item=>{
         const isMoving=!!getLineMovementInfo(item);
@@ -2984,6 +3182,8 @@
       isCase:record.isCase,
       caseSource:record.isCase?record.caseSource:null,
       caseReviewStatus:record.isCase?record.caseReviewStatus:null,
+      pillarSource:record.pillarSource,
+      pillarOverride:record.pillarOverride,
       memo:record.isCase?record.caseMemo:record.dailyMemo,
       lines:record.lines,
       calendarAssignments:record.calendarAssignments
@@ -3023,6 +3223,8 @@
     return JSON.parse(JSON.stringify(doc));
   }
   async function saveCurrentRecord(){
+    const pillarProblem=manualPillarProblem();
+    if(pillarProblem){showToast(pillarProblem);return false;}
     const record=makeRecordSnapshot();
     const date=record.date;
     let doc;
@@ -3100,6 +3302,7 @@
     }
     restoreQuestion(record.question||null);
     setCaseEditor(record);
+    renderManualPillarInputs();
     const legacyMemo=[record.morningAnalysis,record.eveningMemo].filter(value=>typeof value==='string'&&value.trim()).join('\n\n');
     memoTextarea.value=record.isCase?(typeof record.caseMemo==='string'?record.caseMemo:''):(typeof record.dailyMemo==='string'?record.dailyMemo:(activeDayDocument?.dailyMemo||legacyMemo));
     calendarAssignments={
@@ -3110,6 +3313,7 @@
       xunkong1:currentXunkongBranches[0]||null,
       xunkong2:currentXunkongBranches[1]||null
     };
+    applyPillarContext();
     selected=null;updateSelectedTiles();
     renderCalendarDropSlots();
     state.forEach((_,index)=>renderRow(index));
@@ -3189,9 +3393,9 @@
   }
   function exportRecords(records){
     if(!Array.isArray(records)||!records.length){showToast('请先勾选要导出的卦例');return;}
-    const portableRecords=records.map(record=>({...record,schemaVersion:13,
+    const portableRecords=records.map(record=>({...record,schemaVersion:14,
       analysisSnapshot:record.analysisSnapshot?.schemaVersion>=2?record.analysisSnapshot:buildRecordAnalysisSnapshot(record)}));
-    const payload={app:'liuyao-learning-app',schemaVersion:13,exportedAt:new Date().toISOString(),records:portableRecords};
+    const payload={app:'liuyao-learning-app',schemaVersion:14,exportedAt:new Date().toISOString(),records:portableRecords};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;
     const datePart=portableRecords.length===1?(portableRecords[0].date||'record'):'selected';
@@ -3268,14 +3472,16 @@
     const shiYingText=analysisSnapshot.shiYing
       ?'世应关系：第'+analysisSnapshot.shiYing.shiLineNumber+'爻世爻（'+analysisSnapshot.shiYing.shiBranch+'）与第'+analysisSnapshot.shiYing.yingLineNumber+'爻应爻（'+analysisSnapshot.shiYing.yingBranch+'）：'+analysisSnapshot.shiYing.kind
       :'世应关系：纳甲资料不足，暂不能判断';
-    const portableRecord={...record,schemaVersion:13,analysisSnapshot,
+    const portableRecord={...record,schemaVersion:14,analysisSnapshot,
       lines:recordLines.map((line,index)=>{
         const isBrightMoving=!!mapping[line.flowers]?.moving,isMoving=isBrightMoving||!!analysisLines[index]?.movement;
         return {...line,changeBranch:isMoving?(line.changeBranch||null):null,changeRelation:isMoving?(line.changeRelation||null):null,effect:isMoving?(line.effect||''):''};
       })};
     const result=[
       '【六爻卦例｜供 AI 分析】','日期：'+(record.date||'未注明'),'卦名：'+recordHexagramName(record),
-      record.pillars?'年月日柱：'+[record.pillars.year,record.pillars.month,record.pillars.day].filter(Boolean).join('、'):'',
+      record.pillarSource==='manual-case'
+        ?'年月日柱（老师案例手动指定）：年柱'+(record.pillars?.year||'未知')+'；月柱'+(record.pillars?.month||'未填写')+'；日柱'+(record.pillars?.day||'未填写')+'；记录日期'+(record.date||'未注明')+'仅用于归档'
+        :(record.pillars?'起卦年月日柱：'+[record.pillars.year,record.pillars.month,record.pillars.day].filter(Boolean).join('、'):''),
       question.categoryLabel?'问事分类：'+question.categoryLabel:'',question.text?'所问事项：'+question.text:'',
       question.mainUseGod?'主要用神：'+question.mainUseGod:'',question.hint?'用神提示：'+question.hint:'',
       record.isCase?'案例类型：'+(record.caseSource==='practice'?'个人练习案例':'课堂案例（老师讲解）'):'',
@@ -3286,7 +3492,7 @@
       '','【六合与合中带克】',liuHeRuleText,...(liuHeTexts.length?liuHeTexts:['当前保存的本卦与变爻地支中未识别到六合配对']),
       record.isCase&&record.caseMemo?'【案例分析 Memo】\n'+record.caseMemo:(!record.isCase&&record.dailyMemo?'【每日记录 Memo】\n'+record.dailyMemo:''),
       record.jianchu?.name?'建除：'+record.jianchu.name:'',record.twentyEight?.name?'二十八宿：'+record.twentyEight.name:'',
-      '保存时间：'+(record.savedAt||'未记录'),'','【原始记录 JSON｜schemaVersion 13，含 analysisSnapshot】',JSON.stringify(portableRecord,null,2)
+      '保存时间：'+(record.savedAt||'未记录'),'','【原始记录 JSON｜schemaVersion 14，含 analysisSnapshot】',JSON.stringify(portableRecord,null,2)
     ].filter(value=>value!==''||value===0);
     return result.join('\n');
   }
@@ -3397,6 +3603,7 @@
     calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
     selected=null;editingRecordId=null;forceNewRecord=true;
     setCaseEditor(null);setQuestionCategory('daily');questionTextEl.value='';memoTextarea.value='';
+    renderManualPillarInputs();applyPillarContext();
     updateSelectedTiles();renderCalendarDropSlots();
     state.forEach((_,index)=>renderRow(index));refreshBranchStatusTokens();renderTrigramNames();
     markEntryClean();showToast('已开启新卦；之前的记录保持不变');
