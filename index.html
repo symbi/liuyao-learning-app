@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v82</title>
+<title>六爻排卦与每日记录 v83</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -146,7 +146,7 @@
   .calendar-char.element-metal{color:#b98519}
   .calendar-divider{color:#999687;font-weight:500;padding:0 3px}
   .trigram-group-rows{display:flex;flex-direction:column;gap:7px;min-width:0}
-  .line-row{display:grid;width:max-content;max-width:100%;grid-template-columns:116px 52px 29px 46px 52px 29px 46px 6em;gap:6px;align-items:center;border:1px solid #e8e0d1;border-radius:9px;padding:6px 8px;background:#fffefb;transition:border-color .15s,background .15s;overflow-x:auto}
+  .line-row{display:grid;width:max-content;max-width:100%;grid-template-columns:116px 52px 29px 46px 52px 29px 46px 6em 88px;gap:6px;align-items:center;border:1px solid #e8e0d1;border-radius:9px;padding:6px 8px;background:#fffefb;transition:border-color .15s,background .15s;overflow-x:auto}
   .line-row:hover{border-color:#c9d6c9}
   .cell-label{display:none;font-size:10px;color:var(--muted);margin-bottom:3px}
   .flower-options{display:flex;gap:3px;flex-wrap:nowrap;justify-content:flex-start}
@@ -221,7 +221,7 @@
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(15px);background:#283e32;color:#fff;padding:10px 15px;border-radius:10px;box-shadow:0 7px 24px #0002;opacity:0;pointer-events:none;transition:.2s;z-index:10;font-size:12px}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(max-width:1120px){
-    .line-row{grid-template-columns:116px 48px 28px 44px 48px 28px 44px 6em;gap:5px;padding:6px}
+    .line-row{grid-template-columns:116px 48px 28px 44px 48px 28px 44px 6em 88px;gap:5px;padding:6px}
   }
   @media(max-width:820px){
     .trigram-group{grid-template-columns:48px minmax(0,1fr);gap:6px}
@@ -232,7 +232,7 @@
     .prototype-tag{font-size:10px;padding:6px 9px}
     .palette-grid{grid-template-columns:1fr;gap:16px}
     .palette-group+.palette-group{border-left:0;border-top:1px solid var(--line);padding:15px 0 0}
-    .line-row{grid-template-columns:112px 45px 27px 42px 45px 27px 42px 6em;gap:4px;padding:6px}
+    .line-row{grid-template-columns:112px 45px 27px 42px 45px 27px 42px 6em 88px;gap:4px;padding:6px}
     .flower-cell{grid-area:auto}
     .symbol-cell{grid-area:auto}
     .branch-cell{grid-area:auto}
@@ -267,7 +267,7 @@
     .palette-grid{grid-template-columns:1fr;gap:9px}
     .palette-group+.palette-group{border-left:0;border-top:1px solid var(--line);padding:9px 0 0}
     .branch-groups{grid-template-columns:auto auto;gap:8px}
-    .line-row{overflow-x:auto;grid-template-columns:108px 42px 26px 40px 42px 26px 40px 6em;gap:3px;padding:5px 4px}
+    .line-row{overflow-x:auto;grid-template-columns:108px 42px 26px 40px 42px 26px 40px 6em 88px;gap:3px;padding:5px 4px}
     .effect-select{height:29px;font-family:inherit;font-size:13px;font-weight:750;width:6em;min-width:6em;max-width:6em;padding-left:7px;padding-right:26px}
   }
 
@@ -430,7 +430,7 @@
   .sixgod-caption{font-size:11px;color:var(--muted);font-weight:700;white-space:nowrap;}
   .god-tiles{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
   .god-tiles .tile{width:44px;min-width:44px;height:30px;font-size:12px;}
-  .line-row{grid-template-columns:116px 52px 29px 46px 46px 52px 29px 46px 6em;}
+  .line-row{grid-template-columns:116px 52px 29px 46px 46px 52px 29px 46px 6em 88px;}
   .drop-slot.inactive-change-slot{visibility:hidden;pointer-events:none;}
   .shen-cell{width:46px;min-width:46px;}
   .drop-slot.shen-filled{background:#f2eff8;border-color:#d1c8df;}
@@ -493,13 +493,13 @@
   .day-god-drop-slot .drop-token{font-size:13px;}
   /* Six-spirit palette tiles share one consistent button treatment; no automatic tile outline. */
 
-  @media(max-width:1120px){.line-row{grid-template-columns:116px 48px 28px 44px 44px 48px 28px 44px 6em;gap:5px;padding:6px;}}
+  @media(max-width:1120px){.line-row{grid-template-columns:116px 48px 28px 44px 44px 48px 28px 44px 6em 88px;gap:5px;padding:6px;}}
   @media(max-width:820px){
     .calendar-topline{align-items:flex-start;flex-direction:column;gap:8px;}
     .jianchu-guidance{max-width:min(92vw,720px);}
     .record-controls{justify-content:flex-start;}
     .palette-stack{gap:7px;}
-    .line-row{grid-template-columns:112px 45px 27px 42px 42px 45px 27px 42px 6em;gap:4px;padding:6px;}
+    .line-row{grid-template-columns:112px 45px 27px 42px 42px 45px 27px 42px 6em 88px;gap:4px;padding:6px;}
     .god-tiles .tile{width:42px;min-width:42px;}
   }
   /* v71 mobile: the six-column worksheet remains horizontally scrollable on narrow phones. */
@@ -512,7 +512,7 @@
     .jianchu-guidance{flex:1 1 100%;width:100%;max-width:100%;margin-left:2px;padding-left:3px;gap:1px;font-size:13px;}
     .jianchu-guidance>span{flex:0 0 auto;white-space:nowrap;}
     .record-controls{width:100%;justify-content:flex-start;}
-    .line-row{grid-template-columns:108px 42px 26px 40px 40px 42px 26px 40px 6em;gap:3px;padding:5px 4px;}
+    .line-row{grid-template-columns:108px 42px 26px 40px 40px 42px 26px 40px 6em 88px;gap:3px;padding:5px 4px;}
     .shen-cell{width:40px;min-width:40px;}
     .god-tiles .tile{width:40px;min-width:40px;}
   }
@@ -588,26 +588,14 @@
 
 
 
-  /* v52: mark 月破 and 旬空 around the draggable 纳甲地支 token. */
+  /* v83: separate 月破 from the branch token's seasonal fill and 旬空 outline.
+     Grey fill = 休囚死; dotted purple border = 旬空; red corner badge = 月破. */
   .drop-token.branch-token{
     width:27px;min-width:27px;height:27px;box-sizing:border-box;
     display:inline-flex;align-items:center;justify-content:center;
     border:2px solid transparent;border-radius:50%;
-    padding:0;line-height:1;position:relative;
+    padding:0;line-height:1;position:relative;overflow:visible;
   }
-  .drop-token.branch-token.is-month-break{
-    border-color:#c44738;background:#fff0ed!important;
-  }
-  .drop-token.branch-token.is-xunkong{
-    border:2px dotted #7567a6;background:#f2effa!important;
-  }
-  .drop-token.branch-token.is-month-break.is-xunkong{
-    border:2px solid #c44738;background:#fff0ed!important;
-    outline:2px dotted #7567a6;outline-offset:2px;
-  }
-  /* v58: 月令旺相／休囚同步显示在本卦、变卦纳甲地支上。
-     旺相沿用 v57 的配色逻辑：旺的五行作底色，相的五行作外圈；
-     休、囚、死统一灰底。月破、旬空仍用边框标记并保留状态底色。 */
   .drop-token.branch-token.is-monthly-wangxiang{
     border:3px solid var(--monthly-ring);
     background:var(--monthly-bg)!important;
@@ -616,26 +604,34 @@
     border:2px solid transparent;
     background:var(--monthly-bg,#666666)!important;
   }
-  .drop-token.branch-token.is-month-break{
-    background:var(--monthly-bg,#fff0ed)!important;
-  }
-  .drop-token.branch-token.is-xunkong{
-    background:var(--monthly-bg,#f2effa)!important;
-  }
-  .drop-token.branch-token.is-month-break.is-xunkong{
-    border:2px solid #c44738;
-    outline:2px dotted #7567a6;outline-offset:2px;
-    background:var(--monthly-bg,#fff0ed)!important;
-  }
-  /* Reassert collision frames after the seasonal circle declarations above. */
-  .drop-token.branch-token.is-month-break{
-    border:2px solid #c44738;
-    background:var(--monthly-bg,#fff0ed)!important;
-  }
   .drop-token.branch-token.is-xunkong{
     border:2px dotted #7567a6;
     background:var(--monthly-bg,#f2effa)!important;
   }
+  .drop-token.branch-token.is-month-break{
+    background:var(--monthly-bg,#fff0ed)!important;
+  }
+  .drop-token.branch-token.is-month-break::after{
+    content:'破';
+    position:absolute;right:-5px;top:-6px;z-index:3;
+    width:12px;height:12px;display:grid;place-items:center;
+    border:1px solid #fffdf7;border-radius:50%;
+    background:#c44738;color:#fffdf7;
+    font-size:7px;line-height:1;font-weight:900;
+    box-shadow:0 0 0 1px #c44738;
+    pointer-events:none;
+  }
+  /* Compact reminder for a moving line whose original and transformed branches form 六合. */
+  .branch-relation-hint{
+    width:88px;min-width:88px;height:31px;box-sizing:border-box;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    padding:2px 3px;border:1px solid #ddcfad;border-radius:6px;
+    background:#fbf5e8;color:#805d2e;text-align:center;line-height:1.05;
+  }
+  .branch-relation-hint:empty{visibility:hidden;}
+  .branch-relation-hint strong{font-size:11px;font-weight:900;white-space:nowrap;}
+  .branch-relation-hint small{font-size:9px;color:#786d5a;white-space:nowrap;}
+  .branch-relation-hint.has-control{border-color:#d6aa91;background:#fff1e9;color:#9f4e38;}
   .liuhe-overlay{position:absolute;left:0;top:0;z-index:11;display:block;overflow:visible;pointer-events:none;}
   .liuhe-overlay .liuhe-edge{fill:none;stroke-width:2.8;stroke-linecap:round;stroke-dasharray:5 5;opacity:.84;}
   .liuhe-overlay .liuhe-endpoint{stroke:#fffdf7;stroke-width:1.1;}
@@ -1190,6 +1186,31 @@
   function elementClassForBranch(value){ return branchElements[value] ? 'element-'+branchElements[value] : ''; }
   const generates = {wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
   const controls = {wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
+  function getLiuHePairInfo(firstBranch,secondBranch){
+    if(!firstBranch||!secondBranch) return null;
+    const relation=liuHe[firstBranch];
+    if(!relation||relation.partner!==secondBranch) return null;
+    const firstElement=branchElements[firstBranch],secondElement=branchElements[secondBranch];
+    const elementNames={water:'水',wood:'木',earth:'土',fire:'火',metal:'金'};
+    let controlBranch=null,controlledBranch=null,controlText='';
+    if(controls[firstElement]===secondElement){
+      controlBranch=firstBranch;controlledBranch=secondBranch;
+    }else if(controls[secondElement]===firstElement){
+      controlBranch=secondBranch;controlledBranch=firstBranch;
+    }
+    if(controlBranch&&controlledBranch){
+      controlText=controlBranch+elementNames[branchElements[controlBranch]]+'克'+controlledBranch+elementNames[branchElements[controlledBranch]];
+    }
+    let generationText='';
+    if(generates[firstElement]===secondElement){
+      generationText=firstBranch+elementNames[firstElement]+'生'+secondBranch+elementNames[secondElement];
+    }else if(generates[secondElement]===firstElement){
+      generationText=secondBranch+elementNames[secondElement]+'生'+firstBranch+elementNames[firstElement];
+    }
+    return {pair:relation.pair,transform:relation.transform,firstBranch,secondBranch,
+      firstElement,secondElement,hasControl:!!controlText,controlBranch,controlledBranch,controlText,
+      generationText,label:controlText?'合中带克':(generationText?'六合兼相生':'六合')};
+  }
   function getShiYingRelation(info){
     if(!info) return null;
     const shiIndex=info.shi-1;
@@ -1898,7 +1919,8 @@
       });
       slot.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&selected){e.preventDefault();if(selected.type===slot.dataset.dropType)assignToken(meta.id,selected.type,selected.value,slot.dataset.zone);}});
     });
-    row.append(count,symbol,branch,kin,shen,change,changeBranch,changeKin,effect);
+    const branchRelationHint=document.createElement('div');branchRelationHint.className='branch-relation-hint';branchRelationHint.setAttribute('aria-live','polite');
+    row.append(count,symbol,branch,kin,shen,change,changeBranch,changeKin,effect,branchRelationHint);
     return row;
   }
   function assignToken(lineId,type,value,zone){
@@ -1971,6 +1993,25 @@
     filledSlot(changeBranchSlot,item.changeBranch,'branch');
     filledSlot(changeRelationSlot,item.changeRelation,'relation');
     row.querySelector('.effect-select').value=item.effect||'';
+    const branchRelationHint=row.querySelector('.branch-relation-hint');
+    if(branchRelationHint){
+      branchRelationHint.replaceChildren();
+      const pairInfo=isMovingForDisplay?getLiuHePairInfo(item.branch,item.changeBranch):null;
+      branchRelationHint.classList.toggle('has-control',!!pairInfo?.hasControl);
+      if(pairInfo){
+        const label=document.createElement('strong');label.textContent=pairInfo.pair+'合';
+        const detail=document.createElement('small');detail.textContent=pairInfo.label;
+        branchRelationHint.append(label,detail);
+        const forceRule='第十二课规则：力量接近时可考虑贪合忘克；一方明显强于另一方时仍须论克。需结合月令、日辰及其他动爻判断，页面不自动判定哪一方占优。';
+        branchRelationHint.title=pairInfo.controlText
+          ?pairInfo.controlText+'；'+forceRule
+          :(pairInfo.generationText||'六合关系；需结合全卦判断。');
+        branchRelationHint.setAttribute('aria-label',pairInfo.pair+'合，'+pairInfo.label+(pairInfo.controlText?'，'+pairInfo.controlText:''));
+      }else{
+        branchRelationHint.title='';
+        branchRelationHint.removeAttribute('aria-label');
+      }
+    }
     renderTrigramNames();
   }
   // Complete 64-hexagram lookup. Pattern order is bottom-to-top: 初爻 → 上爻.
@@ -2335,6 +2376,34 @@
         original:branchSnapshot(line.branch),transformed:movement&&line.changeBranch?branchSnapshot(line.changeBranch):null,
         changeRelation:movement?(line.changeRelation||null):null,effect:movement?(line.effect||''):''};
     });
+    const branchTokens=[];
+    lineSnapshots.forEach(line=>{
+      if(line.original) branchTokens.push({lineNumber:line.lineNumber,position:line.position,side:'本卦',snapshot:line.original});
+      if(line.transformed) branchTokens.push({lineNumber:line.lineNumber,position:line.position,side:'变卦',snapshot:line.transformed});
+    });
+    const sameLineLiuHe=[],betweenLinesLiuHe=[];
+    for(let i=0;i<branchTokens.length;i++){
+      for(let j=i+1;j<branchTokens.length;j++){
+        const first=branchTokens[i],second=branchTokens[j];
+        const sameLine=first.lineNumber===second.lineNumber;
+        if(sameLine&&!(first.side==='本卦'&&second.side==='变卦')) continue;
+        const pairInfo=getLiuHePairInfo(first.snapshot.branch,second.snapshot.branch);
+        if(!pairInfo) continue;
+        const entry={pair:pairInfo.pair,mode:sameLine?'same-line-original-to-transformed':'between-lines',
+          first:{lineNumber:first.lineNumber,position:first.position,side:first.side,...first.snapshot},
+          second:{lineNumber:second.lineNumber,position:second.position,side:second.side,...second.snapshot},
+          fiveElementRelation:pairInfo.controlText?'control':(pairInfo.generationText?'generation':'none'),
+          controlText:pairInfo.controlText||null,generationText:pairInfo.generationText||null,
+          interpretation:pairInfo.hasControl?'合中带克：是否论克需比较双方力量':'六合：仍需结合问事与全卦判断',
+          forceJudgement:'not-automatically-determined'};
+        (sameLine?sameLineLiuHe:betweenLinesLiuHe).push(entry);
+      }
+    }
+    const liuHeRule={source:'第十二课',title:'合中带克、克中带合与贪合忘克',
+      principle:'六合与五行生克可能同时存在；不能见合就一概判断不克，也不能只见相克就忽略合。',
+      forceComparison:'力量接近时可考虑贪合忘克、以合为主；若克制一方力量明显强于被克一方，仍须论克。',
+      assessmentFactors:'结合月令旺衰、日辰生扶克制、卦中其他动爻及整体卦局比较双方力量。',
+      automation:'页面只识别六合配对并保存五行生克与旺衰背景，不自动判定贪合忘克是否成立。'};
     let shiYing=null;
     if(shiLineNumber&&yingLineNumber){
       const shiBranch=recordLines[shiLineNumber-1]?.branch,yingBranch=recordLines[yingLineNumber-1]?.branch;
@@ -2353,12 +2422,13 @@
     const dateCombinations=findDateTrineCombinations(recordLines,monthBranch,dayBranch);
     const dateTrines=dateCombinations.map(item=>serializeDateTrineCombination(item,recordLines,monthBranch,dayBranch));
     const intraTrines=findIntraHexagramTrines(recordLines,dayBranch,dateCombinations);
-    return {schemaVersion:1,calculatedAt:new Date().toISOString(),calculationSource:'saved-pillars-and-line-inputs',
+    return {schemaVersion:2,calculatedAt:new Date().toISOString(),calculationSource:'saved-pillars-and-line-inputs',
       calendar:{monthPillar:monthPillar||null,dayPillar:dayPillar||null,monthBranch,dayBranch,
         monthWangXiangRule:monthRule?.label||null,xunkongBranches:[...xunkongBranches],xunkongKnown},
       hexagram:hexagram?{name:hexagram.full,palace:hexagram.palace,element:hexagram.element,
         elementName:elementNames[hexagram.element]||null,stage:hexagram.stage,shiLineNumber,yingLineNumber}:null,
-      lines:lineSnapshots,shiYing,trines:{dateBased:dateTrines,withinHexagram:intraTrines}};
+      lines:lineSnapshots,shiYing,trines:{dateBased:dateTrines,withinHexagram:intraTrines},
+      branchRelations:{sameLineLiuHe,betweenLinesLiuHe,lessonRule:liuHeRule}};
   }
 
   // v57: 日期地支固定在最上面一行，并以第一条（上爻）纳甲槽的列中心定位。
@@ -2884,7 +2954,7 @@
   }
   function makeRecordSnapshot(){
     const record={
-      schemaVersion:12,
+      schemaVersion:13,
       id:editingRecordId||(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(16).slice(2)),
       savedAt:new Date().toISOString(),date:document.getElementById('record-date').value||selectedDateKey,timezone:JAPAN_TZ,
       question:getQuestionSnapshot(),isCase:isCaseRecord,
@@ -3119,9 +3189,9 @@
   }
   function exportRecords(records){
     if(!Array.isArray(records)||!records.length){showToast('请先勾选要导出的卦例');return;}
-    const portableRecords=records.map(record=>({...record,schemaVersion:12,
-      analysisSnapshot:record.analysisSnapshot?.schemaVersion===1?record.analysisSnapshot:buildRecordAnalysisSnapshot(record)}));
-    const payload={app:'liuyao-learning-app',schemaVersion:12,exportedAt:new Date().toISOString(),records:portableRecords};
+    const portableRecords=records.map(record=>({...record,schemaVersion:13,
+      analysisSnapshot:record.analysisSnapshot?.schemaVersion>=2?record.analysisSnapshot:buildRecordAnalysisSnapshot(record)}));
+    const payload={app:'liuyao-learning-app',schemaVersion:13,exportedAt:new Date().toISOString(),records:portableRecords};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;
     const datePart=portableRecords.length===1?(portableRecords[0].date||'record'):'selected';
@@ -3133,7 +3203,7 @@
     const question=record.question||{};
     const flowerLabels={0:'O（三字，老阳／动爻）',1:'•（一花两字，少阳／静爻）',2:'••（两花一字，少阴／静爻）',3:'X（三花，老阴／动爻）'};
     const recordLines=Array.isArray(record.lines)?record.lines:[];
-    const analysisSnapshot=record.analysisSnapshot?.schemaVersion===1?record.analysisSnapshot:buildRecordAnalysisSnapshot(record);
+    const analysisSnapshot=record.analysisSnapshot?.schemaVersion>=2?record.analysisSnapshot:buildRecordAnalysisSnapshot(record);
     const analysisLines=Array.isArray(analysisSnapshot.lines)?analysisSnapshot.lines:[];
     function branchStatusText(status){
       if(!status) return '未记录地支';
@@ -3179,10 +3249,26 @@
     }
     const trines=analysisSnapshot.trines||{};
     const trineTexts=[...(trines.dateBased||[]).map(item=>trineText(item,'日月参与三合')),...(trines.withinHexagram||[]).map(item=>trineText(item,'同一卦体三合'))];
+    const branchRelations=analysisSnapshot.branchRelations||{};
+    function liuHeText(item){
+      const first=item.first||{},second=item.second||{};
+      const firstLabel='第'+first.lineNumber+'爻'+(first.side||'')+(first.branch||'');
+      const secondLabel='第'+second.lineNumber+'爻'+(second.side||'')+(second.branch||'');
+      const pairLabel=firstLabel+(item.mode==='same-line-original-to-transformed'?'动化':' 与 ')+secondLabel;
+      const detail=item.controlText?'；五行关系：'+item.controlText+'；合中带克，需比较双方力量':(item.generationText?'；五行关系：'+item.generationText:'；未识别到直接五行生克');
+      const stateLabels=[first.monthStatus?'第一支月令'+first.monthStatus:null,second.monthStatus?'第二支月令'+second.monthStatus:null,
+        first.xunkong===true?'第一支旬空':null,second.xunkong===true?'第二支旬空':null,
+        first.monthBreak===true?'第一支月破':null,second.monthBreak===true?'第二支月破':null].filter(Boolean);
+      return pairLabel+'：'+item.pair+'合'+detail+(stateLabels.length?'（'+stateLabels.join('、')+'）':'')+'；力量结论：待结合日月及全卦人工判断';
+    }
+    const liuHeTexts=[...(branchRelations.sameLineLiuHe||[]).map(liuHeText),...(branchRelations.betweenLinesLiuHe||[]).map(liuHeText)];
+    const liuHeRuleText=branchRelations.lessonRule
+      ?'课程规则（'+branchRelations.lessonRule.source+'）：'+branchRelations.lessonRule.principle+' '+branchRelations.lessonRule.forceComparison+' '+branchRelations.lessonRule.assessmentFactors+' '+branchRelations.lessonRule.automation
+      :'课程规则提醒：六合与五行克制可能并存；力量接近时可考虑贪合忘克，一方明显强于另一方时仍须论克。需结合月令、日辰及其他动爻判断。';
     const shiYingText=analysisSnapshot.shiYing
       ?'世应关系：第'+analysisSnapshot.shiYing.shiLineNumber+'爻世爻（'+analysisSnapshot.shiYing.shiBranch+'）与第'+analysisSnapshot.shiYing.yingLineNumber+'爻应爻（'+analysisSnapshot.shiYing.yingBranch+'）：'+analysisSnapshot.shiYing.kind
       :'世应关系：纳甲资料不足，暂不能判断';
-    const portableRecord={...record,schemaVersion:12,analysisSnapshot,
+    const portableRecord={...record,schemaVersion:13,analysisSnapshot,
       lines:recordLines.map((line,index)=>{
         const isBrightMoving=!!mapping[line.flowers]?.moving,isMoving=isBrightMoving||!!analysisLines[index]?.movement;
         return {...line,changeBranch:isMoving?(line.changeBranch||null):null,changeRelation:isMoving?(line.changeRelation||null):null,effect:isMoving?(line.effect||''):''};
@@ -3197,9 +3283,10 @@
       '','【六爻记录｜从初爻到上爻｜含本卦与变卦状态】',...lines,'',
       '【年月日及旬空标注】\n'+calendarText.join('\n'),shiYingText,'',
       '【三合识别结果】',...(trineTexts.length?trineTexts:['当前保存资料中未识别到符合页面规则的三合局']),
+      '','【六合与合中带克】',liuHeRuleText,...(liuHeTexts.length?liuHeTexts:['当前保存的本卦与变爻地支中未识别到六合配对']),
       record.isCase&&record.caseMemo?'【案例分析 Memo】\n'+record.caseMemo:(!record.isCase&&record.dailyMemo?'【每日记录 Memo】\n'+record.dailyMemo:''),
       record.jianchu?.name?'建除：'+record.jianchu.name:'',record.twentyEight?.name?'二十八宿：'+record.twentyEight.name:'',
-      '保存时间：'+(record.savedAt||'未记录'),'','【原始记录 JSON｜schemaVersion 12，含 analysisSnapshot】',JSON.stringify(portableRecord,null,2)
+      '保存时间：'+(record.savedAt||'未记录'),'','【原始记录 JSON｜schemaVersion 13，含 analysisSnapshot】',JSON.stringify(portableRecord,null,2)
     ].filter(value=>value!==''||value===0);
     return result.join('\n');
   }
