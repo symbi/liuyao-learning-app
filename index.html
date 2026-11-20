@@ -2308,8 +2308,9 @@
   function buildRecordAnalysisSnapshot(record){
     const recordLines=Array.isArray(record?.lines)?record.lines:[];
     const monthPillar=String(record?.pillars?.month||''),dayPillar=String(record?.pillars?.day||'');
-    const monthBranch=monthPillar.slice(-1)||record?.analysisSnapshot?.calendar?.monthBranch||null;
-    const dayBranch=dayPillar.slice(-1)||record?.analysisSnapshot?.calendar?.dayBranch||null;
+    const monthCandidate=monthPillar.slice(-1),dayCandidate=dayPillar.slice(-1);
+    const monthBranch=GANZHI_BRANCHES.includes(monthCandidate)?monthCandidate:(record?.analysisSnapshot?.calendar?.monthBranch||null);
+    const dayBranch=GANZHI_BRANCHES.includes(dayCandidate)?dayCandidate:(record?.analysisSnapshot?.calendar?.dayBranch||null);
     const calculatedXunkong=dayPillar?calculateXunkongBranches(dayPillar):[];
     const storedXunkong=[record?.calendarAssignments?.xunkong1,record?.calendarAssignments?.xunkong2].filter(Boolean);
     const xunkongBranches=calculatedXunkong.length===2?calculatedXunkong:storedXunkong;
@@ -3145,10 +3146,10 @@
     const lines=recordLines.map((line,index)=>{
       const savedLine=analysisLines[index]||{},isBrightMoving=!!mapping[line.flowers]?.moving,isMoving=isBrightMoving||!!savedLine.movement;
       const fields=['摇卦：'+(flowerLabels[line.flowers]||'未记录')];
-      if(line.branch) fields.push('纳甲地支：'+line.branch+'（'+branchStatusText(savedLine.original)+'）');
+      if(line.branch) fields.push('纳甲地支：'+line.branch+(savedLine.original?.elementName||'')+'（'+branchStatusText(savedLine.original)+'）');
       if(line.relation) fields.push('六亲：'+line.relation);
       if(line.shen) fields.push('六神：'+line.shen);
-      if(isMoving&&line.changeBranch) fields.push('变爻地支：'+line.changeBranch+'（'+branchStatusText(savedLine.transformed)+'）');
+      if(isMoving&&line.changeBranch) fields.push('变爻地支：'+line.changeBranch+(savedLine.transformed?.elementName||'')+'（'+branchStatusText(savedLine.transformed)+'）');
       if(isMoving&&line.changeRelation) fields.push('变爻六亲：'+line.changeRelation);
       if(isMoving&&line.effect) fields.push('生克关系：'+line.effect);
       if(savedLine.role) fields.push('爻位：'+savedLine.role);
