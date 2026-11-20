@@ -1,0 +1,127 @@
+{
+  "schemaVersion": 1,
+  "recordDate": "2026-11-20",
+  "timezone": "Asia/Tokyo",
+  "dailyFortune": {
+    "schemaVersion": 11,
+    "id": "daily-2026-11-20",
+    "savedAt": "2026-11-20T03:02:05.105Z",
+    "date": "2026-11-20",
+    "timezone": "Asia/Tokyo",
+    "question": {
+      "category": "daily",
+      "categoryLabel": "今日运势（每日卦）",
+      "mainUseGod": "世爻",
+      "hint": "先看世爻，再结合日月、动爻与全卦关系。",
+      "text": ""
+    },
+    "isCase": false,
+    "pillars": {
+      "year": "丙午",
+      "month": "己亥",
+      "day": "戊戌"
+    },
+    "lines": [
+      {
+        "flowers": 2,
+        "branch": "丑",
+        "relation": "妻财",
+        "shen": "勾陈",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 0,
+        "branch": "亥",
+        "relation": "父母",
+        "shen": "螣蛇",
+        "changeBranch": "巳",
+        "changeRelation": "子孙",
+        "effect": "克"
+      },
+      {
+        "flowers": 0,
+        "branch": "酉",
+        "relation": "官鬼",
+        "shen": "白虎",
+        "changeBranch": "卯",
+        "changeRelation": "兄弟",
+        "effect": "克"
+      },
+      {
+        "flowers": 2,
+        "branch": "未",
+        "relation": "妻财",
+        "shen": "玄武",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 1,
+        "branch": "巳",
+        "relation": "子孙",
+        "shen": "青龙",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      },
+      {
+        "flowers": 1,
+        "branch": "卯",
+        "relation": "兄弟",
+        "shen": "朱雀",
+        "changeBranch": null,
+        "changeRelation": null,
+        "effect": ""
+      }
+    ],
+    "calendarAssignments": {
+      "yearRelation": "子孙",
+      "monthRelation": "父母",
+      "dayRelation": "妻财",
+      "dayGod": "勾陈",
+      "xunkong1": "申",
+      "xunkong2": "酉"
+    },
+    "jianchu": {
+      "name": "闭",
+      "tone": "black",
+      "kind": "黑色标记",
+      "yi": "收款、回款、存款、收纳归档、修补、堵漏",
+      "ji": "开业、启动新项目、婚嫁、庆典、乔迁、动土、大型装修、扩建",
+      "guidance": "宜：收款、回款、存款、收纳归档、修补、堵漏；忌：开业、启动新项目、婚嫁、庆典、乔迁、动土、大型装修、扩建",
+      "offset": 11,
+      "monthBranch": "亥",
+      "dayBranch": "戌",
+      "ruleId": "JIANCHU-EXT-001",
+      "algorithm": "(日支序号 - 月建序号 + 12) mod 12",
+      "guidanceSnapshot": "宜：收款、回款、存款、收纳归档、修补、堵漏；忌：开业、启动新项目、婚嫁、庆典、乔迁、动土、大型装修、扩建",
+      "savedAt": "2026-11-20T03:02:05.105Z"
+    },
+    "twentyEight": {
+      "index": 8,
+      "name": "牛金牛",
+      "short": "牛",
+      "symbol": "玄武",
+      "direction": "北方",
+      "ruleId": "TWENTY_EIGHT_DAILY_ROTATION_CNLUNAR_2019",
+      "anchorDate": "2019-01-17",
+      "anchorMansion": "角木蛟",
+      "candidateYiji": {
+        "yi": "祭祀、安葬",
+        "ji": "嫁娶、动土、开市、出行"
+      },
+      "source": "OPN48/cnlunar + donma/LunarData (candidate)",
+      "savedAt": "2026-11-20T02:43:20.386Z"
+    },
+    "createdAt": "2026-11-20T03:02:05.105Z",
+    "updatedAt": "2026-11-20T03:02:05.105Z",
+    "recordType": "dailyFortune"
+  },
+  "additionalQuestions": [],
+  "dailyMemo": "月帮，六冲\n应克世，应发动，但是应为休囚，应也没有受伤\n世是旺，但是兄弟爻，兄弟持世，估计是要耗财？且被应爻克了，应爻发动，但是父母爻也动，感觉就是会花钱消灾？",
+  "createdAt": "2026-11-20T03:02:05.105Z",
+  "updatedAt": "2026-11-20T03:02:05.105Z"
+}
