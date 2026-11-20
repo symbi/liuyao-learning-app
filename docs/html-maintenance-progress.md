@@ -7,10 +7,10 @@
 - Project: `symbi/liuyao-learning-app`
 - Workstream: HTML maintenance
 - Status: In review (Draft PR open)
-- Current task: 三合发动支点优先级与旬空自动识别
+- Current task: 课堂案例支持手动指定年、月、日干支
 - Target branch: `fix/trine-anchor-auto-xunkong`
 - Active PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
-- Last completed task: HTML v81 source repair and focused logic checks
+- Last completed task: v84 案例干支手动输入、独立归档日期与记录快照
 - Last updated: 2026-11-20
 
 ## 开始任务前
@@ -98,3 +98,44 @@
 - Status: Draft PR opened; awaiting visual/browser review.
 - Next step: 用户打开 Branch Preview，按这张卦例核对卯→未 + 月亥的三角光轨，以及旬空申的灰底+点状外圈；反馈视觉位置/大小后再微调。
 
+
+
+## 2026-11-20 — 课堂案例手动指定年月日干支
+
+- Date: 2026-11-20
+- Task: 课堂案例不能把录入/归档日期误当成老师给出的起卦日期；允许手动指定完整年月日干支。
+- User acceptance criteria:
+  - “记录日期”只用于保存和定位 GitHub 日记录文件；不能自动冒充老师案例的起卦日期。
+  - 案例可以手动填写年柱、月柱、日柱的天干与地支，共六个字符。
+  - 年柱可能未知，允许天干和地支都留空；月柱、日柱需填写完整。
+  - 干支组合必须是合法六十甲子组合。
+  - 手动柱必须参与月令、日辰、旬空、日干六神、暗动/日冲、月破和三合识别等实际计算。
+  - 保存、重新打开、JSON 导出和 AI 复制都必须保留手动干支及其来源。
+- Branch: `fix/trine-anchor-auto-xunkong`
+- Draft PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
+- Base main SHA: `d34783bf05aa1db5af92e76f30e890e33133c1f0`
+- Implementation commits:
+  - `fe1bf9c1d765760ced47425abce17d538223d958` — branch-status marker and 六合 / 合中带克 analysis
+  - `badc513fd3a4e58a7be6378c07f467b0e7aec3d1` — manual Gan-Zhi editor and schema v14 / snapshot v3
+  - `f5c8aa9c324c8690d28c40e933b9555dc3bdaed9` — manual editor state refresh fix
+  - `5c8c265e87ce46bfe76359d685edbfed71cfe530` — keep archive-date almanac separate from manual case pillars
+- Files changed: `index.html`, `docs/html-maintenance-progress.md`
+- Implementation summary:
+  - 进入新的课堂案例时，默认打开“手动指定案例年月日干支”；用户可以关闭，恢复按记录日期自动计算。
+  - 年、月、日三组各有独立天干/地支选择器；选择器会互相约束，只允许合法的六十甲子组合。
+  - 年柱允许两项都留空；月柱、日柱要求完整，保存前校验。
+  - 手动干支成为实际计算上下文：月支驱动旺相休囚/月破，日支驱动日冲/暗动，完整日柱驱动旬空，日干驱动六神起神；三合识别也使用手动月、日支。
+  - 保存记录时分开保存 `date`（归档日期）、`pillars`（实际使用的年月日柱）、`pillarSource` 和 `pillarOverride`。打开旧记录时继续用其既有日期自动干支；打开新手动案例时恢复手动干支。
+  - 手动案例不把归档日期对应的建除、二十八宿保存成案例资料；AI 复制内容会注明“老师案例手动指定”及“年柱未知”。
+  - 升级 record schema 到 14、analysisSnapshot 到 3；旧版快照在导出/AI 复制时会重建。
+- Tests / exact checks:
+  - 内嵌 JavaScript 通过 V8 语法编译。
+  - 合法干支检查：甲子、己亥、戊戌、丙午通过；甲丑、乙子、癸午拒绝。
+  - 源码检查确认有六个独立的干支选择器、保存前校验、重新打开恢复逻辑、手动来源持久化及快照来源字段。
+  - 尚未完成真实浏览器的完整交互验收；Cloudflare Pages 对提交 `f5c8aa9` 返回过一次 Deploy successful，但最后两次提交仍需确认最新预览部署结果。
+- Manual browser checks: 待在 v84 Preview 中验证选择器、合法组合约束、保存/打开和旬空显示。
+- Security and data-preservation checks:
+  - 只修改 HTML 和维护日志；不改 GitHub OAuth、Cloudflare Functions、API 保存路由或生产配置。
+  - 未写入或更改任何真实每日卦例；未合并 PR；未修改 `main` 或 Production。
+- Status: Draft PR open; code committed, final Preview verification pending.
+- Next step: 在 Preview 中新建课堂案例，检查年月日选择器和保存/打开后的计算结果。
