@@ -6,15 +6,15 @@
 
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
-- Status: not_started
-- Current milestone: M0 — AuraDB setup
+- Status: awaiting_chatgpt_review
+- Current milestone: M1 — Python project skeleton and review fixes
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: not_started; planning and agent handoff documents are committed on main
-- Active implementation branch: none
-- Active PR: none
-- Last completed milestone: none
-- Next action: 用户先在 Aura Console 完成 onboarding 并创建 AuraDB Free；用户通知实例已创建后，Claude 只执行 M0 smoke test。M0 审核通过前不创建实现分支、不启动 M1。
-- Last updated: 2026-11-19
+- Implementation code status: implementation_complete_pending_chatgpt_review
+- Active implementation branch: phase1/m1-python-skeleton
+- Active PR: PR #2
+- Last completed milestone: M0
+- Next action: 等待 ChatGPT 最终审核；不合并、不启动 M2
+- Last updated: 2026-11-20
 
 ## 已冻结的架构决定
 
@@ -35,8 +35,8 @@
 
 | Milestone | 目标 | 状态 | Review PR / Merge commit | 备注 |
 |---|---|---|---|---|
-| M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | not_started | — | 用户在 Aura Console 操作；秘密只放 Mac 本地 .env |
-| M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | not_started | — | 无凭据时本地 CLI/Parser 测试仍可运行 |
+| M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
+| M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | awaiting_chatgpt_review | PR #2 / no merge commit | 第三轮小修已完成；URI/Gemini/脱敏/.gitignore/文档问题已更新，等待 ChatGPT 最终确认，不合并、不启动 M2 |
 | M2 | Markdown/TXT/PDF/JSON Source Adapters | not_started | — | PDF 真实样本需用户提供，先用 fixture |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
@@ -45,7 +45,7 @@
 | M7 | Query Tool、向量/图关系检索、Evidence Pack | not_started | — | 不生成最终占卜报告 |
 | M8 | 端到端验收 | not_started | — | 真实课程、真实案例、获准参考材料 |
 
-允许状态值：not_started、in_progress、awaiting_chatgpt_review、changes_requested、approved_merged、blocked。
+允许状态值：not_started、in_progress、awaiting_chatgpt_review、changes_requested、completed、approved_merged、blocked。
 
 ## 每个里程碑的交接记录模板
 
@@ -70,9 +70,9 @@
 
 ## 最近一次交接
 
-- 2026-11-19：用户明确选择先创建 AuraDB Free，再进行 M0 smoke test。Claude Code 已确认目前没有修改代码、没有创建分支、没有推进任何里程碑。跨窗口总览见 [docs/workspace-handoff.md](workspace-handoff.md)；HTML 维护进度单独记录在 [docs/html-maintenance-progress.md](html-maintenance-progress.md)。
+- **历史记录（2026-11-19）：** 当时用户明确选择先创建 AuraDB Free，再进行 M0 smoke test。Claude Code 记录当时没有修改代码、没有创建分支、没有推进任何里程碑；这是旧状态快照，不是 2026-11-20 的当前状态。跨窗口总览见 [docs/workspace-handoff.md](workspace-handoff.md)；HTML 维护进度单独记录在 [docs/html-maintenance-progress.md](html-maintenance-progress.md)。
 
-当前还没有 Phase 1 代码实现提交。Phase 1 计划、Claude Code Prompt、通用 Agent 规则和本进度文件已提交到 main。下一位执行模型应先读取：
+当前 M0 已完成环境验收，M1 骨架和第三轮小修正在现有 Draft PR #2 上等待最终审核。下一位执行模型应先读取：
 
 1. AGENTS.md
 2. CLAUDE.md（若使用 Claude Code）
@@ -82,4 +82,43 @@
 6. docs/codex-phase1-implementation-prompt.md（技术细节参考）
 7. docs/rules-status.md、docs/reference-research-plan.md
 
-首次执行前检查本地 git status，不得覆盖用户已有改动。
+首次执行前检查本地 git status，不得覆盖用户已有改动，不得开始 M2。
+
+## 2026-11-20 — 历史记录：M1 ChatGPT 第二轮审核交接
+
+- Milestone: M1 — Python project skeleton, configuration, logging, and basic CLI
+- Status: awaiting_chatgpt_review
+- Branch: `phase1/m1-python-skeleton`
+- Draft PR: https://github.com/symbi/liuyao-learning-app/pull/2
+- M0 status: completed / actual AuraDB Free validation completed before M1; no independent M0 PR or merge commit is claimed
+- M0 evidence: AuraDB Free / Neo4j `5.27-aura`; GCP Singapore; enterprise edition as reported by `dbms.components()`; Python `3.12.13`; neo4j driver `6.4.1`; Vector Index creation, ONLINE, query, and deletion passed; dimensions `128, 256, 384, 768, 1024, 1536, 3072` passed; `SEARCH` and direct `$vec` passed on the measured instance. The original report remains outside the repository.
+- Implementation summary: the existing M1 skeleton remains in place. URI userinfo is rejected by the Neo4j validator for all accepted schemes, Pydantic validation hides URI inputs, `ConnectionProfile` stores only safe URI data, and doctor treats missing Gemini as skipped rather than a failure.
+- Configuration precedence: OS environment variables > `~/.config/liuyao-kb/m0.env` and optional local env files > defaults. Credentials remain outside the repository.
+- Test isolation: Neo4j doctor tests mock the driver; CLI tests use a temporary config directory and never open AuraDB.
+- Tests: `.venv/bin/python -m pytest -q` — 72 passed; `.venv/bin/python -m pytest` — 72 passed in 0.86s.
+- Lint: `.venv/bin/python -m ruff check .` — passed.
+- Format: `.venv/bin/python -m ruff format --check .` — passed.
+- Types: `.venv/bin/python -m mypy` — passed with no issues in 8 source files.
+- Manual/security checks: `git diff --check` passed; no secret-like env file is tracked; only `.env.example` is tracked; no actual credentials or private `.env` values were copied into the repository or progress file.
+- Known limitations: M1 remains a scaffold; ingestion, embeddings, LLM extraction, GraphRAG, and evidence retrieval remain for later milestones.
+- Next step: resolve review comments only, update PR #2, and request another ChatGPT review. Do not merge or start M2.
+
+## 2026-11-20 — M1 第三轮小修与最终审核准备
+
+- Milestone: M1 — Python project skeleton and review fixes
+- Status: awaiting_chatgpt_review
+- Branch: `phase1/m1-python-skeleton`
+- Draft PR: https://github.com/symbi/liuyao-learning-app/pull/2
+- Latest reviewed checkpoint before this pass: `5d0e8e8`
+- Third-round implementation commit: `ceea60b`
+- Small fixes: expanded `*.env` ignore coverage; strengthened quoted/space redaction tests; corrected README links and doctor credential guidance; qualified M0-only driver observations; clarified instance-ID documentation; marked old 2026-11-19 handoff as historical.
+- Branch synchronization: rebased onto latest `origin/main` after fetching without resetting or overwriting the daily-record commit.
+- Secrets: no real credentials were read, printed, or committed; TLS certificate verification remains enabled.
+- Tests: `.venv/bin/python -m pytest` — 74 passed in 0.59s.
+- Lint: `.venv/bin/python -m ruff check .` — passed.
+- Format: `.venv/bin/python -m ruff format --check .` — passed; 13 files already formatted.
+- Types: `.venv/bin/python -m mypy` — passed with no issues in 8 source files.
+- Gitignore: `m0.env`, `local.env`, `production.env`, `.env`, and `.env.local` matched ignore rules; `.env.example` and `sources.example.yaml` remained tracked.
+- Final pre-confirmation fixes: clarified M0-only username/database naming, made m0.env 初始化非破坏性, relabeled second-round history, and added unterminated env quote rejection with variable-name/line-only warnings.
+- Final verification: 75 tests passed; Ruff check passed; Ruff format check passed; Mypy passed; `git diff --check` passed.
+- Next step: update PR #2 and wait for ChatGPT final approval. Do not merge or start M2.
