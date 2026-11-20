@@ -1,0 +1,72 @@
+# ---------------------------------------------------------------------------
+# liuyao-kb source allowlist (TEMPLATE)
+#
+#   cp sources.example.yaml sources.yaml
+#
+# sources.yaml is gitignored -- it records absolute paths on this machine.
+# Only this example file is committed.
+#
+# The importer reads ONLY what is listed here. It never scans the home
+# directory, and it never sends material to a model service unless the
+# relevant allow_model_processing flag is explicitly turned on.
+# ---------------------------------------------------------------------------
+
+# --- Source B: curated lesson notes ---------------------------------------
+# The primary course knowledge source. These are the notes written up after
+# each lesson, so they are chunked, embedded and mined for candidate rules.
+curated_notes:
+  enabled: true
+  # Absolute path to the Learning repository checkout.
+  root: ~/src/liuyao-learning-app
+  include_globs:
+    - "docs/lessons/*.md"
+  exclude_globs: []
+
+# --- Classroom cases --------------------------------------------------------
+# Cases split out of the lessons. Deterministic mapping, no LLM guessing.
+class_cases:
+  enabled: true
+  root: ~/src/liuyao-learning-app
+  include_globs:
+    - "materials/class-cases/**/*.json"
+
+# --- Source A: raw transcripts ---------------------------------------------
+# Uncorrected ASR. Accuracy is roughly 70%, so this stays OFF by default:
+# the file is not read, no chunk is produced, no embedding is generated and
+# no rule is extracted from it.
+raw_asr:
+  enabled: false
+  root: ~/src/liuyao-learning-raw
+  # Even when enabled, content indexing is a separate, later decision.
+  index_content: false
+  allow_model_processing: false
+
+# --- Personal daily casting records -----------------------------------------
+# Off by default: daily memos are personal material.
+daily_records:
+  include: false
+  only_cases: true
+  root: ~/src/liuyao-learning-app
+
+# --- PDF references ----------------------------------------------------------
+# Only files the user has explicitly reviewed. Scanned PDFs without a text
+# layer are reported as unsupported rather than silently skipped.
+pdf:
+  enabled: false
+  files: []
+  allow_model_processing: false
+
+# --- External GitHub projects --------------------------------------------------
+# Empty until a repository, a path inside it and its licence are confirmed.
+# Imported content is always labelled external and never treated as a
+# teacher's classroom rule.
+external_projects: []
+#  - repo_url: https://github.com/owner/name
+#    paths:
+#      - README.md
+#      - docs/
+#    commit_sha: <pinned commit>
+#    author: <author>
+#    license: <SPDX id>
+#    license_status: reviewed
+#    include_source_code: false

@@ -83,3 +83,22 @@
 7. docs/rules-status.md、docs/reference-research-plan.md
 
 首次执行前检查本地 git status，不得覆盖用户已有改动。
+
+## 2026-11-20 — Cursor M1 接手与验收状态
+
+- Milestone: M1 — Python project skeleton, configuration, logging, and basic CLI
+- Status: implementation_complete_pending_draft_pr_review
+- Branch: `phase1/m1-python-skeleton`
+- M0 status: accepted / actual AuraDB Free validation completed before M1
+- M0 evidence: AuraDB Free / Neo4j `5.27-aura`; Python `3.12.13`; neo4j driver `6.4.1`; Vector Index creation, ONLINE, query, and deletion passed; dimensions `128, 256, 384, 768, 1024, 1536, 3072` passed; SEARCH syntax and direct `$vec` query passed. Local M0 report remains outside the repository.
+- Implementation summary: Python package skeleton, redacting config loader, logging redaction, Typer CLI, Neo4j driver wrapper, and source allowlist remain isolated on the M1 branch. No real AuraDB connection or database modification was performed during M1.
+- Redaction fixes: key/value assignments, extra `=` residue, Authorization Bearer values, Neo4j URI userinfo, and exception/log text are redacted; normal fields such as `log_level` and `database` remain intact.
+- Configuration precedence: explicit environment mapping/process environment > env file > defaults. Warnings name conflicting variables only and never include values.
+- Test isolation: CLI tests use a temporary `LIUYAO_KB_CONFIG_DIR` so local `~/.config/liuyao-kb/m0.env` cannot affect expected no-credentials behavior.
+- Tests: `56 passed` with `.venv/bin/python -m pytest -q`.
+- Lint: `.venv/bin/python -m ruff check .` — passed.
+- Format: `.venv/bin/python -m ruff format --check .` — passed after formatting.
+- Types: `.venv/bin/python -m mypy` — passed with no issues in 8 source files.
+- Manual/security checks: no secret-like files are tracked; `.env.example` remains placeholder-only; no actual credentials or private `.env` values were copied into the repository or progress file.
+- Known limitations: M1 is a scaffold only; ingestion, embeddings, LLM extraction, GraphRAG, and evidence retrieval remain for later milestones.
+- Next step: inspect the commit/diff, push `phase1/m1-python-skeleton`, create a Draft PR to `main`, and stop for ChatGPT review. Do not merge automatically.

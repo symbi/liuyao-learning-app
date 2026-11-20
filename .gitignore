@@ -1,0 +1,113 @@
+# ---------------------------------------------------------------------------
+# Secrets and local credentials
+# ---------------------------------------------------------------------------
+# Real environment files must never enter Git. The repository is PUBLIC.
+.env
+.env.*
+!.env.example
+*.env.local
+*.credentials
+credentials.json
+credentials.yaml
+secrets.yaml
+secrets.yml
+*.pem
+*.key
+*.p12
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+.python-version
+
+# ---------------------------------------------------------------------------
+# Test / lint / type caches
+# ---------------------------------------------------------------------------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.hypothesis/
+.pyre/
+
+# ---------------------------------------------------------------------------
+# Local logs, caches and outputs
+# ---------------------------------------------------------------------------
+*.log
+logs/
+log/
+.cache/
+tmp/
+temp/
+evidence-packs/
+evidence_packs/
+out/
+output/
+outputs/
+*.sqlite
+*.sqlite3
+*.db
+
+# ---------------------------------------------------------------------------
+# Local source configuration (may contain absolute machine paths)
+# ---------------------------------------------------------------------------
+# Only the committed *.example.* templates belong in Git.
+sources.yaml
+sources.yml
+sources.local.yaml
+sources.local.yml
+
+# ---------------------------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
