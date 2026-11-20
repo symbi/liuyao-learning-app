@@ -107,11 +107,14 @@ def doctor(
     if config.has_gemini:
         record("Gemini API key", True, "configured")
     else:
-        record(
-            "Gemini API key",
-            False,
-            "not configured",
-            "Only needed from M5 onwards. Add GEMINI_API_KEY to your local .env.",
+        checks.append(
+            {
+                "name": "Gemini API key",
+                "ok": True,
+                "status": "skipped",
+                "detail": "not configured (Gemini is optional until M5)",
+                "hint": "Add GEMINI_API_KEY to ~/.config/liuyao-kb/m0.env only when M5 is enabled.",
+            }
         )
 
     # --- output -----------------------------------------------------------
@@ -124,7 +127,10 @@ def doctor(
         table.add_column("Detail")
         for entry in checks:
             ok = bool(entry["ok"])
-            status = "[green]ok[/green]" if ok else "[yellow]missing[/yellow]"
+            if entry.get("status") == "skipped":
+                status = "[yellow]skipped[/yellow]"
+            else:
+                status = "[green]ok[/green]" if ok else "[yellow]missing[/yellow]"
             table.add_row(str(entry["name"]), status, str(entry["detail"]))
             hint = entry.get("hint")
             if hint:

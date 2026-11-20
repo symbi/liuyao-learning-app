@@ -50,6 +50,18 @@ class TestConnectionProfile:
         assert "s3cret-password-value" not in description
         assert "abc123.databases.neo4j.io" in description
 
+    def test_profile_repr_and_safe_uri_are_secret_free(self) -> None:
+        profile = build_profile(settings(uri="neo4j+s://abc123.databases.neo4j.io"))
+        rendered = repr(profile)
+        assert "s3cret-password-value" not in rendered
+        assert profile.safe_uri == "neo4j+s://abc123.databases.neo4j.io"
+
+    @pytest.mark.parametrize("scheme", ["neo4j+s", "bolt+s"])
+    def test_secure_scheme_profile_uri_is_sanitized(self, scheme: str) -> None:
+        profile = build_profile(settings(uri=f"{scheme}://abc123.databases.neo4j.io:7687"))
+        assert profile.safe_uri == f"{scheme}://abc123.databases.neo4j.io:7687"
+        assert "s3cret-password-value" not in repr(profile)
+
 
 class TestTrustStore:
     def test_uses_a_verifying_trust_store(self) -> None:

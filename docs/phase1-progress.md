@@ -6,15 +6,15 @@
 
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
-- Status: not_started
-- Current milestone: M0 — AuraDB setup
+- Status: awaiting_chatgpt_review
+- Current milestone: M1 — Python project skeleton and review fixes
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: not_started; planning and agent handoff documents are committed on main
-- Active implementation branch: none
-- Active PR: none
-- Last completed milestone: none
-- Next action: 用户先在 Aura Console 完成 onboarding 并创建 AuraDB Free；用户通知实例已创建后，Claude 只执行 M0 smoke test。M0 审核通过前不创建实现分支、不启动 M1。
-- Last updated: 2026-11-19
+- Implementation code status: implementation_complete_pending_chatgpt_review
+- Active implementation branch: phase1/m1-python-skeleton
+- Active PR: PR #2
+- Last completed milestone: M0
+- Next action: resolve review comments and request another review
+- Last updated: 2026-11-20
 
 ## 已冻结的架构决定
 
@@ -35,8 +35,8 @@
 
 | Milestone | 目标 | 状态 | Review PR / Merge commit | 备注 |
 |---|---|---|---|---|
-| M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | not_started | — | 用户在 Aura Console 操作；秘密只放 Mac 本地 .env |
-| M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | not_started | — | 无凭据时本地 CLI/Parser 测试仍可运行 |
+| M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
+| M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | awaiting_chatgpt_review | PR #2 / no merge commit | 当前分支已修复 URI 凭据、Gemini optional 和外部凭据文档问题，等待第二轮审核 |
 | M2 | Markdown/TXT/PDF/JSON Source Adapters | not_started | — | PDF 真实样本需用户提供，先用 fixture |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
@@ -45,7 +45,7 @@
 | M7 | Query Tool、向量/图关系检索、Evidence Pack | not_started | — | 不生成最终占卜报告 |
 | M8 | 端到端验收 | not_started | — | 真实课程、真实案例、获准参考材料 |
 
-允许状态值：not_started、in_progress、awaiting_chatgpt_review、changes_requested、approved_merged、blocked。
+允许状态值：not_started、in_progress、awaiting_chatgpt_review、changes_requested、completed、approved_merged、blocked。
 
 ## 每个里程碑的交接记录模板
 
@@ -84,21 +84,21 @@
 
 首次执行前检查本地 git status，不得覆盖用户已有改动。
 
-## 2026-11-20 — Cursor M1 接手与验收状态
+## 2026-11-20 — M1 ChatGPT 第二轮审核交接
 
 - Milestone: M1 — Python project skeleton, configuration, logging, and basic CLI
-- Status: implementation_complete_pending_draft_pr_review
+- Status: awaiting_chatgpt_review
 - Branch: `phase1/m1-python-skeleton`
-- M0 status: accepted / actual AuraDB Free validation completed before M1
-- M0 evidence: AuraDB Free / Neo4j `5.27-aura`; Python `3.12.13`; neo4j driver `6.4.1`; Vector Index creation, ONLINE, query, and deletion passed; dimensions `128, 256, 384, 768, 1024, 1536, 3072` passed; SEARCH syntax and direct `$vec` query passed. Local M0 report remains outside the repository.
-- Implementation summary: Python package skeleton, redacting config loader, logging redaction, Typer CLI, Neo4j driver wrapper, and source allowlist remain isolated on the M1 branch. No real AuraDB connection or database modification was performed during M1.
-- Redaction fixes: key/value assignments, extra `=` residue, Authorization Bearer values, Neo4j URI userinfo, and exception/log text are redacted; normal fields such as `log_level` and `database` remain intact.
-- Configuration precedence: explicit environment mapping/process environment > env file > defaults. Warnings name conflicting variables only and never include values.
-- Test isolation: CLI tests use a temporary `LIUYAO_KB_CONFIG_DIR` so local `~/.config/liuyao-kb/m0.env` cannot affect expected no-credentials behavior.
-- Tests: `56 passed` with `.venv/bin/python -m pytest -q`.
+- Draft PR: https://github.com/symbi/liuyao-learning-app/pull/2
+- M0 status: completed / actual AuraDB Free validation completed before M1; no independent M0 PR or merge commit is claimed
+- M0 evidence: AuraDB Free / Neo4j `5.27-aura`; GCP Singapore; enterprise edition as reported by `dbms.components()`; Python `3.12.13`; neo4j driver `6.4.1`; Vector Index creation, ONLINE, query, and deletion passed; dimensions `128, 256, 384, 768, 1024, 1536, 3072` passed; `SEARCH` and direct `$vec` passed on the measured instance. The original report remains outside the repository.
+- Implementation summary: the existing M1 skeleton remains in place. URI userinfo is rejected by the Neo4j validator for all accepted schemes, Pydantic validation hides URI inputs, `ConnectionProfile` stores only safe URI data, and doctor treats missing Gemini as skipped rather than a failure.
+- Configuration precedence: OS environment variables > `~/.config/liuyao-kb/m0.env` and optional local env files > defaults. Credentials remain outside the repository.
+- Test isolation: Neo4j doctor tests mock the driver; CLI tests use a temporary config directory and never open AuraDB.
+- Tests: `.venv/bin/python -m pytest -q` — 72 passed; `.venv/bin/python -m pytest` — 72 passed in 0.86s.
 - Lint: `.venv/bin/python -m ruff check .` — passed.
-- Format: `.venv/bin/python -m ruff format --check .` — passed after formatting.
+- Format: `.venv/bin/python -m ruff format --check .` — passed.
 - Types: `.venv/bin/python -m mypy` — passed with no issues in 8 source files.
-- Manual/security checks: no secret-like files are tracked; `.env.example` remains placeholder-only; no actual credentials or private `.env` values were copied into the repository or progress file.
-- Known limitations: M1 is a scaffold only; ingestion, embeddings, LLM extraction, GraphRAG, and evidence retrieval remain for later milestones.
-- Next step: inspect the commit/diff, push `phase1/m1-python-skeleton`, create a Draft PR to `main`, and stop for ChatGPT review. Do not merge automatically.
+- Manual/security checks: `git diff --check` passed; no secret-like env file is tracked; only `.env.example` is tracked; no actual credentials or private `.env` values were copied into the repository or progress file.
+- Known limitations: M1 remains a scaffold; ingestion, embeddings, LLM extraction, GraphRAG, and evidence retrieval remain for later milestones.
+- Next step: resolve review comments only, update PR #2, and request another ChatGPT review. Do not merge or start M2.

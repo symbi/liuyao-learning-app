@@ -78,6 +78,40 @@ class TestRedaction:
         assert "s3cret-password-value" not in rendered
         assert settings.password.get_secret_value() == "s3cret-password-value"
 
+    @pytest.mark.parametrize("scheme", ["neo4j", "neo4j+s", "bolt", "bolt+s"])
+    def test_redaction_covers_all_accepted_schemes(self, scheme: str) -> None:
+        text = f"could not connect to {scheme}://user:pass@host.databases.neo4j.io"
+        redacted = redact(text)
+        assert "pass@" not in redacted
+        assert "user:" not in redacted
+        assert f"{scheme}://<redacted>@host.databases.neo4j.io" in redacted
+
+    @pytest.mark.parametrize("scheme", ["neo4j", "neo4j+s", "bolt", "bolt+s"])
+    def test_uri_userinfo_is_rejected_for_all_schemes(self, scheme: str) -> None:
+        with pytest.raises(ValidationError) as exc:
+            Neo4jSettings(
+                uri=f"{scheme}://user:pass@host.databases.neo4j.io",
+                username="user",
+                password="secret",
+                database="db",
+            )
+        message = str(exc.value)
+        assert "must not contain username/password userinfo" in message
+        assert f"{scheme}://user:pass@" not in message
+
+    @pytest.mark.parametrize("scheme", ["neo4j", "neo4j+s", "bolt", "bolt+s"])
+    def test_safe_uri_redacts_and_repr_is_safe(self, scheme: str) -> None:
+        settings = Neo4jSettings(
+            uri=f"{scheme}://host.databases.neo4j.io:7687",
+            username="abc123",
+            password="s3cret-password-value",
+            database="abc123",
+        )
+        rendered = repr(settings)
+        assert "s3cret-password-value" not in rendered
+        assert "host.databases.neo4j.io" in rendered
+        assert settings.safe_uri.startswith(f"{scheme}://")
+
 
 class TestInstanceId:
     @pytest.mark.parametrize(

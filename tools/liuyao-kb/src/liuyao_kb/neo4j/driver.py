@@ -54,10 +54,10 @@ class ConnectionProfile:
 
     Kept separate from :class:`Neo4jSettings` because the settings are
     what the user configured, while this is what the driver needs.
+    Only sanitized, non-secret connection details are stored here.
     """
 
-    uri: str
-    username: str
+    safe_uri: str
     database: str
     scheme: str
     host: str
@@ -121,8 +121,7 @@ def build_profile(settings: Neo4jSettings) -> ConnectionProfile:
     host, port = _split_host_port(settings.uri)
     _, ca_source = build_ca()
     return ConnectionProfile(
-        uri=settings.uri,
-        username=settings.username,
+        safe_uri=settings.safe_uri,
         database=settings.database,
         scheme="neo4j",
         host=host,
@@ -143,7 +142,7 @@ def build_driver(settings: Neo4jSettings) -> neo4j.Driver:
     logger.info(
         "Creating Neo4j driver for %s as user %r on database %r",
         profile.describe(),
-        profile.username,
+        settings.username,
         profile.database,
     )
 

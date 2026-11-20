@@ -48,6 +48,37 @@ class TestDoctor:
         names = {check["name"] for check in payload["checks"]}
         assert "Neo4j credentials" in names
 
+    def test_neo4j_ok_without_gemini_is_not_failed(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        from liuyao_kb.neo4j import driver
+
+        monkeypatch.setattr(
+            driver,
+            "check_connection",
+            lambda _settings: {
+                "ok": True,
+                "target": "neo4j+s://abc123.databases.neo4j.io",
+                "username": "abc123",
+                "database": "abc123",
+                "profile": "neo4j://abc123.databases.neo4j.io:7687",
+                "server_version": "5.27-aura",
+                "edition": "enterprise",
+                "error": None,
+                "hint": None,
+            },
+        )
+        monkeypatch.setenv("NEO4J_URI", "neo4j+s://abc123.databases.neo4j.io")
+        monkeypatch.setenv("NEO4J_USERNAME", "abc123")
+        monkeypatch.setenv("NEO4J_PASSWORD", "super-secret-value")
+        monkeypatch.setenv("NEO4J_DATABASE", "abc123")
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
+        result = runner.invoke(app, ["doctor", "--json"])
+        payload = json.loads(result.stdout)
+        assert payload["ok"] is True
+        gemini = next(check for check in payload["checks"] if check["name"] == "Gemini API key")
+        assert gemini["status"] == "skipped"
+        assert "super-secret-value" not in result.stdout
+
     def test_never_prints_a_password(self, tmp_path: Path, monkeypatch) -> None:
         env_file = tmp_path / ".env"
         env_file.write_text(

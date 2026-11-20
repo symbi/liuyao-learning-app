@@ -24,11 +24,19 @@ embedding and querying arrive in later milestones.
 cd tools/liuyao-kb
 uv venv --python 3.12 .venv
 uv pip install --python .venv/bin/python -e ".[dev]"
-cp .env.example .env          # then fill in the values
+
+mkdir -p ~/.config/liuyao-kb
+chmod 700 ~/.config/liuyao-kb
+cp .env.example ~/.config/liuyao-kb/m0.env
+chmod 600 ~/.config/liuyao-kb/m0.env
+
 cp sources.example.yaml sources.yaml
 ```
 
-Both `.env` and `sources.yaml` are gitignored. Only the `.example`
+Fill in real credentials only in `~/.config/liuyao-kb/m0.env` on the
+local Mac. Do not ask a coding agent to read or print that file.
+
+Both `sources.yaml` and local env files are gitignored. Only `.example`
 templates are committed.
 
 ### Credentials
@@ -38,9 +46,13 @@ come from the Aura Console instance credentials file. Nothing is
 hardcoded, and nothing is printed: the password never appears in logs,
 `doctor` output, or any generated file.
 
-The loader reads `~/.config/liuyao-kb/m0.env` first, then a local `.env`.
-A variable already set in the environment is never replaced by a file,
-and the warning that records the override names the variable only.
+The loader reads `~/.config/liuyao-kb/m0.env` first, then optional local
+`.env` files. A variable already set in the OS environment always wins.
+Warnings name only conflicting variable names, never values.
+
+URI authentication is not embedded in `NEO4J_URI`. Keep the URI host-only
+and provide `NEO4J_USERNAME` and `NEO4J_PASSWORD` separately. The tool
+rejects URI userinfo and redacts URI representations.
 
 AuraDB names the instance **user** and **user database** after the
 instance id, and that id is *not* always `neo4j`. Read both values from
@@ -52,8 +64,10 @@ All AuraDB-specific connection logic lives in
 `src/liuyao_kb/neo4j/driver.py`. The importer, schema writer and query
 tool all go through it, so the quirks below are fixed in one place.
 
-The standard Aura URI is `neo4j+s://<id>.databases.neo4j.io`. The driver
-does **not** use it verbatim, because three things break on AuraDB:
+The standard Aura URI is `neo4j+s://<id>.databases.neo4j.io`. In the
+specific M0 Singapore Free instance, the driver **did not** use it
+verbatim because these measured behaviors required workarounds. They are
+not asserted as universal behavior for every AuraDB deployment:
 
 1. **No SRV records.** The routing driver resolves the host through a
    DNS SRV lookup; with no SRV record it fails with "Unable to retrieve

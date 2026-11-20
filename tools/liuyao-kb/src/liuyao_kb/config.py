@@ -42,7 +42,7 @@ _AUTHORIZATION_BEARER_PATTERN: Final[re.Pattern[str]] = re.compile(
 
 #: Credentials embedded in a URI (``neo4j+s://user:pass@host``).
 _URI_USERINFO_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"(neo4j(?:\+s(?:c)?)?://)[^/\s@]+@",
+    r"(?P<scheme>(?:neo4j|neo4j\+s|bolt|bolt\+s)://)[^/\s@]+@",
     re.IGNORECASE,
 )
 
@@ -103,7 +103,7 @@ def instance_id_from_uri(uri: str) -> str | None:
 class Neo4jSettings(BaseModel):
     """Connection settings for one Neo4j database."""
 
-    model_config = ConfigDict(frozen=True)
+    model_config = ConfigDict(frozen=True, hide_input_in_errors=True)
 
     uri: str = Field(..., description="Aura connection URI, e.g. neo4j+s://...")
     username: str = Field(..., description="Instance user name")
@@ -116,11 +116,27 @@ class Neo4jSettings(BaseModel):
         value = value.strip()
         if not value:
             raise ValueError("Neo4j URI must not be empty")
-        if not value.startswith(("neo4j://", "neo4j+s://", "bolt://", "bolt+s://")):
+
+        from urllib.parse import urlsplit
+
+        try:
+            parts = urlsplit(value)
+        except ValueError:
+            raise ValueError("Neo4j URI is malformed") from None
+
+        accepted_schemes = ("neo4j", "neo4j+s", "bolt", "bolt+s")
+        if parts.scheme.lower() not in accepted_schemes:
             raise ValueError(
-                "Neo4j URI must start with neo4j://, neo4j+s://, bolt:// or bolt+s:// "
-                f"(got scheme {redact_uri(value)!r})"
+                "Neo4j URI must use neo4j://, neo4j+s://, bolt:// or bolt+s:// "
+                f"(got scheme {parts.scheme or '<missing>'})"
             )
+        if parts.username is not None or parts.password is not None:
+            raise ValueError(
+                "Neo4j URI must not contain username/password userinfo; "
+                "pass authentication through NEO4J_USERNAME and NEO4J_PASSWORD"
+            )
+        if not parts.hostname:
+            raise ValueError("Neo4j URI must include a host")
         return value
 
     @property
