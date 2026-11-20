@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v80</title>
+<title>六爻排卦与每日记录 v81</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -599,11 +599,11 @@
     border-color:#c44738;background:#fff0ed!important;
   }
   .drop-token.branch-token.is-xunkong{
-    border:2px dashed #7567a6;background:#f2effa!important;
+    border:2px dotted #7567a6;background:#f2effa!important;
   }
   .drop-token.branch-token.is-month-break.is-xunkong{
     border:2px solid #c44738;background:#fff0ed!important;
-    outline:2px dashed #7567a6;outline-offset:2px;
+    outline:2px dotted #7567a6;outline-offset:2px;
   }
   /* v58: 月令旺相／休囚同步显示在本卦、变卦纳甲地支上。
      旺相沿用 v57 的配色逻辑：旺的五行作底色，相的五行作外圈；
@@ -624,7 +624,7 @@
   }
   .drop-token.branch-token.is-month-break.is-xunkong{
     border:2px solid #c44738;
-    outline:2px dashed #7567a6;outline-offset:2px;
+    outline:2px dotted #7567a6;outline-offset:2px;
     background:var(--monthly-bg,#fff0ed)!important;
   }
   /* Reassert collision frames after the seasonal circle declarations above. */
@@ -633,7 +633,7 @@
     background:var(--monthly-bg,#fff0ed)!important;
   }
   .drop-token.branch-token.is-xunkong{
-    border:2px dashed #7567a6;
+    border:2px dotted #7567a6;
     background:var(--monthly-bg,#f2effa)!important;
   }
   .liuhe-overlay{position:absolute;left:0;top:0;z-index:11;display:block;overflow:visible;pointer-events:none;}
@@ -1149,7 +1149,7 @@
   function getBranchStatus(value){
     if(!value) return {monthBreak:false,xunkong:false,monthly:null};
     const monthBreak=!!(currentMonthBranch && sixClashes[currentMonthBranch]===value);
-    const xunkong=[calendarAssignments?.xunkong1,calendarAssignments?.xunkong2].includes(value);
+    const xunkong=currentXunkongBranches.includes(value);
     const monthly=getMonthlyBranchState(value);
     return {monthBreak,xunkong,monthly};
   }
@@ -1340,6 +1340,7 @@
   let followJapanToday=true;
   let currentDayBranch=null;
   let currentMonthBranch=null;
+  let currentXunkongBranches=[];
   let currentJianChuInfo=null;
   let worksheetReady=false;
 
@@ -1366,6 +1367,14 @@
   function dayPillar(year,month,day){
     // 2026-10-31 -> JDN 2461345 -> 戊寅; index = (JDN + 49) mod 60.
     return ganzhiFromIndex(julianDayNumber(year,month,day)+49);
+  }
+  // 以完整日柱定位六十甲子所在旬；每旬十日，旬末空缺的两个地支即旬空。
+  function calculateXunkongBranches(dayPillarValue){
+    const cycleIndex=Array.from({length:60},(_,index)=>index)
+      .find(index=>ganzhiFromIndex(index)===dayPillarValue);
+    if(!Number.isInteger(cycleIndex)) return [];
+    const voidStart=(10-2*Math.floor(cycleIndex/10)+12)%12;
+    return [GANZHI_BRANCHES[voidStart],GANZHI_BRANCHES[(voidStart+1)%12]];
   }
   function solarLongitude(jd){
     // Meeus-style apparent geocentric solar longitude, sufficient for the
@@ -1588,7 +1597,6 @@
     const dateKey=dateKeyFromParts(date);
     if(!force && lastJapanDateKey && lastJapanDateKey!==dateKey){
       calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
-      if(typeof renderCalendarDropSlots==='function') renderCalendarDropSlots();
     }
     lastJapanDateKey=dateKey;
     selectedDateKey=dateKey;
@@ -1596,6 +1604,9 @@
     const yearInfo=yearPillarForDate(date,referenceMs);
     const monthValue=monthPillarForDate(date,referenceMs,yearInfo);
     const dayValue=dayPillar(date.year,date.month,date.day);
+    currentXunkongBranches=calculateXunkongBranches(dayValue);
+    calendarAssignments.xunkong1=currentXunkongBranches[0]||null;
+    calendarAssignments.xunkong2=currentXunkongBranches[1]||null;
     currentMonthBranch=String(monthValue||'').charAt(1)||null;
     currentDayBranch=String(dayValue||'').charAt(1)||null;
     renderJianChuInfo(calculateJianChu(currentMonthBranch,currentDayBranch));
@@ -1608,8 +1619,9 @@
     if(stamp) stamp.textContent=String(date.year)+'.'+String(date.month).padStart(2,'0')+'.'+String(date.day).padStart(2,'0');
     const dateInput=document.getElementById('record-date');
     if(dateInput) dateInput.value=dateKey;
-    // A historical-date change can change 日冲 status without changing any yao input.
-    if(worksheetReady) renderLineIndicators();
+    // 旬空随完整日柱自动更新；日辰变化后立即刷新所有本卦、变卦纳甲标记。
+    if(typeof renderCalendarDropSlots==='function') renderCalendarDropSlots();
+    if(worksheetReady){renderLineIndicators();refreshBranchStatusTokens();}
   }
   function updateCalendarForJapanToday(){
     if(!followJapanToday) return;
@@ -1784,6 +1796,7 @@
   });
 
   function assignCalendarToken(key,type,value){
+    if(key.startsWith('xunkong')){showToast('旬空由当前日柱自动计算，无需手动填写');return;}
     const expectedType=key==='dayGod'?'god':(key.startsWith('xunkong')?'branch':'relation');
     if(type!==expectedType){showToast(expectedType==='branch'?'这里需要地支':expectedType==='god'?'这里需要六神':'这里需要六亲');return;}
     calendarAssignments[key]=value;
@@ -1798,7 +1811,8 @@
   function renderCalendarDropSlots(){
     document.querySelectorAll('[data-calendar-key]').forEach(slot=>{
       const key=slot.dataset.calendarKey;
-      const value=calendarAssignments[key];
+      const isCalculatedXunkong=key==='xunkong1'||key==='xunkong2';
+      const value=key==='xunkong1'?currentXunkongBranches[0]:(key==='xunkong2'?currentXunkongBranches[1]:calendarAssignments[key]);
       const type=key==='dayGod'?'god':(key.startsWith('xunkong')?'branch':'relation');
       slot.classList.toggle('filled',!!value);
       slot.classList.toggle('kin-filled',type==='relation'&&!!value);
@@ -1806,15 +1820,23 @@
       Object.values(sixGodClasses).forEach(className=>slot.classList.remove(className));
       if(type==='god'&&value&&sixGodClasses[value]) slot.classList.add(sixGodClasses[value]);
       slot.classList.toggle('wrong-god',key==='dayGod'&&!!value&&!!expectedDayGod&&value!==expectedDayGod);
+      if(isCalculatedXunkong){
+        const dayText=document.getElementById('day-pillar')?.textContent||'';
+        slot.title=value?'按日柱 '+dayText+' 自动计算旬空':'等待有效日柱后自动计算旬空';
+      }else{
+        slot.removeAttribute('title');
+      }
       slot.replaceChildren();
       if(!value){const prompt=document.createElement('span');prompt.className='slot-label';prompt.textContent='＋';slot.appendChild(prompt);return;}
       const token=document.createElement('span');
       token.className='drop-token'+(type==='branch'&&elementClassForBranch(value)?' '+elementClassForBranch(value):'')+(type==='god'&&sixGodClasses[value]?' '+sixGodClasses[value]:'');
       if(type==='branch'){token.setAttribute('aria-label','地支'+value);}
       token.textContent=value;slot.appendChild(token);
-      const clear=document.createElement('button');clear.type='button';clear.className='clear-slot';clear.title='清除此项';clear.setAttribute('aria-label','清除'+value);clear.textContent='×';
-      clear.addEventListener('click',e=>{e.stopPropagation();calendarAssignments[key]=null;renderCalendarDropSlots();refreshBranchStatusTokens();});
-      slot.appendChild(clear);
+      if(!isCalculatedXunkong){
+        const clear=document.createElement('button');clear.type='button';clear.className='clear-slot';clear.title='清除此项';clear.setAttribute('aria-label','清除'+value);clear.textContent='×';
+        clear.addEventListener('click',e=>{e.stopPropagation();calendarAssignments[key]=null;renderCalendarDropSlots();refreshBranchStatusTokens();});
+        slot.appendChild(clear);
+      }
     });
   }
   document.querySelectorAll('[data-calendar-key]').forEach(slot=>{
@@ -2195,10 +2217,28 @@
     trineDefinitions.forEach(definition=>{
       const [outerA,middle,outerB]=definition.branches;
       const activeLines=state.map((item,id)=>({item,id,motion:getLineMovementInfo(item)}))
-        .filter(entry=>entry.motion && definition.branches.includes(entry.item.branch));
+        .filter(entry=>entry.motion&&entry.item.branch&&definition.branches.includes(entry.item.branch));
       const activationLines=activeLines.filter(entry=>isTrineActivationBranch(definition,entry.item.branch));
 
-      // Mode A: two active lines in the same trigram; one must be an allowed activation branch.
+      // Mode C（最高优先）：同一条动爻的本卦地支和变卦地支组成两支，日/月支补第三支。
+      activeLines.forEach(entry=>{
+        const transformed=entry.item.changeBranch;
+        if(!transformed||transformed===entry.item.branch||!definition.branches.includes(transformed)) return;
+        if(!isTrineActivationBranch(definition,entry.item.branch)) return;
+        const missing=definition.branches.find(branch=>branch!==entry.item.branch&&branch!==transformed);
+        const dateSource=dateSources.find(source=>source.branch===missing);
+        if(!missing||!dateSource) return;
+        const key=['C',definition.element,entry.id,dateSource.source].join(':');
+        if(seen.has(key)) return;
+        seen.add(key);
+        combinations.push({
+          mode:'C',definition,dateSource:dateSource.source,dateBranch:missing,
+          lineIds:[entry.id],anchorLineId:entry.id,
+          motionKinds:[entry.motion.kind],anchorBranch:entry.item.branch,transformedBranch:transformed
+        });
+      });
+
+      // Mode A：同一卦体内两条动爻提供两支，至少一条是允许发动的中神。
       for(let i=0;i<activeLines.length;i++){
         for(let j=i+1;j<activeLines.length;j++){
           const first=activeLines[i],second=activeLines[j];
@@ -2221,11 +2261,11 @@
         }
       }
 
-      // Mode B: one active allowed anchor branch + both date branches as the two ends.
-      if(month && day && month!==day && activeLines.length===1 && activationLines.length===1){
+      // Mode B：一条允许发动的中神爻，月支与日支分别补足另外两支。
+      if(month&&day&&month!==day&&activeLines.length===1&&activationLines.length===1){
         const dateSet=new Set([month,day]);
         const requiredOuter=new Set([outerA,outerB]);
-        const exactlyOuter=dateSet.size===2 && [...dateSet].every(branch=>requiredOuter.has(branch)) &&
+        const exactlyOuter=dateSet.size===2&&[...dateSet].every(branch=>requiredOuter.has(branch))&&
           [...requiredOuter].every(branch=>dateSet.has(branch));
         if(exactlyOuter){
           activationLines.forEach(entry=>{
@@ -2240,9 +2280,16 @@
         }
       }
     });
-    return combinations.sort((a,b)=>a.mode===b.mode?0:a.mode==='A'?-1:1);
-  }
 
+    // 同一三合局若已有“动爻本支→变支”的优先组合，就不再画替代组合。
+    const preferredTrines=new Set(combinations.filter(item=>item.mode==='C').map(item=>item.definition.element));
+    return combinations
+      .filter(item=>item.mode==='C'||!preferredTrines.has(item.definition.element))
+      .sort((a,b)=>{
+        const priority={C:0,A:1,B:2};
+        return priority[a.mode]-priority[b.mode]||a.lineIds[0]-b.lineIds[0];
+      });
+  }
   // v57: 日期地支固定在最上面一行，并以第一条（上爻）纳甲槽的列中心定位。
   // 定位使用空槽本身，而不是内部 token，避免未填上爻时错误吸附到其他已填写的爻位。
   function positionDateBranchSidecar(combination){
@@ -2323,6 +2370,9 @@
     if(Math.abs(target-row.scrollLeft)>1) row.scrollLeft=target;
   }
   function renderTrineOverlay(){
+    const dateCombinations=arguments.length?(arguments[0]||[]):findDateTrineCombinations();
+    const preferredDateAnchors=new Set(dateCombinations.filter(item=>item.mode==='C')
+      .map(item=>item.definition.element+':'+item.anchorLineId));
     if(!trineOverlay || !worksheetHost) return;
     const hostRect=worksheetHost.getBoundingClientRect();
     const width=Math.max(1,worksheetHost.clientWidth);
@@ -2345,6 +2395,7 @@
         trine.branches.includes(movingItem.branch)&&trine.branches.includes(movingItem.changeBranch)
       );
       if(!matchingTrine || !isTrineActivationBranch(matchingTrine,movingItem.branch)) continue;
+      if(preferredDateAnchors.has(matchingTrine.element+':'+movingId)) continue;
       const missingBranch=matchingTrine.branches.find(branch=>branch!==movingItem.branch&&branch!==movingItem.changeBranch);
       if(!missingBranch) continue;
 
@@ -2403,15 +2454,21 @@
       }
     }
 
-    // v56: 日月参与三合绘图；节点在纳甲列上方并排显示。
-    const dateCombinations=arguments.length ? (arguments[0]||[]) : findDateTrineCombinations();
+    // 日月参与三合绘图；Mode C 优先展示同一动爻的本支→变支，再由日/月支补第三支。
     positionDateBranchSidecar(dateCombinations[0]||null);
     positionHexagramHeading();
     dateCombinations.forEach(combination=>{
       const {mode,definition,dateSource,lineIds,motionKinds}=combination;
       let nodes=[];
       let sourceText='';
-      if(mode==='A'){
+      if(mode==='C'){
+        const lineId=lineIds[0];
+        const baseToken=rowsHost.querySelector('[data-line-id="'+lineId+'"][data-zone="branch"] .drop-token');
+        const changeToken=rowsHost.querySelector('[data-line-id="'+lineId+'"][data-zone="changeBranch"] .drop-token');
+        const dateToken=dateBranchSidecar.querySelector('[data-date-branch="'+dateSource+'"]');
+        nodes=[baseToken,changeToken,dateToken];
+        sourceText='第'+(lineId+1)+'爻'+motionKinds[0]+'：'+(baseToken?.textContent.trim()||'')+'→'+(changeToken?.textContent.trim()||'')+' + '+(dateSource==='month'?'月支':'日支')+(dateToken?.textContent.trim()||'');
+      }else if(mode==='A'){
         const dateToken=dateBranchSidecar.querySelector('[data-date-branch="'+dateSource+'"]');
         const lineTokens=lineIds.map(id=>rowsHost.querySelector('[data-line-id="'+id+'"][data-zone="branch"] .drop-token'));
         nodes=[...lineTokens,dateToken];
@@ -2437,7 +2494,7 @@
       });
       group.appendChild(svgNode('polygon',{
         points:points.map(point=>point.x+','+point.y).join(' '),
-        fill:definition.color,'fill-opacity':mode==='A'?'.045':'.035',
+        fill:definition.color,'fill-opacity':mode==='C'?'.055':(mode==='A'?'.045':'.035'),
         'class':'date-trine-fill'
       }));
       [[0,1],[1,2],[2,0]].forEach(([a,b])=>{
@@ -2455,7 +2512,8 @@
       })));
       const title=svgNode('title');
       const activationNote=definition.element==='water'?'申子辰允许子爻或辰爻发动。':'须由中神爻发动。';
-      title.textContent=definition.label+' · 方式'+mode+'：'+sourceText+'。'+activationNote+(mode==='A'?'另一个动爻与发动爻须在同一卦体，日支或月支补第三支。':'日支和月支补足另外两支。');
+      const modeNote=mode==='C'?'同一条发动爻的本卦地支与变卦地支组成两支，日支或月支补第三支。':(mode==='A'?'另一个动爻与发动爻须在同一卦体，日支或月支补第三支。':'日支和月支补足另外两支。');
+      title.textContent=definition.label+' · 方式'+mode+'：'+sourceText+'。'+activationNote+modeNote;
       group.appendChild(title);
       trineOverlay.appendChild(group);
     });
@@ -2780,7 +2838,7 @@
         };
       }),
       // Year/month/day six-relative slots, day-stem six-god slot and the two xunkong branches.
-      calendarAssignments:{...calendarAssignments},
+      calendarAssignments:{...calendarAssignments,xunkong1:currentXunkongBranches[0]||null,xunkong2:currentXunkongBranches[1]||null},
       // Preserve the exact displayed 建除日 and the month/day branches used at save time.
       jianchu:currentJianChuInfo?{...currentJianChuInfo,yi:currentJianChuInfo.yi||'',ji:currentJianChuInfo.ji||'',guidanceSnapshot:currentJianChuInfo.guidance||'',savedAt:new Date().toISOString()}:null,
       // Preserve the exact value-day mansion and the candidate source snapshot for historical records.
@@ -2919,8 +2977,8 @@
       monthRelation:relations.includes(record.calendarAssignments?.monthRelation)?record.calendarAssignments.monthRelation:null,
       dayRelation:relations.includes(record.calendarAssignments?.dayRelation)?record.calendarAssignments.dayRelation:null,
       dayGod:sixGods.includes(record.calendarAssignments?.dayGod)?record.calendarAssignments.dayGod:null,
-      xunkong1:yangBranches.concat(yinBranches).includes(record.calendarAssignments?.xunkong1)?record.calendarAssignments.xunkong1:null,
-      xunkong2:yangBranches.concat(yinBranches).includes(record.calendarAssignments?.xunkong2)?record.calendarAssignments.xunkong2:null
+      xunkong1:currentXunkongBranches[0]||null,
+      xunkong2:currentXunkongBranches[1]||null
     };
     selected=null;updateSelectedTiles();
     renderCalendarDropSlots();
