@@ -1811,7 +1811,8 @@
     renderCalendarValue(document.getElementById('year-pillar'),next.year||'— —');
     renderCalendarValue(document.getElementById('month-pillar'),next.month||'— —');
     renderCalendarValue(document.getElementById('day-pillar'),next.day||'— —');
-    renderJianChuInfo(calculateJianChu(currentMonthBranch,currentDayBranch));
+    renderJianChuInfo(manualActive?null:calculateJianChu(currentMonthBranch,currentDayBranch));
+    if(manualActive) currentTwentyEightInfo=null;
     updateDailySixGod(next.day||'');
     const dateCard=document.querySelector('.date-card');
     if(dateCard) dateCard.classList.toggle('manual-case-pillars',manualActive);
@@ -3167,8 +3168,8 @@
           effect:isMoving?(item.effect||''):''};
       }),
       calendarAssignments:{...calendarAssignments,xunkong1:currentXunkongBranches[0]||null,xunkong2:currentXunkongBranches[1]||null},
-      jianchu:currentJianChuInfo?{...currentJianChuInfo,yi:currentJianChuInfo.yi||'',ji:currentJianChuInfo.ji||'',guidanceSnapshot:currentJianChuInfo.guidance||'',savedAt:new Date().toISOString()}:null,
-      twentyEight:currentTwentyEightInfo?{...currentTwentyEightInfo,candidateYiji:{...currentTwentyEightInfo.candidateYiji}}:null
+      jianchu:!(isCaseRecord&&manualPillarOverride.enabled)&&currentJianChuInfo?{...currentJianChuInfo,yi:currentJianChuInfo.yi||'',ji:currentJianChuInfo.ji||'',guidanceSnapshot:currentJianChuInfo.guidance||'',savedAt:new Date().toISOString()}:null,
+      twentyEight:!(isCaseRecord&&manualPillarOverride.enabled)&&currentTwentyEightInfo?{...currentTwentyEightInfo,candidateYiji:{...currentTwentyEightInfo.candidateYiji}}:null
     };
     record.analysisSnapshot=buildRecordAnalysisSnapshot(record);
     return record;
@@ -3394,7 +3395,7 @@
   function exportRecords(records){
     if(!Array.isArray(records)||!records.length){showToast('请先勾选要导出的卦例');return;}
     const portableRecords=records.map(record=>({...record,schemaVersion:14,
-      analysisSnapshot:record.analysisSnapshot?.schemaVersion>=2?record.analysisSnapshot:buildRecordAnalysisSnapshot(record)}));
+      analysisSnapshot:record.analysisSnapshot?.schemaVersion>=3?record.analysisSnapshot:buildRecordAnalysisSnapshot(record)}));
     const payload={app:'liuyao-learning-app',schemaVersion:14,exportedAt:new Date().toISOString(),records:portableRecords};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;
@@ -3407,7 +3408,7 @@
     const question=record.question||{};
     const flowerLabels={0:'O（三字，老阳／动爻）',1:'•（一花两字，少阳／静爻）',2:'••（两花一字，少阴／静爻）',3:'X（三花，老阴／动爻）'};
     const recordLines=Array.isArray(record.lines)?record.lines:[];
-    const analysisSnapshot=record.analysisSnapshot?.schemaVersion>=2?record.analysisSnapshot:buildRecordAnalysisSnapshot(record);
+    const analysisSnapshot=record.analysisSnapshot?.schemaVersion>=3?record.analysisSnapshot:buildRecordAnalysisSnapshot(record);
     const analysisLines=Array.isArray(analysisSnapshot.lines)?analysisSnapshot.lines:[];
     function branchStatusText(status){
       if(!status) return '未记录地支';
