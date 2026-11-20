@@ -27,7 +27,9 @@ uv pip install --python .venv/bin/python -e ".[dev]"
 
 mkdir -p ~/.config/liuyao-kb
 chmod 700 ~/.config/liuyao-kb
-cp .env.example ~/.config/liuyao-kb/m0.env
+if [ ! -f ~/.config/liuyao-kb/m0.env ]; then
+  cp .env.example ~/.config/liuyao-kb/m0.env
+fi
 chmod 600 ~/.config/liuyao-kb/m0.env
 
 cp sources.example.yaml sources.yaml
@@ -54,9 +56,11 @@ URI authentication is not embedded in `NEO4J_URI`. Keep the URI host-only
 and provide `NEO4J_USERNAME` and `NEO4J_PASSWORD` separately. The tool
 rejects URI userinfo and redacts URI representations.
 
-AuraDB names the instance **user** and **user database** after the
-instance id, and that id is *not* always `neo4j`. Read both values from
-the credentials file rather than assuming.
+For the current M0 Singapore Free instance, the observed **instance user**
+and **user database** were both the instance ID rather than `neo4j`. This is
+an M0 result, not a rule for every AuraDB instance. For every other instance,
+read both values from the downloaded Aura Credentials file and never derive
+or assume them from the URI instance ID.
 
 ## Connecting to AuraDB
 

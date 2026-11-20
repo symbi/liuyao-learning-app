@@ -234,6 +234,22 @@ class TestLoadConfig:
         assert config.neo4j is None
         assert config.warnings
 
+    def test_unterminated_quoted_password_is_ignored_safely(self, tmp_path: Path) -> None:
+        env_file = tmp_path / "m0.env"
+        secret_fragment = "unterminated secret"
+        env_file.write_text(
+            "NEO4J_URI=neo4j+s://abc123.databases.neo4j.io\n"
+            "NEO4J_USERNAME=abc123\n"
+            f"NEO4J_PASSWORD='{secret_fragment}\n"
+            "NEO4J_DATABASE=abc123\n",
+            encoding="utf-8",
+        )
+        config = load_config(env={}, config_dir=tmp_path, dotenv=True)
+        assert config.neo4j is None
+        warning = next(w for w in config.warnings if "NEO4J_PASSWORD" in w)
+        assert "m0.env:3" in warning
+        assert secret_fragment not in warning
+
 
 class TestConfigModel:
     def test_is_frozen(self) -> None:

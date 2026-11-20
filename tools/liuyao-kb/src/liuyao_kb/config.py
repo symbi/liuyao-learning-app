@@ -191,12 +191,13 @@ class Config(BaseModel):
         return bool(self.gemini.api_key.get_secret_value())
 
 
-def _read_env_file(path: Path) -> dict[str, str]:
-    """Parse a ``KEY=VALUE`` file. Comments and blank lines are ignored."""
+def _read_env_file(path: Path) -> tuple[dict[str, str], list[str]]:
+    """Parse a KEY=VALUE file and collect safe validation warnings."""
     if not path.is_file():
-        return {}
+        return {}, []
     values: dict[str, str] = {}
-    for raw in path.read_text(encoding="utf-8").splitlines():
+    warnings: list[str] = []
+    for line_number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
@@ -205,11 +206,17 @@ def _read_env_file(path: Path) -> dict[str, str]:
         if "=" not in line:
             continue
         key, _, value = line.partition("=")
+        key = key.strip()
         value = value.strip()
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        if value.startswith(('"', "'")):
+            quote = value[0]
+            if len(value) < 2 or value[-1] != quote:
+                warnings.append(f"Ignored invalid env value at {path.name}:{line_number}: {key}")
+                continue
             value = value[1:-1]
-        values[key.strip()] = value
-    return values
+        if key:
+            values[key] = value
+    return values, warnings
 
 
 def _candidate_env_files(config_dir: Path) -> list[Path]:
@@ -233,7 +240,8 @@ def _apply_env_file(environment: dict[str, str], path: Path, warnings: list[str]
     explicit mapping tests pass in its place. Either one wins over a file.
     The warning names the keys and the file, never the values.
     """
-    file_values = _read_env_file(path)
+    file_values, file_warnings = _read_env_file(path)
+    warnings.extend(file_warnings)
     if not file_values:
         return
     kept: list[str] = []

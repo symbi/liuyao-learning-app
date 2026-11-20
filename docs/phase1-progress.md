@@ -13,7 +13,7 @@
 - Active implementation branch: phase1/m1-python-skeleton
 - Active PR: PR #2
 - Last completed milestone: M0
-- Next action: complete third-round fixes and request final review
+- Next action: 等待 ChatGPT 最终审核；不合并、不启动 M2
 - Last updated: 2026-11-20
 
 ## 已冻结的架构决定
@@ -36,7 +36,7 @@
 | Milestone | 目标 | 状态 | Review PR / Merge commit | 备注 |
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
-| M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | awaiting_chatgpt_review | PR #2 / no merge commit | 当前分支已修复 URI 凭据、Gemini optional 和外部凭据文档问题，等待第二轮审核 |
+| M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | awaiting_chatgpt_review | PR #2 / no merge commit | 第三轮小修已完成；URI/Gemini/脱敏/.gitignore/文档问题已更新，等待 ChatGPT 最终确认，不合并、不启动 M2 |
 | M2 | Markdown/TXT/PDF/JSON Source Adapters | not_started | — | PDF 真实样本需用户提供，先用 fixture |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
@@ -84,7 +84,7 @@
 
 首次执行前检查本地 git status，不得覆盖用户已有改动，不得开始 M2。
 
-## 2026-11-20 — M1 ChatGPT 第二轮审核交接
+## 2026-11-20 — 历史记录：M1 ChatGPT 第二轮审核交接
 
 - Milestone: M1 — Python project skeleton, configuration, logging, and basic CLI
 - Status: awaiting_chatgpt_review
@@ -119,4 +119,6 @@
 - Format: `.venv/bin/python -m ruff format --check .` — passed; 13 files already formatted.
 - Types: `.venv/bin/python -m mypy` — passed with no issues in 8 source files.
 - Gitignore: `m0.env`, `local.env`, `production.env`, `.env`, and `.env.local` matched ignore rules; `.env.example` and `sources.example.yaml` remained tracked.
+- Final pre-confirmation fixes: clarified M0-only username/database naming, made m0.env 初始化非破坏性, relabeled second-round history, and added unterminated env quote rejection with variable-name/line-only warnings.
+- Final verification: 75 tests passed; Ruff check passed; Ruff format check passed; Mypy passed; `git diff --check` passed.
 - Next step: update PR #2 and wait for ChatGPT final approval. Do not merge or start M2.
