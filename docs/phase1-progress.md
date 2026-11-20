@@ -110,6 +110,7 @@
 - Branch: `phase1/m1-python-skeleton`
 - Draft PR: https://github.com/symbi/liuyao-learning-app/pull/2
 - Latest reviewed checkpoint before this pass: `5d0e8e8`
+- Third-round implementation commit: `ceea60b`
 - Small fixes: expanded `*.env` ignore coverage; strengthened quoted/space redaction tests; corrected README links and doctor credential guidance; qualified M0-only driver observations; clarified instance-ID documentation; marked old 2026-11-19 handoff as historical.
 - Branch synchronization: rebased onto latest `origin/main` after fetching without resetting or overwriting the daily-record commit.
 - Secrets: no real credentials were read, printed, or committed; TLS certificate verification remains enabled.
