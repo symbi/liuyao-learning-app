@@ -6,14 +6,14 @@
 
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
-- Status: awaiting_chatgpt_review
-- Current milestone: M1 — Python project skeleton and review fixes
+- Status: approved_merged
+- Current milestone: M2 — Source Adapters
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: implementation_complete_pending_chatgpt_review
-- Active implementation branch: phase1/m1-python-skeleton
-- Active PR: PR #2
-- Last completed milestone: M0
-- Next action: 等待 ChatGPT 最终审核；不合并、不启动 M2
+- Implementation code status: M1 approved_merged; M2 not_started
+- Active implementation branch: none
+- Active PR: none
+- Last completed milestone: M1
+- Next action: 从最新 main 创建 `phase1/m2-source-adapters`，按 M2 范围实现 Markdown/TXT/PDF/JSON Source Adapters；完成后更新本文件并创建 Draft PR，等待 ChatGPT 审核
 - Last updated: 2026-11-20
 
 ## 已冻结的架构决定
@@ -36,7 +36,7 @@
 | Milestone | 目标 | 状态 | Review PR / Merge commit | 备注 |
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
-| M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | awaiting_chatgpt_review | PR #2 / no merge commit | 第三轮小修已完成；URI/Gemini/脱敏/.gitignore/文档问题已更新，等待 ChatGPT 最终确认，不合并、不启动 M2 |
+| M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
 | M2 | Markdown/TXT/PDF/JSON Source Adapters | not_started | — | PDF 真实样本需用户提供，先用 fixture |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
@@ -72,7 +72,7 @@
 
 - **历史记录（2026-11-19）：** 当时用户明确选择先创建 AuraDB Free，再进行 M0 smoke test。Claude Code 记录当时没有修改代码、没有创建分支、没有推进任何里程碑；这是旧状态快照，不是 2026-11-20 的当前状态。跨窗口总览见 [docs/workspace-handoff.md](workspace-handoff.md)；HTML 维护进度单独记录在 [docs/html-maintenance-progress.md](html-maintenance-progress.md)。
 
-当前 M0 已完成环境验收，M1 骨架和第三轮小修正在现有 Draft PR #2 上等待最终审核。下一位执行模型应先读取：
+截至 2026-11-20，M1 已通过审核并合并到 main（PR #2；merge commit `df7bc3fe0a568dc89fe9875d87e653d9eca026fb`）。以上旧交接记录仅保留作历史背景。下一位执行模型应先读取：
 
 1. AGENTS.md
 2. CLAUDE.md（若使用 Claude Code）
@@ -82,7 +82,7 @@
 6. docs/codex-phase1-implementation-prompt.md（技术细节参考）
 7. docs/rules-status.md、docs/reference-research-plan.md
 
-首次执行前检查本地 git status，不得覆盖用户已有改动，不得开始 M2。
+首次执行前检查本地 `git status`，不得覆盖用户已有改动。M2 已是下一项待启动工作；只有在读取本文件和实施计划、确认工作区状态后，才可开始 M2。
 
 ## 2026-11-20 — 历史记录：M1 ChatGPT 第二轮审核交接
 
@@ -122,3 +122,40 @@
 - Final pre-confirmation fixes: clarified M0-only username/database naming, made m0.env 初始化非破坏性, relabeled second-round history, and added unterminated env quote rejection with variable-name/line-only warnings.
 - Final verification: 75 tests passed; Ruff check passed; Ruff format check passed; Mypy passed; `git diff --check` passed.
 - Next step: update PR #2 and wait for ChatGPT final approval. Do not merge or start M2.
+
+
+## 2026-11-20 — M1 合并完成与 M2 跨模型交接
+
+- Milestone: M1 — Python project skeleton, configuration, logging, and basic CLI
+- Status: approved_merged
+- PR: https://github.com/symbi/liuyao-learning-app/pull/2
+- Branch: `phase1/m1-python-skeleton`
+- Reviewed implementation head: `48edf7ccd4b07c7635bc9d398d9da79a8240b408`
+- Merge commit on main: `df7bc3fe0a568dc89fe9875d87e653d9eca026fb`
+- Merge verified: PR #2 state closed, merged=true; main points to the merge commit at the time of this update.
+- Final review: ChatGPT code review found no blocking issue. Local test report from the VS Code Agent: 75 pytest tests passed; Ruff check, Ruff format check, Mypy, and `git diff --check` passed. ChatGPT inspected GitHub code but did not independently rerun those local commands.
+- M1 code and tests are merged. Do not reopen M1 unless a concrete defect is found.
+
+### Next milestone: M2 — Source Adapters
+
+- Status: not_started
+- Suggested branch: `phase1/m2-source-adapters`
+- Base: latest `origin/main`; do not assume a stale local checkout is current.
+- Scope: implement source parsing/adapters for curated Markdown lesson notes, TXT text, selected PDF files, and structured classroom-case JSON. The adapters should produce a consistent, source-aware parsed-document representation with provenance such as source type, repository-relative path/source URI, stable source identity where available, heading/paragraph or page location, and the original structured case fields required by the schema.
+- Before implementation, inspect actual existing lesson Markdown, relevant TXT examples, PDF handling requirements, and current HTML/classroom-case JSON schema in the repositories. Use small synthetic fixtures for tests; do not expose private raw ASR or personal records in fixtures.
+- M2 does not include Neo4j schema/writes, Embedding, Gemini calls, generative LLM extraction, incremental synchronization, Evidence Pack, Cloud Run, or changes to the deployed HTML app. Those belong to later milestones or separate workstreams.
+- PDF real-world sample acceptance can be deferred until the adapter and fixture tests exist; do not block initial implementation waiting for a real PDF.
+- Expected result: adapters preserve source provenance and content faithfully; tests cover parser behavior, page/heading locations, malformed/unsupported inputs, and structured JSON field preservation. Do not silently discard unparseable content.
+- At completion: run tests/lint/type checks, inspect diff and secret scan, update this progress file with exact commands/results, push the M2 branch, and open a Draft PR. Stop for ChatGPT review; do not merge or begin M3.
+
+### Cross-model execution protocol
+
+1. Any available VS Code Agent/model, Claude Code, Codex, or other coding agent may execute the task. Model identity and quota do not define project state.
+2. Before starting, read `AGENTS.md`, `docs/workspace-handoff.md`, this file, `docs/phase1-implementation-plan.md`, and `docs/phase1-operating-model.md`. Read `CLAUDE.md` only when using Claude Code; other agent-specific prompts are optional references.
+3. Inspect `git status --short --branch`, current branch, latest `origin/main`, and local changes. Never reset, clean, stash, overwrite, or discard uncommitted user work without explicit permission.
+4. Work on one milestone branch only. Commit and push small checkpoints regularly. A checkpoint report must include the branch, commit SHA, completed work, exact tests/results, known limitations, and next action. Update this file before handoff.
+5. If an agent hits quota or must stop, it must stop safely at a checkpoint: save working changes, run applicable checks, commit on the existing milestone branch when safe, push the branch, and update this file. If it cannot push, record the exact local branch/commit and unfinished changes; never claim they are backed up on GitHub.
+6. The replacement model must first inspect GitHub and local Git state. It must continue the same M2 branch and inspect existing diffs before editing; it must not recreate completed work or start a second competing branch.
+7. No model may merge the Draft PR, approve its own work, or begin M3. ChatGPT reviews the PR; the user controls merge authorization.
+
+Secrets, credentials, private audio/transcripts, and personal records must never be copied into this progress file.
