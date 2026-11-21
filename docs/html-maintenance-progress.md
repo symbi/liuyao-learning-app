@@ -88,9 +88,12 @@
   - 每个目标格显示已放入的字符，提供单项清除按钮；保存时继续校验月/日完整、干支有效及年柱完整或未知。
   - 保留原有历史记录字段与分析流程；无新增记录 schema 字段。
 - Tests / exact checks:
-  - 完整内嵌 JavaScript 通过 V8 语法编译。
+  - 完整内嵌 JavaScript 通过 V8 语法编译（约 156 KB 脚本）。
   - 静态检查通过：顶部两个 mode buttons、六个 case drop targets、十天干 palette、原 branch-pairs、原 question-category、原 worksheet rows 均存在。
-  - 指针拖拽路由检查通过：case pillar target 在普通爻位 assignToken 之前分流到 `assignManualPillarToken`；drop type 不匹配仍会被拒绝。
+  - 使用最小 DOM 模拟环境执行到 palette 初始化：默认日期显示 `2026.11.21`，日期字段 `2026-11-21`；顶部模式初始为每日模式。
+  - 在模拟环境中点击「输入课堂案例」，六个目标格和面板正确显示；天干 palette 有 10 项，原地支 palette 有 12 项。
+  - 模拟点击回退流程，将 `己` + `亥` 放入月柱、`戊` + `戌` 放入日柱后，顶端即时显示 `己亥` / `戊戌`，校验提示为空；年柱保持未知可接受。
+  - 指针拖拽路由静态检查通过：case pillar target 在普通爻位 assignToken 之前分流到 `assignManualPillarToken`；drop type 不匹配仍会被拒绝。
   - 手动保存校验及 `pillarOverride` / `pillarSource` 原有持久化字段保留。
   - 尚未完成真实浏览器拖放验收；需检查鼠标拖动、点选回退、清除、保存、重开。
 - Manual browser checks: 待 v87 Preview 部署后，验证默认每日模式日期干支与原模板、切到课堂案例后六个目标格、底部十干与原六合地支拖拽区、问事分类、六爻 worksheet 和保存/重开。
