@@ -525,3 +525,41 @@
 - Status: Updated on existing HTML maintenance PR #1 branch; Cloudflare Preview and user browser acceptance pending.
 - Next step: 在 Preview 检查小格位置与宽度、拖入/清除六亲、保存重开和 AI 复制。
 - v97 final polish: the compact tag text now uses 9px so the two-character 六亲 fits the 21px slot; its hover-clear control is scaled down. The AI consistency warning is limited to 六亲 use gods and checks whether the matching 六亲 itself was marked.
+
+
+## 2026-11-21 — 自动装卦与只读检查（v98）
+
+- Task: 在保留 v97 手动拖拽学习方式的基础上，增加「自动装卦」和「检查卦盘」两个独立入口。
+- User acceptance criteria:
+  - 自动装卦按本卦上下卦的纳甲规则计算六爻地支，并按本卦卦宫五行装六亲。
+  - 按起卦日干确定初爻起始六神，再由初爻向上依次排列六神。
+  - 明动爻按变卦上下卦重新计算对应变爻纳甲地支和六亲。
+  - 年、月、日柱的六亲标记可按同一卦宫五行计算；六神起神对应日干。
+  - 自动装卦只补空白项；已有内容（包括错误值）不覆盖，只报告差异。
+  - 「检查卦盘」只核对，不写入、不改动数据；错误槽位用红色标记，未填写项用黄色标记，并显示当前值/正确值。
+  - 伏藏六亲仍完全由用户手动标记；暗动的变卦纳甲不在未核实规则前自动生成。
+- Implementation:
+  - 页面标题更新为 v98；在六爻区域增加「自动装卦」「检查卦盘」按钮及检查结果面板。
+  - 以底部到顶部的六爻阴阳 pattern 分别识别下卦/上卦；下卦使用内卦纳甲，上卦使用外卦纳甲。
+  - 新增八卦内外卦纳甲地支表；六亲以本卦宫五行为基准，变爻六亲也沿用本卦宫五行。
+  - 六神使用第八课确认的日干起神表及青龙→朱雀→勾陈→螣蛇→白虎→玄武顺序。
+  - 变卦先翻转明动爻阴阳，再按变后的上下卦重新取纳甲；只向现有明动爻变卦槽位填入对应数据。
+  - 自动装卦只补空值，不调用手动拖拽覆盖逻辑；检查按钮不会写入任何字段。
+  - 修改日期、摇卦阴阳、拖拽/清除字段或重新打开记录时，清除旧检查提示，避免标记过期。
+  - 复用现有记录字段（branch / relation / shen / changeBranch / changeRelation / calendarAssignments），不增加记录 schema 字段。
+- Tests / exact checks:
+  - 内嵌 JavaScript 通过 V8 语法解析。
+  - 八宫纯卦纳甲 fixture 全部通过：乾、坎、艮、震、巽、离、坤、兑的初爻至上爻顺序均与仓库课堂笔记一致。
+  - 第十九课案例 fixture：天水讼本卦纳甲为寅辰午午申戌；第三爻明动后，天风姤变卦纳甲为丑亥酉午申戌，第三爻为酉金。
+  - 已静态检查自动填入、非破坏式检查、错误/缺失高亮、输入变更后清除旧提示等关键代码路径。
+  - 尚未完成真实浏览器操作验收：须在 Preview 上点击两按钮，检查手动错误不会被覆盖、检查按钮完全不修改、保存/重开保留结果。
+- Rule boundaries:
+  - 本卦和变卦六亲均按本卦卦宫五行计算。
+  - 旬空沿用当前日柱自动计算；不把旬空拖拽槽当作用户可编辑项目。
+  - 伏藏六亲不自动推导，也不把人工伏藏标记当作原六亲计算结果。
+  - 暗动仅按现有第十一课逻辑识别；由于课程笔记将暗动是否在所有情形下生成变爻纳甲列为待核实，v98 暂不自动填写暗动的变卦纳甲。
+- Security and data-preservation checks:
+  - 只修改 index.html 和本维护日志；不修改 daily-records JSON、课程原始资料、OAuth、Cloudflare Functions、API 或凭据。
+  - 未修改 main、未合并 PR #1、未部署 Production。
+- Status: Implemented on existing PR #1 branch; browser Preview verification pending.
+- Next step: 检查 Cloudflare Preview 部署后实际交互与保存/重新打开行为，再按反馈调整。
