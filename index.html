@@ -3100,7 +3100,7 @@
           {kind:'line',lineId:i,zone:'changeBranch',label:AUTO_LINE_POSITIONS[i]+'变卦纳甲地支',expected:branch},
           {kind:'line',lineId:i,zone:'changeRelation',label:AUTO_LINE_POSITIONS[i]+'变卦六亲',expected:kin}
         );
-      }else if(getDarkMovementInfo(state[i])) darkMovingCount++;
+      }else if(currentDayBranch&&sixClashes[currentDayBranch]===originalBranches[i]) darkMovingCount++;
     }
     if(darkMovingCount) notes.push('发现'+darkMovingCount+'条暗动爻。第十一课资料尚未确认暗动是否在所有情形下都按明动生成变爻纳甲，因此本次不自动填写暗动变卦。');
     notes.push('伏藏六亲是手动学习标记，自动装卦和检查均不会改动或判断它。');
