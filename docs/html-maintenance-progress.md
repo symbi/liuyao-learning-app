@@ -524,3 +524,4 @@
   - 未合并 PR，未修改 `main` 或 Production。
 - Status: Updated on existing HTML maintenance PR #1 branch; Cloudflare Preview and user browser acceptance pending.
 - Next step: 在 Preview 检查小格位置与宽度、拖入/清除六亲、保存重开和 AI 复制。
+- v97 final polish: the compact tag text now uses 9px so the two-character 六亲 fits the 21px slot; its hover-clear control is scaled down. The AI consistency warning is limited to 六亲 use gods and checks whether the matching 六亲 itself was marked.
