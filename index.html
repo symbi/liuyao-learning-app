@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v90</title>
+<title>六爻排卦与每日记录 v91</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -956,16 +956,6 @@
           </div>
           <div class="drop-slot kin-filled calendar-drop-slot" data-drop-type="relation" data-calendar-key="dayRelation" role="button" tabindex="0" aria-label="日柱六亲"><span class="slot-label">＋</span></div>
         </div>
-        <div class="case-stem-source" id="case-stem-source" hidden aria-label="课堂案例干支拖拽区">
-          <div class="case-token-row">
-            <div class="tiles stem-tiles" id="stem-tiles" aria-label="十天干项目"></div>
-          </div>
-          <div class="case-token-row">
-            <div class="branch-groups" id="branch-pairs" aria-label="六合地支配对">
-              <!-- Each column groups the two branches of one 六合; outline color shows its 合化 element. -->
-            </div>
-          </div>
-        </div>
         <div class="xunkong-group" aria-label="日干六神与旬空">
           <div class="day-god-hint" id="day-god-hint" aria-hidden="true"></div>
           <div class="drop-slot day-god-drop-slot calendar-drop-slot" data-drop-type="god" data-calendar-key="dayGod" role="button" tabindex="0" aria-label="当天六神起神，按日干确定"><span class="slot-label">＋</span></div>
@@ -973,6 +963,14 @@
           <div class="xunkong-slots">
             <div class="drop-slot xunkong-drop-slot calendar-drop-slot" data-drop-type="branch" data-calendar-key="xunkong1" role="button" tabindex="0" aria-label="旬空第一个地支"><span class="slot-label">＋</span></div>
             <div class="drop-slot xunkong-drop-slot calendar-drop-slot" data-drop-type="branch" data-calendar-key="xunkong2" role="button" tabindex="0" aria-label="旬空第二个地支"><span class="slot-label">＋</span></div>
+          </div>
+        </div>
+        <div class="case-stem-source" id="case-stem-source" hidden aria-label="课堂案例干支拖拽区">
+          <div class="case-token-row">
+            <div class="tiles stem-tiles" id="stem-tiles" aria-label="十天干项目"></div>
+          </div>
+          <div class="case-token-row">
+            <div class="branch-groups" id="branch-pairs-top" aria-label="顶部六合地支配对"></div>
           </div>
         </div>
       </div>
@@ -1009,6 +1007,9 @@
 
   <section class="card palette-card" aria-label="可拖拽项目">
     <div class="palette-grid">
+      <div class="palette-group">
+        <div class="branch-groups" id="branch-pairs" aria-label="六合地支配对"></div>
+      </div>
       <div class="palette-group">
         <div class="palette-stack">
           <div class="tiles kin-tiles" id="kin-tiles" aria-label="六亲项目"></div>
@@ -1966,17 +1967,20 @@
     {values:['戌','卯'], groupClass:'liuhe-fire', label:'卯戌合化火'}
   ];
   addTiles(document.getElementById('stem-tiles'),GANZHI_STEMS,'stem','');
-  const branchPairHost=document.getElementById('branch-pairs');
-  branchPairDefinitions.forEach(pair=>{
-    const group=document.createElement('div');
-    group.className='branch-pair '+pair.groupClass;
-    group.setAttribute('aria-label',pair.label);
-    const upper=document.createElement('div'); upper.className='tiles';
-    const lower=document.createElement('div'); lower.className='tiles';
-    addTiles(upper,[pair.values[0]],'branch','yang');
-    addTiles(lower,[pair.values[1]],'branch','yin');
-    group.append(upper,lower);
-    branchPairHost.appendChild(group);
+  ['branch-pairs-top','branch-pairs'].forEach(hostId=>{
+    const branchPairHost=document.getElementById(hostId);
+    if(!branchPairHost)return;
+    branchPairDefinitions.forEach(pair=>{
+      const group=document.createElement('div');
+      group.className='branch-pair '+pair.groupClass;
+      group.setAttribute('aria-label',pair.label);
+      const upper=document.createElement('div'); upper.className='tiles';
+      const lower=document.createElement('div'); lower.className='tiles';
+      addTiles(upper,[pair.values[0]],'branch','yang');
+      addTiles(lower,[pair.values[1]],'branch','yin');
+      group.append(upper,lower);
+      branchPairHost.appendChild(group);
+    });
   });
   addTiles(document.getElementById('kin-tiles'),relations,'relation','');
   addTiles(document.getElementById('god-tiles'),sixGods,'god','');
