@@ -142,4 +142,4 @@ reference-package/
 
 在 S0 审核通过前，不开始 S1/S2 的实际网络采集。在调查问真网站前，先核验站点使用条款、版权/授权和技术访问方式；不允许自动采集时，只登记来源链接，停止爬取。
 
-当前 M2-B PR #3 尚待用户 Mac 本机验收与合并；Source Collector 的 S0 可以独立准备，但不要擅自启动现有知识库的 M2-C JSON Adapter，也不要修改 HTML App。
+当前状态（2026-11-21）：PR #3 已合并（merge commit `9505ce7`），M2-A/M2-B 已完成；PR #4 是 Learning App 当前活跃的 Draft PR，等待最终复审和用户决定；M2-C 课堂案例 JSON Adapter 尚未启动，须等 PR #4 合并和用户明确授权后才启动。Source Collector 的 S0 属于独立窗口、独立 Repository 的工作，不属于 Learning App Agent 的任务；不要擅自启动 M2-C，也不要修改 HTML App。
