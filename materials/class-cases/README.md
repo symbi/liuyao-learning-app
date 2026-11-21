@@ -20,7 +20,9 @@ materials/class-cases/
 └── ...
 ```
 
-每条案例记录只需要：
+每条案例的 JSON 记录保留程序可读的最小结构；需要进行完整爻位复盘时，可同目录附加 `case-xxx-analysis.md`，用于逐爻分析和区分老师讲解、用户补充与 AI 推算。JSON 仍是结构化案例记录，Markdown 是便于学习者阅读的分析稿。
+
+每条案例记录至少需要：
 
 - `recordType`: 程序识别，固定为 `class-case`
 - `id`: 程序生成的案例 ID
