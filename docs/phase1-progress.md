@@ -13,8 +13,8 @@
 - Active implementation branch: phase1/m2-source-adapters
 - Active PR: Draft PR #3（M2-A + M2-B）
 - Last completed milestone: M1
-- Next action: 等待 ChatGPT 审查 Draft PR #3；不合并、不开始 PDF/JSON 等 M2 后续阶段
-- Latest M2 implementation commit: dc222bd
+- Next action: 等待 ChatGPT 复审 Draft PR #3（M2-B 围栏修复已推送）；不合并、不开始 PDF/JSON 等 M2 后续阶段
+- Latest M2 implementation commit: 38b4e09
 - Active M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3
 - Last updated: 2026-11-21
 
@@ -39,7 +39,7 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/PDF/JSON Source Adapters | in_progress | [Draft PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) | M2-A 已通过 ChatGPT 代码审查（`3b89bbc` / `d4d55fb`）；M2-B Markdown/TXT Adapters 已实现（`dc222bd`），等待 ChatGPT 审查；PDF/JSON 未开始；未合并；daily JSON excluded from classroom-case ingestion |
+| M2 | Markdown/TXT/PDF/JSON Source Adapters | in_progress | [Draft PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) | M2-A 已通过 ChatGPT 代码审查（`3b89bbc` / `d4d55fb`）；M2-B 已实现（`dc222bd`），首轮审查发现的 fenced code block 关闭围栏问题已修复（`38b4e09`），等待 ChatGPT 复审；PDF/JSON 未开始；未合并；daily JSON excluded from classroom-case ingestion |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
@@ -244,3 +244,35 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - Secrets: confirm no secrets committed — 未提交任何 .env、凭据、Raw ASR、私人 Memo 或真实课程内容；fixtures 均为小型合成字符串。
 - Next recommended milestone: 无（等待审查）。ChatGPT 审查 Draft PR #3 通过后，由用户决定是否合并；不得自行开始 PDF/JSON 或其他 M2 后续阶段。
 - Handoff summary for next model: M2-A 已审查通过；M2-B 已完成并进入 Draft PR #3 等待 ChatGPT 审查。接手者先读 AGENTS.md、本文件和 PR #3，不要创建第二个 M2 分支，不要合并，不要开始 PDF/JSON。
+
+### M2-B 围栏修复 (2026-11-21) — 回应 PR #3 ChatGPT 审查
+
+- Status: awaiting_chatgpt_review（复审）
+- Branch: `phase1/m2-source-adapters`
+- Draft PR URL: https://github.com/symbi/liuyao-learning-app/pull/3
+- Review source: PR #3 评论 https://github.com/symbi/liuyao-learning-app/pull/3#issuecomment-7058611732（ChatGPT 首轮审查：整体通过，仅 fenced code block 关闭围栏识别一项必须修复，未批准合并）
+- Fix commit: `38b4e09`（fix(m2): validate Markdown closing fences by char, length and trailing text）
+- 问题：旧逻辑只保存围栏字符、不保存长度，且对关闭行不检查尾随文字；四反引号代码块内的三反引号行或 ` ```python ` 行会被误判为关闭围栏，其后的 `# ...` 代码行被误识别为 Markdown 标题，污染标题归属和段落定位。
+- 修复（只改 `tools/liuyao-kb/src/liuyao_kb/sources/adapters.py` 的围栏识别，未引入完整 CommonMark 解析器，未改动其他逻辑）:
+  1. 开启围栏同时记录字符和长度（`fence_char` + `fence_length`）。
+  2. 关闭围栏必须与开启字符相同，且长度不小于开启长度。
+  3. 关闭围栏后只能有空格或 Tab；带 `python` 等 info text 的围栏形行只是代码内容。
+  4. 开启和关闭围栏都遵守最多三个前导空格：围栏行按原始行匹配 `^ {0,3}`，四个前导空格的行不是围栏（开启侧按普通段落处理，关闭侧按代码内容处理）。
+  5. 补充 CommonMark 一致性细节：反引号围栏的 info string 若含反引号则不构成开启围栏。
+- 回归测试（`tools/liuyao-kb/tests/test_source_adapters.py` 新增 `TestMarkdownFences`，7 个测试）:
+  - 较短围栏：审查复现原文（四反引号块内含 ` ```python ` 和 `# 这行仍是代码`）不再提前关闭、不再误判标题。
+  - 带 info text 的非关闭行：等长 ` ```python ` 不关闭代码块。
+  - 不同围栏字符：反引号块内的 `~~~` 行、波浪线块内的 ` ``` ` 行都不关闭。
+  - 合法关闭围栏：更长的关闭围栏加尾随空格/Tab 可以关闭，其后的 `# 真标题` 恢复为真实标题。
+  - 缩进规则：四空格缩进的围栏形行既不开启也不关闭；不超过三空格的围栏仍正常工作。
+  - 所有新测试都逐 section 验证 locator offset 切片与原文一致，代码块内标题、空行和文本不丢失。
+- Tests run (exact commands, in `tools/liuyao-kb`):
+  - `.venv/bin/python -m pytest` — 144 passed in 1.44s（此前 137，新增 7）
+  - `.venv/bin/python -m pytest tests/test_source_adapters.py` — 38 passed
+  - `.venv/bin/python -m ruff check .` — passed (All checks passed)
+  - `.venv/bin/python -m ruff format --check .` — passed (17 files already formatted)
+  - `.venv/bin/python -m mypy` — passed (no issues in 10 source files)
+  - `git diff --check` — passed
+- Files changed: `tools/liuyao-kb/src/liuyao_kb/sources/adapters.py`、`tools/liuyao-kb/tests/test_source_adapters.py`、`docs/phase1-progress.md`（本节）。未改动 PDF/JSON，未重构无关代码，未触碰其他工作流文件。
+- Secrets: confirm no secrets committed — 无新增凭据或私人内容；测试仍全部使用 synthetic fixtures。
+- Next step: 保持 Draft PR #3 为 Draft，等待 ChatGPT 复审；不合并，不开始 PDF/JSON。
