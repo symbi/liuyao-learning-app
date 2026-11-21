@@ -3832,7 +3832,7 @@
     const isClassroomCase=!!record.isCase&&record.caseSource!=='practice';
     const memoSection=record.isCase
       ?(record.caseMemo?'【'+(isClassroomCase?'老师分析 Memo':'个人案例 Memo')+'】\n'+record.caseMemo:'')
-      :(record.recordType==='dailyFortune'&&record.dailyMemo?'【个人复盘 Memo】\n'+record.dailyMemo:'');
+      :(!record.isCase&&record.dailyMemo?'【个人复盘 Memo】\n'+record.dailyMemo:'');
     const conclusionSection=record.isCase&&record.caseConclusion
       ?'【'+(isClassroomCase?'老师结论':'个人结论')+'】\n'+record.caseConclusion:'';
     const result=[
