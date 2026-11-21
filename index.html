@@ -1567,18 +1567,6 @@
       algorithm:'(日支序号 - 月建序号 + 12) mod 12'
     };
   }
-  PILLAR_KEYS.forEach(key=>{
-    const stemSelect=document.getElementById('manual-'+key+'-stem');
-    const branchSelect=document.getElementById('manual-'+key+'-branch');
-    stemSelect.addEventListener('change',()=>readManualPillarInputs(key,'stem'));
-    branchSelect.addEventListener('change',()=>readManualPillarInputs(key,'branch'));
-  });
-  manualPillarToggle.addEventListener('change',()=>{
-    manualPillarOverride.enabled=manualPillarToggle.checked;
-    updateCaseEditor();
-    renderManualPillarInputs();
-    applyPillarContext();
-  });
   function renderJianChuInfo(info){
     const savedOffset=Number.isInteger(info?.offset)?info.offset:-1;
     const canonical=(savedOffset>=0&&savedOffset<12)?JIAN_CHU_STARS[savedOffset]:JIAN_CHU_STARS.find(item=>item.name===info?.name);
@@ -1738,6 +1726,19 @@
     applyPillarContext();
   }
   const PILLAR_KEYS=['year','month','day'];
+  // Bind manual selectors only after PILLAR_KEYS has been initialized.
+  PILLAR_KEYS.forEach(key=>{
+    const stemSelect=document.getElementById('manual-'+key+'-stem');
+    const branchSelect=document.getElementById('manual-'+key+'-branch');
+    stemSelect.addEventListener('change',()=>readManualPillarInputs(key,'stem'));
+    branchSelect.addEventListener('change',()=>readManualPillarInputs(key,'branch'));
+  });
+  manualPillarToggle.addEventListener('change',()=>{
+    manualPillarOverride.enabled=manualPillarToggle.checked;
+    updateCaseEditor();
+    renderManualPillarInputs();
+    applyPillarContext();
+  });
   function isValidGanzhiPair(stem,branch){
     const stemIndex=GANZHI_STEMS.indexOf(stem),branchIndex=GANZHI_BRANCHES.indexOf(branch);
     return stemIndex>=0&&branchIndex>=0&&(stemIndex%2)===(branchIndex%2);
@@ -1821,9 +1822,14 @@
     if(dateTrigger) dateTrigger.title=manualActive?'选择记录/归档日期，不代表老师案例的起卦日期':'选择起卦日期';
     if(dateInput) dateInput.setAttribute('aria-label',manualActive?'选择记录/归档日期（不参与案例干支计算）':'选择起卦日期');
     if(manualPillarValidation) manualPillarValidation.textContent=manualPillarProblem();
+    // The initial date calculation runs before worksheet-only DOM nodes are created.
+    // Delay sidecar/line rendering until the worksheet has completed initialization.
     if(typeof renderCalendarDropSlots==='function') renderCalendarDropSlots();
-    if(typeof renderDateBranchSidecar==='function') renderDateBranchSidecar();
-    if(worksheetReady){renderLineIndicators();refreshBranchStatusTokens();}
+    if(worksheetReady){
+      if(typeof renderDateBranchSidecar==='function') renderDateBranchSidecar();
+      renderLineIndicators();
+      refreshBranchStatusTokens();
+    }
   }
   function updateCalendarForJapanToday(){
     if(!followJapanToday) return;
