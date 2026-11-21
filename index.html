@@ -1816,6 +1816,8 @@
     if(!isCaseRecord||!manualPillarOverride.enabled){showToast('请先切换到输入课堂案例模式');return;}
     if(!['year','month','day'].includes(key)||!['stem','branch'].includes(part)) return;
     manualPillarOverride[key][part]=value;
+    selected=null;
+    updateSelectedTiles();
     renderManualPillarInputs();
     applyPillarContext();
     showToast('已放入'+(key==='year'?'年':key==='month'?'月':'日')+(part==='stem'?'干':'支')+'：'+value);
