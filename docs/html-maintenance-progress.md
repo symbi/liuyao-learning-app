@@ -7,10 +7,10 @@
 - Project: `symbi/liuyao-learning-app`
 - Workstream: HTML maintenance
 - Status: In review (Draft PR open)
-- Current task: 课堂案例支持手动指定年、月、日干支
+- Current task: 课堂案例干支选择器改为完整选项、天干地支独立选择
 - Target branch: `fix/trine-anchor-auto-xunkong`
 - Active PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
-- Last completed task: v84 案例干支手动输入、独立归档日期与记录快照
+- Last completed task: v85 修正课堂案例干支选择器交互
 - Last updated: 2026-11-20
 
 ## 开始任务前
@@ -139,3 +139,35 @@
   - 未写入或更改任何真实每日卦例；未合并 PR；未修改 `main` 或 Production。
 - Status: Draft PR open; code committed, final Preview verification pending.
 - Next step: 在 Preview 中新建课堂案例，检查年月日选择器和保存/打开后的计算结果。
+
+
+## 2026-11-21 — 课堂案例干支选择器改为独立选择
+
+- Date: 2026-11-21
+- Task: 保留日常日期自动排干支；课堂案例手动输入时，天干与地支必须分别提供完整选择范围，不互相过滤或擅自清空。
+- User acceptance criteria:
+  - 日常每日记录仍以日本当天日期自动计算年、月、日干支。
+  - 只有案例启用手动干支时，手动值才替代自动计算值；案例归档日期仍只用于定位和保存记录。
+  - 年干下拉框始终提供完整十个天干；年支始终提供完整十二地支。月柱、日柱同样如此。
+  - 选择一个天干不得缩小地支列表；选择一个地支不得缩小天干列表；系统不得因另一侧选择而清空用户当前选择。
+  - 仍需校验六十甲子合法性；月柱、日柱必填，年柱可未知；无效组合必须提示并阻止保存，避免把错误干支用于正式排盘。
+- Branch: `fix/trine-anchor-auto-xunkong`
+- Draft PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
+- Implementation commit: `d19d265b9b346545ec53ac48ea1080f5dabab102`
+- Files changed: `index.html`, `docs/html-maintenance-progress.md`
+- Implementation summary:
+  - 每日模式仍由 `updateCalendarForJapanToday()` 自动计算当前日本日期的年月日干支；未更改日期算法和自动刷新逻辑。
+  - 案例模式仍由现有 `pillarOverride.enabled` 控制是否覆盖自动值；案例关闭手动输入时恢复日期自动值。
+  - 重写 `syncPillarPairControls()`：每个干下拉框始终显示十个天干，每个支下拉框始终显示十二地支；两者独立，不再动态过滤、不再自动清除对侧选择。
+  - 保留六十甲子校验和保存前校验；发现不合法组合时明确提示用户核对老师原文。
+  - 调整手动输入说明，明确每日自动计算与案例手动覆盖的关系。
+- Tests / exact checks:
+  - 待完成：拉取更新后的完整 HTML，再对内嵌 JavaScript 执行 V8 语法编译。
+  - 待完成：静态检查所有六组选择器均使用完整十干/十二支数组，且 `syncPillarPairControls` 不再执行动态过滤或清空逻辑。
+  - 待完成：Cloudflare Pages 最新 Preview 部署与实际 UI 人工验收。
+- Manual browser checks: 待用户在 Preview 中确认：日常页面仍自动显示当天年月日干支；标记课堂案例后，年/月/日每一柱的天干下拉框可看到完整十项，地支下拉框可看到完整十二项；选择一侧不会影响另一侧；非法组合有提示；合法组合可保存并重开。
+- Security and data-preservation checks:
+  - 只更改 `index.html` 和本维护日志；未改 GitHub OAuth、Cloudflare Functions、API 保存路由或 Production 配置。
+  - 未写入或改动任何真实每日记录；未合并 PR，未修改 `main`。
+- Status: Code committed to existing Draft PR; Preview deployment and visual acceptance pending.
+- Next step: 验证构建结果并提供 Preview 地址给用户检查。
