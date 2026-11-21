@@ -47,6 +47,7 @@ function decodeBase64Utf8(value) {
 }
 function dateIsValid(date) { if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false; const parsed = new Date(date + 'T00:00:00Z'); return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === date; }
 function recordPath(date) { return `daily-records/${date.slice(0, 4)}/${date.slice(5, 7)}/${date}.json`; }
+function recordMarkdownPath(date, recordId) { return `daily-records/${date.slice(0, 4)}/${date.slice(5, 7)}/markdown/${date}--${recordId}.md`; }
 async function githubFetch(path, token, init = {}) {
   return fetch(`https://api.github.com${path}`, {
     ...init,
@@ -168,6 +169,75 @@ async function handleRecords(request, env, session, date) {
 }
 
 
+async function handleRecordMarkdown(request, env, session, date, recordId) {
+  if (!dateIsValid(date)) return json({ error: 'Invalid date; expected YYYY-MM-DD' }, 400);
+  if (!/^[A-Za-z0-9_-]{1,100}$/.test(recordId)) return json({ error: 'Invalid record ID' }, 400);
+  const path = recordMarkdownPath(date, recordId);
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  const apiPath = `/repos/${OWNER}/${REPO}/contents/${encodedPath}`;
+
+  if (request.method === 'GET') {
+    const response = await githubFetch(apiPath, session.accessToken);
+    if (response.status === 404) return json({ markdown: null, sha: null });
+    const data = await response.json();
+    if (!response.ok) return json({ error: data.message || 'Unable to read Markdown file' }, response.status);
+    if (data.type !== 'file' || typeof data.content !== 'string') return json({ error: 'Unexpected GitHub Markdown response' }, 502);
+    try {
+      return json({ markdown: decodeBase64Utf8(data.content), sha: data.sha });
+    } catch {
+      return json({ error: 'The saved Markdown file could not be decoded' }, 502);
+    }
+  }
+
+  if (request.method === 'PUT' || request.method === 'DELETE') {
+    const origin = request.headers.get('origin');
+    if (origin && origin !== new URL(request.url).origin) return json({ error: 'Cross-origin write blocked' }, 403);
+    const length = Number(request.headers.get('content-length') || 0);
+    if (length > 400_000) return json({ error: 'Markdown file is too large' }, 413);
+    let body;
+    try { body = await request.json(); } catch { return json({ error: 'Invalid JSON request body' }, 400); }
+
+    const currentResponse = await githubFetch(apiPath, session.accessToken);
+    let current = null;
+    if (currentResponse.ok) current = await currentResponse.json();
+    else if (currentResponse.status !== 404) return json({ error: 'Unable to check current Markdown file' }, currentResponse.status);
+    const currentSha = current?.sha || null;
+    if (currentSha !== (body.sha || null)) return json({ error: 'Markdown file changed since it was loaded. Reload before saving.', conflict: true, currentSha }, 409);
+
+    if (request.method === 'DELETE') {
+      if (!currentSha) return json({ deleted: true, missing: true });
+      const remove = await githubFetch(apiPath, session.accessToken, {
+        method: 'DELETE',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ message: `Delete Liuyao Markdown record ${date} (${recordId})`, sha: currentSha })
+      });
+      const result = await remove.json();
+      if (!remove.ok) return json({ error: result.message || 'GitHub Markdown deletion failed' }, remove.status);
+      return json({ deleted: true, commit: result.commit?.sha || null });
+    }
+
+    const markdown = body?.markdown;
+    if (typeof markdown !== 'string' || !markdown.trim()) return json({ error: 'Markdown content is required' }, 400);
+    if (new TextEncoder().encode(markdown).length > 300_000) return json({ error: 'Markdown content exceeds 300 KB' }, 413);
+    const payload = {
+      message: `Save Liuyao Markdown record ${date} (${recordId})`,
+      content: b64Utf8(markdown),
+      ...(currentSha ? { sha: currentSha } : {})
+    };
+    const write = await githubFetch(apiPath, session.accessToken, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await write.json();
+    if (!write.ok) return json({ error: result.message || 'GitHub Markdown save failed' }, write.status);
+    return json({ saved: true, sha: result.content?.sha || null, commit: result.commit?.sha || null, path });
+  }
+
+  return json({ error: 'Method not allowed' }, 405, { allow: 'GET, PUT, DELETE' });
+}
+
+
 async function handleListRecords(env, session) {
   // Resolve main to the latest commit, then retrieve its complete Git tree.
   const commitResponse = await githubFetch('/repos/' + OWNER + '/' + REPO + '/commits/main', session.accessToken);
@@ -257,6 +327,8 @@ export async function onRequest(context) {
   if (request.method === 'GET' && path === 'me') return json({ authenticated: !!session, login: session?.login || null });
   if (!session) return json({ error: 'Not authenticated' }, 401);
   if (request.method === 'GET' && path === 'records') return handleListRecords(env, session);
+  const markdownMatch = path.match(/^record-markdown\/(\d{4}-\d{2}-\d{2})\/([A-Za-z0-9_-]{1,100})$/);
+  if (markdownMatch) return handleRecordMarkdown(request, env, session, markdownMatch[1], markdownMatch[2]);
   const match = path.match(/^records\/(\d{4}-\d{2}-\d{2})$/);
   if (match) return handleRecords(request, env, session, match[1]);
   return json({ error: 'Not found' }, 404);
