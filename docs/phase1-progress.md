@@ -292,3 +292,9 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - PR #4 当前状态: Draft、未合并；已同步到 main `9505ce7`；共 11 个文件；等待 ChatGPT 对新 head 做最终复审，用户再决定是否合并。
 - Secrets: 未写入任何密钥、凭据或私人内容。
 - Next step: 等待 ChatGPT 复审 PR #4 与用户决定；不启动 M2-C、不创建 Source Collector 仓库、不开发 PDF Adapter/OCR。
+
+## 2026-11-21 — PR #4 再次同步 main 记录
+
+- main 已前进：PR #3 合并后，main 新增第十九课课堂案例（`materials/class-cases/lesson-19/case-001.json` 与 `case-001-analysis.md`，提交 `a92bf4a`）及数次每日记录更新，同步时最新 main 为 `de7d884`。
+- PR #4 分支已通过 GitHub merge commit `6f2c405` 合并最新 main：PR #3 的 M2-A/M2-B 代码与测试完整保留（adapters.py blob SHA 与此前核对一致），本 PR 的架构决策、来源目录与 Reference Package Schema 未被覆盖。
+- `docs/phase1-implementation-plan.md` 第 4 节已按现状修正：课堂案例不再是“只有 README 约定”，并记录 M2-C 实施准备要求。本节之后的状态以本节为准。

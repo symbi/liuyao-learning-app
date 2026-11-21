@@ -131,7 +131,8 @@ flowchart TB
 - liuyao-learning-app 有第 5～20 课整理笔记、外部参考文档和案例目录说明；正式课程笔记以 Markdown 为主。
 - liuyao-learning-raw 有部分课程原始 ASR TXT；Raw ASR 默认不进入主要索引。
 - 2026-11-19 的两个仓库 main 分支扫描均未发现 PDF；2026-11-21 的 ChatGPT Library PDF 清单也没有返回 PDF。当前没有已选定、准备导入的 PDF。
-- materials/class-cases/ 此前扫描时只有 README 约定；M2-C 需根据现有 HTML JSON Schema 实现 Case Mapper，并使用合成 fixtures。
+- materials/class-cases/ 已有第一份结构化课堂案例：`materials/class-cases/lesson-19/case-001.json`（第十九课工作调动案例）及对应分析文档 `materials/class-cases/lesson-19/case-001-analysis.md`，均已提交到 main。此前“只有 README 约定、没有已提交案例 JSON”的描述已过期。
+- M2-C 实施准备要求（本计划只记录要求，不在本 PR 实现）：（1）实施前先检查真实的 `case-001.json`，了解实际字段结构（如 recordType、lessonId、casting、teacherAnalysis 等）；（2）检查 HTML 导出 JSON 与课堂案例 JSON 的字段关系；（3）自动化测试使用合成 fixtures 独立进行，不把真实案例、私人 ASR 全文或个人每日记录复制进 fixtures；（4）映射时保留原始字段、来源链和案例身份，不随意丢弃数据；（5）不要因为已有一个案例就假定所有历史案例都符合相同结构，字段差异必须显式处理。
 - daily-records/ 是否有真实记录以同步时重新扫描为准，默认仍不导入个人每日 Memo。
 
 因此 M2 只测试 Markdown/TXT 和结构化 JSON；不为不存在的 PDF 准备 fixture 或解析器。不得为了测试伪造老师案例。
