@@ -583,7 +583,7 @@
   - Saved chart: 火风鼎，离宫火，二世；上离、下巽；乙卯月、戊午日；旬空子丑；二爻世、五爻应；应克世。
   - Lines from 初爻 to 上爻: 丑土子孙勾陈（囚、旬空）；亥水官鬼螣蛇（休、世）；酉金妻财白虎（死、月破）；酉金妻财玄武（死、月破）；未土子孙青龙（囚、应）；巳火兄弟朱雀（相）。六爻皆静。
   - The export now spells out that 午火克酉金; the two 酉金妻财 lines are both 静爻、卯月月破, not旬空. It also spells out all other lines' month/day interactions.
-  - User memo has the parenthetical phrase「日克（用神克日建）」. From the saved 戊午日 and 酉金用神 branches, the computed direction is 日支午火克爻支酉金; the original Memo is preserved verbatim and not rewritten.
+  - The saved Memo initially read「日克（日建克用神）」. The user corrected it to「日辰克用神；月破（月建和用神相冲）」; the daily-record JSON on `main` was updated accordingly (commit `1e9df116119b0c4034110066e669583bd3e8365d`). The calculated direction is consistent: 日支午火克爻支酉金.
 - Tests / exact checks:
   - Inline JavaScript passed V8 syntax compilation after each follow-up change.
   - Auto-fill logic now compares only fields that were non-empty before automatic filling; no success count is generated for newly auto-filled values.
@@ -608,7 +608,7 @@
 
 ### v98 follow-up — 自动伏神判断与精简反馈（2026-11-21）
 
-- User clarified that the factory-modification case Memo should read「日辰克用神」；the chart calculation remains 午火克妻财酉金. The saved original record was not edited.
+- User clarified that the factory-modification case Memo should read「日辰克用神」；the saved record Memo was corrected on `main` (commit `1e9df116119b0c4034110066e669583bd3e8365d`). Chart fields and teacher conclusion were unchanged.
 - Automatic hidden-six-kin rule:
   - Read the primary use god from the selected question category.
   - Only 六亲 use gods (父母、兄弟、子孙、妻财、官鬼) participate. Daily / annual fortune categories are explicitly marked「无固定用神」; 世爻 remains the main reading focus, but it is not treated as a 六亲用神 for hidden-kin generation.
