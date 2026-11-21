@@ -3141,28 +3141,42 @@
   function runAutoAssembly(mode){
     const plan=buildAutoAssemblyPlan();
     if(!plan.ready){renderAutoAssemblyReport(mode,'暂时无法执行。',[],plan.notes);return;}
+    // Preserve the original values so automatically inserted values are not
+    // presented as if the user had already entered and passed them.
+    const originalValues=new Map(plan.entries.map(entry=>[entry,readAutoEntry(entry)]));
     let filledCount=0;
     if(mode==='fill'){
-      plan.entries.forEach(entry=>{if(!readAutoEntry(entry)){writeAutoEntry(entry,entry.expected);filledCount++;}});
+      plan.entries.forEach(entry=>{
+        if(!originalValues.get(entry)){
+          writeAutoEntry(entry,entry.expected);
+          filledCount++;
+        }
+      });
       for(let i=0;i<6;i++) renderRow(i);
       renderCalendarDropSlots();
       renderLineIndicators();
     }
-    let correctCount=0;const errors=[],missing=[];
+    const errors=[],missing=[];
     for(const entry of plan.entries){
       const current=readAutoEntry(entry);
+      if(mode==='fill'&&!originalValues.get(entry)) continue;
       if(!current) missing.push({kind:'missing',entry,message:entry.label+'：尚未填写，应该为「'+entry.expected+'」。'});
-      else if(current===entry.expected) correctCount++;
-      else errors.push({kind:'error',entry,message:entry.label+'：你填写的是「'+current+'」，正确应为「'+entry.expected+'」。已保留原值。'});
+      else if(current!==entry.expected) errors.push({kind:'error',entry,message:entry.label+'：你填写的是「'+current+'」，正确应为「'+entry.expected+'」。已保留原值。'});
     }
     const issues=[...errors,...missing];
-    const summary=mode==='fill'
-      ?'已补充 '+filledCount+' 项；正确 '+correctCount+' 项；发现 '+errors.length+' 处与计算结果不一致，未覆盖原值。'
-      :'已检查 '+plan.entries.length+' 项；正确 '+correctCount+' 项；发现 '+errors.length+' 处错误、'+missing.length+' 项空缺。';
+    let summary='';
+    if(mode==='fill'){
+      summary='已自动填写 '+filledCount+' 个原本空白的项目。';
+      if(errors.length) summary+='另外发现 '+errors.length+' 个原有手工填写与计算结果不一致，已保留原值。';
+      if(missing.length) summary+='仍有 '+missing.length+' 个项目未填写。';
+    }else{
+      summary=errors.length||missing.length
+        ?'检查完成：发现 '+errors.length+' 个填写错误、'+missing.length+' 个空缺项目。'
+        :'检查完成：未发现填写错误。';
+    }
     renderAutoAssemblyReport(mode,summary,issues,plan.notes);
     if(errors.length||missing.length) showToast(mode==='fill'?'自动装卦完成：有项目需要你核对':'检查完成：发现需要核对的项目');
-    else if(plan.notes.length) showToast(mode==='fill'?'自动装卦完成，部分资料待补':'检查完成，部分项目因资料不足未核对');
-    else showToast(mode==='fill'?'自动装卦完成':'检查完成：当前填写与计算一致');
+    else showToast(mode==='fill'?'自动装卦完成':'检查完成：未发现填写错误');
   }
   const autoFillHexagramButton=document.getElementById('auto-fill-hexagram');
   const checkHexagramButton=document.getElementById('check-hexagram');
@@ -3672,29 +3686,59 @@
       parts.push(status.monthBreak===null?'月破状态未计算':(status.monthBreak?'月破':'不月破'));
       return parts.join('；');
     }
+    function dayBranchInteractionText(lineBranch){
+      const dayBranch=analysisSnapshot.calendar?.dayBranch;
+      if(!lineBranch||!dayBranch||!branchElements[lineBranch]||!branchElements[dayBranch]) return '日辰作用未计算';
+      const names={water:'水',wood:'木',earth:'土',fire:'火',metal:'金'};
+      const dayElement=branchElements[dayBranch],lineElement=branchElements[lineBranch];
+      let relation='比和';
+      if(dayElement!==lineElement){
+        if(generates[dayElement]===lineElement) relation='日支'+dayBranch+names[dayElement]+'生爻支'+lineBranch+names[lineElement];
+        else if(generates[lineElement]===dayElement) relation='爻支'+lineBranch+names[lineElement]+'生日支'+dayBranch+names[dayElement];
+        else if(controls[dayElement]===lineElement) relation='日支'+dayBranch+names[dayElement]+'克爻支'+lineBranch+names[lineElement];
+        else if(controls[lineElement]===dayElement) relation='爻支'+lineBranch+names[lineElement]+'克日支'+dayBranch+names[dayElement];
+      }else{
+        relation='日支'+dayBranch+names[dayElement]+'与爻支'+lineBranch+names[lineElement]+'比和';
+      }
+      const extras=[];
+      if(sixClashes[dayBranch]===lineBranch) extras.push('日辰六冲：'+dayBranch+'冲'+lineBranch);
+      if(liuHe[dayBranch]?.partner===lineBranch) extras.push('日辰六合：'+dayBranch+lineBranch+'合');
+      return relation+(extras.length?'；'+extras.join('；'):'');
+    }
     const lines=recordLines.map((line,index)=>{
       const savedLine=analysisLines[index]||{},isBrightMoving=!!mapping[line.flowers]?.moving,isMoving=isBrightMoving||!!savedLine.movement;
       const fields=['摇卦：'+(flowerLabels[line.flowers]||'未记录')];
-      if(line.branch) fields.push('纳甲地支：'+line.branch+(savedLine.original?.elementName||'')+'（'+branchStatusText(savedLine.original)+'）');
-      if(line.relation) fields.push('六亲：'+line.relation);
-      if(line.hiddenRelation) fields.push('伏藏六亲（人工标注）：'+line.hiddenRelation);
-      if(line.shen) fields.push('六神：'+line.shen);
-      if(isMoving&&line.changeBranch) fields.push('变爻地支：'+line.changeBranch+(savedLine.transformed?.elementName||'')+'（'+branchStatusText(savedLine.transformed)+'）');
-      if(isMoving&&line.changeRelation) fields.push('变爻六亲：'+line.changeRelation);
-      if(isMoving&&line.effect) fields.push('生克关系：'+line.effect);
+      if(line.branch){
+        fields.push('本卦纳甲：'+line.branch+(savedLine.original?.elementName||'')+'（'+branchStatusText(savedLine.original)+'）');
+        fields.push('日辰对本爻：'+dayBranchInteractionText(line.branch));
+      }else{
+        fields.push('本卦纳甲：未填写');
+      }
+      fields.push('六亲：'+(line.relation||'未填写'));
+      fields.push('伏藏六亲：'+(line.hiddenRelation?'人工标注'+line.hiddenRelation:'未作人工标注'));
+      fields.push('六神：'+(line.shen||'未填写'));
+      fields.push('爻动静：'+(savedLine.movement||(isBrightMoving?'明动':'静爻')));
+      if(isMoving){
+        if(line.changeBranch) fields.push('变卦纳甲：'+line.changeBranch+(savedLine.transformed?.elementName||'')+'（'+branchStatusText(savedLine.transformed)+'）');
+        else fields.push('变卦纳甲：未填写');
+        fields.push('变卦六亲：'+(line.changeRelation||'未填写'));
+        if(line.effect) fields.push('已手工标注的动变关系：'+line.effect);
+      }
       if(savedLine.role) fields.push('爻位：'+savedLine.role);
-      if(savedLine.movement) fields.push('动爻性质：'+savedLine.movement);
       return '第'+(index+1)+'爻（'+(['初爻','二爻','三爻','四爻','五爻','上爻'][index]||'')+'）：'+fields.join('；');
     });
     const calendar=record.calendarAssignments||{};
     const calendarText=[
+      analysisSnapshot.calendar?.yearPillar?'年柱：'+analysisSnapshot.calendar.yearPillar:'年柱：未提供',
+      analysisSnapshot.calendar?.monthPillar?'月柱：'+analysisSnapshot.calendar.monthPillar:'',
+      analysisSnapshot.calendar?.dayPillar?'日柱：'+analysisSnapshot.calendar.dayPillar:'',
       analysisSnapshot.calendar?.monthWangXiangRule?'月令旺相规则：'+analysisSnapshot.calendar.monthWangXiangRule:'',
       analysisSnapshot.calendar?.monthBranch?'月支：'+analysisSnapshot.calendar.monthBranch:'',
       analysisSnapshot.calendar?.dayBranch?'日支：'+analysisSnapshot.calendar.dayBranch:'',
       calendar.yearRelation?'年柱六亲：'+calendar.yearRelation:'',
       calendar.monthRelation?'月柱六亲：'+calendar.monthRelation:'',
       calendar.dayRelation?'日柱六亲：'+calendar.dayRelation:'',
-      calendar.dayGod?'日干六神：'+calendar.dayGod:'',
+      calendar.dayGod?'日干起六神：'+calendar.dayGod+'（初爻起）':'日干起六神：未填写',
       analysisSnapshot.calendar?.xunkongBranches?.length===2?'旬空：'+analysisSnapshot.calendar.xunkongBranches.join('、'):'旬空：无法从保存的日柱确认'
     ].filter(Boolean);
     function trineText(trine,kind){
@@ -3726,8 +3770,16 @@
       ?'课程规则（'+branchRelations.lessonRule.source+'）：'+branchRelations.lessonRule.principle+' '+branchRelations.lessonRule.forceComparison+' '+branchRelations.lessonRule.assessmentFactors+' '+branchRelations.lessonRule.automation
       :'课程规则提醒：六合与五行克制可能并存；力量接近时可考虑贪合忘克，一方明显强于另一方时仍须论克。需结合月令、日辰及其他动爻判断。';
     const shiYingText=analysisSnapshot.shiYing
-      ?'世应关系：第'+analysisSnapshot.shiYing.shiLineNumber+'爻世爻（'+analysisSnapshot.shiYing.shiBranch+'）与第'+analysisSnapshot.shiYing.yingLineNumber+'爻应爻（'+analysisSnapshot.shiYing.yingBranch+'）：'+analysisSnapshot.shiYing.kind
+      ?'世应关系：第'+analysisSnapshot.shiYing.shiLineNumber+'爻世爻（'+analysisSnapshot.shiYing.shiBranch+({water:'水',wood:'木',earth:'土',fire:'火',metal:'金'}[analysisSnapshot.shiYing.shiElement]||'')+'）与第'+analysisSnapshot.shiYing.yingLineNumber+'爻应爻（'+analysisSnapshot.shiYing.yingBranch+({water:'水',wood:'木',earth:'土',fire:'金',metal:'金'}[analysisSnapshot.shiYing.yingElement]||'')+'）：'+analysisSnapshot.shiYing.kind
       :'世应关系：纳甲资料不足，暂不能判断';
+    const palace=analysisSnapshot.hexagram||{};
+    const linePattern=recordLines.length===6&&recordLines.every(line=>[0,1,2,3].includes(line.flowers))
+      ?recordLines.map(line=>mapping[line.flowers]?.yang?'1':'0').join(''):null;
+    const trigramNames=linePattern?{upper:TRIGRAM_NAME_BY_PATTERN[linePattern.slice(3,6)],lower:TRIGRAM_NAME_BY_PATTERN[linePattern.slice(0,3)]}:{};
+    const trigramElements={乾:'金',兑:'金',离:'火',震:'木',巽:'木',坎:'水',艮:'土',坤:'土'};
+    const hexagramStructureText=palace.name
+      ?'本卦：'+palace.name+'；上卦：'+(trigramNames.upper||'未识别')+(trigramNames.upper?'（'+trigramElements[trigramNames.upper]+'）':'')+'；下卦：'+(trigramNames.lower||'未识别')+(trigramNames.lower?'（'+trigramElements[trigramNames.lower]+'）':'')+'；卦宫：'+palace.palace+'宫（'+(palace.elementName||'五行未记录')+'）；卦宫世次：'+(palace.stage||'未记录')
+      :'本卦结构：卦宫或上下卦信息不足';
     const portableRecord={...record,schemaVersion:16,analysisSnapshot,
       lines:recordLines.map((line,index)=>{
         const isBrightMoving=!!mapping[line.flowers]?.moving,isMoving=isBrightMoving||!!analysisLines[index]?.movement;
@@ -3747,8 +3799,9 @@
       question.mainUseGod?'主要用神：'+question.mainUseGod:'',question.hint?'用神提示：'+question.hint:'',
       record.isCase?'案例类型：'+(record.caseSource==='practice'?'个人练习案例':'课堂案例（老师讲解）'):'',
       record.isCase&&record.caseSource!=='practice'?'案例核对状态：'+(CASE_REVIEW_LABELS[record.caseReviewStatus]||'待核对'):'',
+      '','【卦盘基本信息】',hexagramStructureText,shiYingText,
       '','【六爻记录｜从初爻到上爻｜含本卦与变卦状态】',...lines,'',
-      '【年月日及旬空标注】\n'+calendarText.join('\n'),shiYingText,hiddenCheckText,'',
+      '【年月日及旬空标注】\n'+calendarText.join('\n'),hiddenCheckText,'',
       '【三合识别结果】',...(trineTexts.length?trineTexts:['当前保存资料中未识别到符合页面规则的三合局']),
       '','【六合与合中带克】',liuHeRuleText,...(liuHeTexts.length?liuHeTexts:['当前保存的本卦与变爻地支中未识别到六合配对']),
       record.isCase&&record.caseMemo?'【老师分析过程】\n'+record.caseMemo:(!record.isCase&&record.dailyMemo?'【每日记录 Memo】\n'+record.dailyMemo:''),
