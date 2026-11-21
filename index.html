@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v97</title>
+<title>六爻排卦与每日记录 v98</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -80,8 +80,21 @@
   .palette-help{display:none}
   .palette-help strong{color:var(--jade)}
   .worksheet{padding:12px 12px 14px}
-  .worksheet-subhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;min-height:36px}
-  .hexagram-heading{display:flex;align-items:center;min-height:34px;min-width:56px;gap:10px;flex-wrap:wrap}
+  .worksheet-subhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;min-height:36px;flex-wrap:wrap}
+  .auto-assembly-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:0 0 auto;margin-left:auto}
+  .auto-review-report{width:100%;margin:0 0 8px;padding:8px 10px;border:1px solid #e2d3b8;border-radius:8px;background:#fbf6e9;color:#504b3f;font-size:12px;line-height:1.5}
+  .auto-review-report[hidden]{display:none!important}
+  .auto-review-report strong{display:block;margin-bottom:2px;font-size:12px;font-weight:900}
+  .auto-review-summary{color:#686252}
+  .auto-review-list{display:grid;gap:2px;margin:5px 0 0;padding-left:18px;max-height:190px;overflow:auto}
+  .auto-review-list li{padding-right:3px}
+  .auto-review-list li.error{color:#a33e2d}
+  .auto-review-list li.missing{color:#90651d}
+  .auto-review-list li.note{color:#65685d}
+  .drop-slot.auto-check-error{border:1.5px solid #b94d39!important;background:#fff0ec!important;box-shadow:0 0 0 2px rgba(185,77,57,.13)!important}
+  .drop-slot.auto-check-missing{border:1.5px dashed #b98519!important;background:#fff8e8!important;box-shadow:0 0 0 2px rgba(185,133,25,.11)!important}
+  .hexagram-heading{display:flex;align-items:center;min-height:34px;min-width:56px;gap:10px;flex-wrap:wrap;flex:1 1 auto}
+  @media(max-width:560px){.auto-assembly-actions{width:100%;margin-left:0;justify-content:flex-start}.auto-assembly-actions .small-action{padding:5px 8px;font-size:11px}.auto-review-report{font-size:11px}}
   .date-branch-sidecar{white-space:nowrap;}
   .hexagram-name{display:inline-flex;align-items:center;font-size:25px;font-weight:900;line-height:1;letter-spacing:.04em;white-space:nowrap}
   .hexagram-element-badge{width:27px;height:27px;flex:0 0 27px;border:1.8px solid currentColor;border-radius:50%;display:inline-grid;place-items:center;font-size:14px;font-weight:900;line-height:1;white-space:nowrap;background:rgba(255,253,247,.75)}
@@ -1002,7 +1015,12 @@
   <section class="card worksheet" aria-label="六爻输入区">
     <div class="worksheet-subhead">
       <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-element-badge" id="hexagram-element-badge" aria-label="卦宫五行"></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
+      <div class="auto-assembly-actions" role="group" aria-label="自动装卦与检查">
+        <button type="button" class="small-action primary" id="auto-fill-hexagram" title="根据本卦、日柱和动爻计算并补齐空白项目；不会覆盖已有填写">自动装卦</button>
+        <button type="button" class="small-action" id="check-hexagram" title="只检查当前填写，不会修改任何内容">检查卦盘</button>
+      </div>
     </div>
+    <div class="auto-review-report" id="auto-review-report" hidden aria-live="polite"></div>
     <div class="rows" id="rows"></div>
     <aside class="worksheet-memo" aria-label="记录内容">
       <div class="worksheet-memo-header"><strong id="memo-title">每日记录 Memo</strong></div>
@@ -1824,6 +1842,7 @@
   }
   function assignManualPillarToken(key,part,value){
     if(!isCaseRecord||!manualPillarOverride.enabled)return;
+    clearAutoReviewReport();
     if(!['year','month','day'].includes(key)||!['stem','branch'].includes(part)) return;
     manualPillarOverride[key][part]=value;
     selected=null;
@@ -1871,6 +1890,7 @@
     updateCalendarForDate(date);
   }
   function chooseCalendarDate(value, preserveAssignments=false){
+    clearAutoReviewReport();
     const date=parseDateInput(value);
     if(!date){showToast('请选择有效日期');return false;}
     const today=getJapanDateParts();
@@ -2073,6 +2093,7 @@
   });
 
   function assignCalendarToken(key,type,value){
+    clearAutoReviewReport();
     if(key.startsWith('xunkong')){showToast('旬空由当前日柱自动计算，无需手动填写');return;}
     const expectedType=key==='dayGod'?'god':(key.startsWith('xunkong')?'branch':'relation');
     if(type!==expectedType){showToast(expectedType==='branch'?'这里需要地支':expectedType==='god'?'这里需要六神':'这里需要六亲');return;}
@@ -2157,6 +2178,7 @@
     effect.innerHTML='<option value="">—</option>'+effects.map(value=>'<option value="'+value+'">'+value+'</option>').join('');
     effect.addEventListener('change',()=>{state[meta.id].effect=effect.value;});
     count.querySelectorAll('[data-flower]').forEach(btn=>btn.addEventListener('click',()=>{
+      clearAutoReviewReport();
       state[meta.id].flowers=Number(btn.dataset.flower); state.forEach((_,i)=>renderRow(i));
     }));
     [hiddenRelation,branch,kin,shen,changeBranch,changeKin].forEach(slot=>{
@@ -2183,6 +2205,7 @@
     return row;
   }
   function assignToken(lineId,type,value,zone){
+    clearAutoReviewReport();
     const key=zone || (type==='branch'?'branch':'relation');
     state[lineId][key]=value;
     selected=null; updateSelectedTiles(); renderRow(lineId);
@@ -2198,7 +2221,7 @@
     if(type==='branch'){token.textContent=value;applyBranchStatus(token,value);}else{token.textContent=value;}
     slot.appendChild(token);
     const clear=document.createElement('button');clear.type='button';clear.className='clear-slot';clear.title='清除此项';clear.setAttribute('aria-label','清除'+value);clear.textContent='×';
-    clear.addEventListener('click',e=>{e.stopPropagation();state[Number(slot.dataset.lineId)][slot.dataset.zone]=null;renderRow(Number(slot.dataset.lineId));});slot.appendChild(clear);
+    clear.addEventListener('click',e=>{e.stopPropagation();clearAutoReviewReport();state[Number(slot.dataset.lineId)][slot.dataset.zone]=null;renderRow(Number(slot.dataset.lineId));});slot.appendChild(clear);
   }
   function renderRow(id){
     const row=rowsHost.querySelector('[data-line-id="'+id+'"]'); if(!row)return;
@@ -2990,6 +3013,162 @@
   rowsHost.addEventListener('scroll',scheduleLiuheOverlay,true);
 
 
+
+  // v98: automatic Najia / 六亲 / 六神 with a non-destructive checker.
+  // Pattern strings are bottom-to-top: 初爻 -> 上爻.
+  const TRIGRAM_NAME_BY_PATTERN={'111':'乾','110':'兑','101':'离','100':'震','011':'巽','010':'坎','001':'艮','000':'坤'};
+  const TRIGRAM_NAJIA_BRANCHES={
+    '乾':{inner:['子','寅','辰'],outer:['午','申','戌']},
+    '兑':{inner:['巳','卯','丑'],outer:['亥','酉','未']},
+    '离':{inner:['卯','丑','亥'],outer:['酉','未','巳']},
+    '震':{inner:['子','寅','辰'],outer:['午','申','戌']},
+    '巽':{inner:['丑','亥','酉'],outer:['未','巳','卯']},
+    '坎':{inner:['寅','辰','午'],outer:['申','戌','子']},
+    '艮':{inner:['辰','午','申'],outer:['戌','子','寅']},
+    '坤':{inner:['未','巳','卯'],outer:['丑','亥','酉']}
+  };
+  const AUTO_LINE_POSITIONS=['初爻','二爻','三爻','四爻','五爻','上爻'];
+  const autoReviewReportEl=document.getElementById('auto-review-report');
+
+  function clearAutoReviewReport(){
+    document.querySelectorAll('.drop-slot.auto-check-error,.drop-slot.auto-check-missing').forEach(slot=>slot.classList.remove('auto-check-error','auto-check-missing'));
+    if(autoReviewReportEl){autoReviewReportEl.hidden=true;autoReviewReportEl.replaceChildren();}
+  }
+  function najiaBranchesForPattern(pattern){
+    if(typeof pattern!=='string'||!/^[01]{6}$/.test(pattern)) return null;
+    const lower=TRIGRAM_NAJIA_BRANCHES[TRIGRAM_NAME_BY_PATTERN[pattern.slice(0,3)]];
+    const upper=TRIGRAM_NAJIA_BRANCHES[TRIGRAM_NAME_BY_PATTERN[pattern.slice(3,6)]];
+    return lower&&upper?[...lower.inner,...upper.outer]:null;
+  }
+  function sixKinForBranch(branch,palaceElement){
+    const element=branchElements[branch];
+    if(!element||!palaceElement) return null;
+    if(element===palaceElement) return '兄弟';
+    if(generates[palaceElement]===element) return '子孙';
+    if(controls[palaceElement]===element) return '妻财';
+    if(controls[element]===palaceElement) return '官鬼';
+    if(generates[element]===palaceElement) return '父母';
+    return null;
+  }
+  function buildAutoAssemblyPlan(){
+    if(!state.every(item=>item.flowers!==null&&mapping[item.flowers])||!currentHexagramInfo){
+      return {ready:false,entries:[],notes:['请先完成六次摇卦的阴阳输入，确定本卦后再自动装卦或检查。']};
+    }
+    const pattern=state.map(item=>mapping[item.flowers].yang?'1':'0').join('');
+    const originalBranches=najiaBranchesForPattern(pattern);
+    if(!originalBranches) return {ready:false,entries:[],notes:['无法识别当前上下卦的纳甲结构，请检查六爻阴阳输入。']};
+    const palaceElement=currentHexagramInfo.element,entries=[],notes=[];
+    for(let i=0;i<6;i++){
+      const branch=originalBranches[i],kin=sixKinForBranch(branch,palaceElement);
+      if(!kin) return {ready:false,entries:[],notes:['无法根据本卦卦宫五行计算第'+(i+1)+'爻六亲。']};
+      entries.push(
+        {kind:'line',lineId:i,zone:'branch',label:AUTO_LINE_POSITIONS[i]+'纳甲地支',expected:branch},
+        {kind:'line',lineId:i,zone:'relation',label:AUTO_LINE_POSITIONS[i]+'六亲',expected:kin}
+      );
+    }
+    const dayPillar=String(currentPillars?.day||''),dayStem=dayPillar.charAt(0);
+    const firstGod=dayStemFirstGod[dayStem]||null;
+    if(firstGod){
+      const firstIndex=sixGods.indexOf(firstGod);
+      for(let i=0;i<6;i++) entries.push({kind:'line',lineId:i,zone:'shen',label:AUTO_LINE_POSITIONS[i]+'六神',expected:sixGods[(firstIndex+i)%sixGods.length]});
+      entries.push({kind:'calendar',key:'dayGod',label:'日干六神起神',expected:firstGod});
+    }else{
+      notes.push('六神暂不能计算：当前没有有效日柱日干；本卦纳甲和六亲仍可装配。');
+    }
+    for(const key of ['year','month','day']){
+      const pillar=String(currentPillars?.[key]||''),branch=pillar.charAt(1);
+      if(GANZHI_STEMS.includes(pillar.charAt(0))&&GANZHI_BRANCHES.includes(branch)){
+        const kin=sixKinForBranch(branch,palaceElement);
+        if(kin) entries.push({kind:'calendar',key:key+'Relation',label:(key==='year'?'年':key==='month'?'月':'日')+'柱六亲',expected:kin});
+      }else if(key!=='year'){
+        notes.push((key==='month'?'月':'日')+'柱尚未提供有效干支，该柱六亲和依赖日干的六神不作猜测。');
+      }else{
+        notes.push('年柱未知或未填写：年柱六亲跳过，不影响其他项目。');
+      }
+    }
+    const transformedPattern=state.map(item=>{
+      const bit=mapping[item.flowers].yang?'1':'0';
+      return mapping[item.flowers].moving?(bit==='1'?'0':'1'):bit;
+    }).join('');
+    const transformedBranches=najiaBranchesForPattern(transformedPattern);
+    if(!transformedBranches) return {ready:false,entries:[],notes:['变卦上下卦无法识别，停止装配以免写入错误纳甲。']};
+    let darkMovingCount=0;
+    for(let i=0;i<6;i++){
+      if(mapping[state[i].flowers].moving){
+        const branch=transformedBranches[i],kin=sixKinForBranch(branch,palaceElement);
+        if(kin) entries.push(
+          {kind:'line',lineId:i,zone:'changeBranch',label:AUTO_LINE_POSITIONS[i]+'变卦纳甲地支',expected:branch},
+          {kind:'line',lineId:i,zone:'changeRelation',label:AUTO_LINE_POSITIONS[i]+'变卦六亲',expected:kin}
+        );
+      }else if(getDarkMovementInfo(state[i])) darkMovingCount++;
+    }
+    if(darkMovingCount) notes.push('发现'+darkMovingCount+'条暗动爻。第十一课资料尚未确认暗动是否在所有情形下都按明动生成变爻纳甲，因此本次不自动填写暗动变卦。');
+    notes.push('伏藏六亲是手动学习标记，自动装卦和检查均不会改动或判断它。');
+    return {ready:true,entries,notes,pattern,transformedPattern};
+  }
+  function readAutoEntry(entry){
+    return entry.kind==='line'?(state[entry.lineId]?.[entry.zone]||''):(calendarAssignments[entry.key]||'');
+  }
+  function writeAutoEntry(entry,value){
+    if(entry.kind==='line') state[entry.lineId][entry.zone]=value;
+    else calendarAssignments[entry.key]=value;
+  }
+  function autoEntrySlot(entry){
+    return entry.kind==='line'
+      ?rowsHost.querySelector('[data-line-id="'+entry.lineId+'"][data-zone="'+entry.zone+'"]')
+      :document.querySelector('[data-calendar-key="'+entry.key+'"]');
+  }
+  function renderAutoAssemblyReport(mode,summary,issues,notes){
+    clearAutoReviewReport();
+    if(!autoReviewReportEl) return;
+    const title=document.createElement('strong');
+    title.textContent=mode==='fill'?'自动装卦结果':'卦盘检查结果';
+    const detail=document.createElement('div');detail.className='auto-review-summary';detail.textContent=summary;
+    autoReviewReportEl.append(title,detail);
+    const list=document.createElement('ul');list.className='auto-review-list';
+    issues.forEach(issue=>{
+      const item=document.createElement('li');
+      item.className=issue.kind==='error'?'error':issue.kind==='missing'?'missing':'note';
+      item.textContent=issue.message;list.appendChild(item);
+      const slot=issue.entry?autoEntrySlot(issue.entry):null;
+      if(slot&&issue.kind==='error') slot.classList.add('auto-check-error');
+      if(slot&&issue.kind==='missing') slot.classList.add('auto-check-missing');
+    });
+    notes.forEach(note=>{const item=document.createElement('li');item.className='note';item.textContent=note;list.appendChild(item);});
+    if(list.childElementCount) autoReviewReportEl.appendChild(list);
+    autoReviewReportEl.hidden=false;
+  }
+  function runAutoAssembly(mode){
+    const plan=buildAutoAssemblyPlan();
+    if(!plan.ready){renderAutoAssemblyReport(mode,'暂时无法执行。',[],plan.notes);return;}
+    let filledCount=0;
+    if(mode==='fill'){
+      plan.entries.forEach(entry=>{if(!readAutoEntry(entry)){writeAutoEntry(entry,entry.expected);filledCount++;}});
+      for(let i=0;i<6;i++) renderRow(i);
+      renderCalendarDropSlots();
+      renderLineIndicators();
+    }
+    let correctCount=0;const errors=[],missing=[];
+    for(const entry of plan.entries){
+      const current=readAutoEntry(entry);
+      if(!current) missing.push({kind:'missing',entry,message:entry.label+'：尚未填写，应该为「'+entry.expected+'」。'});
+      else if(current===entry.expected) correctCount++;
+      else errors.push({kind:'error',entry,message:entry.label+'：你填写的是「'+current+'」，正确应为「'+entry.expected+'」。已保留原值。'});
+    }
+    const issues=[...errors,...missing];
+    const summary=mode==='fill'
+      ?'已补充 '+filledCount+' 项；正确 '+correctCount+' 项；发现 '+errors.length+' 处与计算结果不一致，未覆盖原值。'
+      :'已检查 '+plan.entries.length+' 项；正确 '+correctCount+' 项；发现 '+errors.length+' 处错误、'+missing.length+' 项空缺。';
+    renderAutoAssemblyReport(mode,summary,issues,plan.notes);
+    if(errors.length||missing.length) showToast(mode==='fill'?'自动装卦完成：有项目需要你核对':'检查完成：发现需要核对的项目');
+    else if(plan.notes.length) showToast(mode==='fill'?'自动装卦完成，部分资料待补':'检查完成，部分项目因资料不足未核对');
+    else showToast(mode==='fill'?'自动装卦完成':'检查完成：当前填写与计算一致');
+  }
+  const autoFillHexagramButton=document.getElementById('auto-fill-hexagram');
+  const checkHexagramButton=document.getElementById('check-hexagram');
+  if(autoFillHexagramButton) autoFillHexagramButton.addEventListener('click',()=>runAutoAssembly('fill'));
+  if(checkHexagramButton) checkHexagramButton.addEventListener('click',()=>runAutoAssembly('check'));
+
   function renderLineIndicators(){
     state.forEach((item,id)=>{
       const row=rowsHost.querySelector('[data-line-id="'+id+'"]');
@@ -3350,6 +3529,7 @@
   }
   function openRecord(record){
     if(!record||!Array.isArray(record.lines)||record.lines.length!==6){showToast('卦例数据格式不正确');return;}
+    clearAutoReviewReport();
     const date=record.date||getJapanDateParts();
     if(typeof date==='string'){
       if(!chooseCalendarDate(date,true)) return;
