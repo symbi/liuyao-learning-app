@@ -153,7 +153,7 @@
   - 仍需校验六十甲子合法性；月柱、日柱必填，年柱可未知；无效组合必须提示并阻止保存，避免把错误干支用于正式排盘。
 - Branch: `fix/trine-anchor-auto-xunkong`
 - Draft PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
-- Implementation commit: `d19d265b9b346545ec53ac48ea1080f5dabab102`
+- Implementation commits: `d19d265b9b346545ec53ac48ea1080f5dabab102`（独立选择逻辑）、`47b575236bb21a616bce727753f98e69533e2124`（版本标记 v85）
 - Files changed: `index.html`, `docs/html-maintenance-progress.md`
 - Implementation summary:
   - 每日模式仍由 `updateCalendarForJapanToday()` 自动计算当前日本日期的年月日干支；未更改日期算法和自动刷新逻辑。
@@ -162,8 +162,8 @@
   - 保留六十甲子校验和保存前校验；发现不合法组合时明确提示用户核对老师原文。
   - 调整手动输入说明，明确每日自动计算与案例手动覆盖的关系。
 - Tests / exact checks:
-  - 待完成：拉取更新后的完整 HTML，再对内嵌 JavaScript 执行 V8 语法编译。
-  - 待完成：静态检查所有六组选择器均使用完整十干/十二支数组，且 `syncPillarPairControls` 不再执行动态过滤或清空逻辑。
+  - 更新后的完整 HTML 内嵌 JavaScript 已通过 V8 语法编译（154 KB 脚本，无语法错误）。
+  - 静态检查通过：年、月、日三组均通过完整 `GANZHI_STEMS` / `GANZHI_BRANCHES` 数组填充；控制函数不含 `.filter()`、配对联动清空或自动删除值的逻辑；保存前六十甲子合法性校验仍在。
   - 待完成：Cloudflare Pages 最新 Preview 部署与实际 UI 人工验收。
 - Manual browser checks: 待用户在 Preview 中确认：日常页面仍自动显示当天年月日干支；标记课堂案例后，年/月/日每一柱的天干下拉框可看到完整十项，地支下拉框可看到完整十二项；选择一侧不会影响另一侧；非法组合有提示；合法组合可保存并重开。
 - Security and data-preservation checks:
