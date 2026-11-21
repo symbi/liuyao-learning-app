@@ -3798,6 +3798,10 @@
     const hexagramStructureText=palace.name
       ?'本卦：'+palace.name+'；上卦：'+(trigramNames.upper||'未识别')+(trigramNames.upper?'（'+trigramElements[trigramNames.upper]+'）':'')+'；下卦：'+(trigramNames.lower||'未识别')+(trigramNames.lower?'（'+trigramElements[trigramNames.lower]+'）':'')+'；卦宫：'+palace.palace+'宫（'+(palace.elementName||'五行未记录')+'）；卦宫世次：'+(palace.stage||'未记录')
       :'本卦结构：卦宫或上下卦信息不足';
+    const movementLines=analysisLines.filter(line=>line.movement);
+    const movementSummaryText=movementLines.length
+      ?'动爻概况：'+movementLines.map(line=>'第'+line.lineNumber+'爻'+line.movement).join('、')
+      :'动爻概况：六爻皆静，无明动或暗动，未形成变卦';
     const portableRecord={...record,schemaVersion:16,analysisSnapshot,
       lines:recordLines.map((line,index)=>{
         const isBrightMoving=!!mapping[line.flowers]?.moving,isMoving=isBrightMoving||!!analysisLines[index]?.movement;
@@ -3817,7 +3821,7 @@
       question.mainUseGod?'主要用神：'+question.mainUseGod:'',question.hint?'用神提示：'+question.hint:'',
       record.isCase?'案例类型：'+(record.caseSource==='practice'?'个人练习案例':'课堂案例（老师讲解）'):'',
       record.isCase&&record.caseSource!=='practice'?'案例核对状态：'+(CASE_REVIEW_LABELS[record.caseReviewStatus]||'待核对'):'',
-      '','【卦盘基本信息】',hexagramStructureText,shiYingText,
+      '','【卦盘基本信息】',hexagramStructureText,shiYingText,movementSummaryText,
       '','【六爻记录｜从初爻到上爻｜含本卦与变卦状态】',...lines,'',
       '【年月日及旬空标注】\n'+calendarText.join('\n'),hiddenCheckText,'',
       '【三合识别结果】',...(trineTexts.length?trineTexts:['当前保存资料中未识别到符合页面规则的三合局']),
