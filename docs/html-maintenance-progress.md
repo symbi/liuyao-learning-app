@@ -61,6 +61,41 @@
 
 ## 最近任务
 
+## 2026-11-21 — 修复日历与手动干支控件初始化中断（v86）
+
+- Date: 2026-11-21
+- Task: v85 Preview 打开后日本当天日期、年月日干支、手动选择器选项均未初始化；修复前端启动阶段的 JavaScript 异常。
+- User acceptance criteria:
+  - 页面打开即自动使用 Asia/Tokyo 当天日期，显示年月日干支；日期输入框也显示对应当天日期。
+  - 每日记录界面的纳甲/六亲等原有下方区域正常初始化和显示。
+  - 手动干支选项正确填充完整十干/十二支，但只有标记案例并启用手动覆盖后才参与计算。
+  - 无须合并 PR 或操作 Production 即可通过 Preview 验收。
+- Branch: `fix/trine-anchor-auto-xunkong`
+- Draft PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
+- Fix commits:
+  - `a22aa8a6fafe6f0763e7e5ce76ca6432558b694e` — 修正初始化顺序并延迟 worksheet sidecar 渲染
+  - `22d2d3834bd04f47dde68060406add81c2b51fc3` — 标记页面版本 v86
+- Root cause:
+  - `PILLAR_KEYS.forEach(...)` 的事件绑定代码位于 `const PILLAR_KEYS=['year','month','day']` 声明之前。脚本运行到此处会触发 JavaScript temporal-dead-zone ReferenceError，导致整个 IIFE 中断，日期、干支显示和动态选项填充均未执行。
+  - 初始日期计算还会调用 `applyPillarContext()`；该流程在 `dateBranchSidecar` 这个 worksheet DOM 节点创建之前调用 `renderDateBranchSidecar()`，同样会读取尚未初始化的 const 并引发异常。
+- Implementation summary:
+  - 将年月日六个选择器的 change 事件绑定移动到 `PILLAR_KEYS` 声明之后。
+  - 只在 `worksheetReady` 为 true 时，才刷新依赖 worksheet 节点的侧栏、爻线指示和分支状态；初始日期计算仍照常写入年月日干支和日期字段。
+  - 保留 v85 的完整十干/十二支独立选择逻辑与六十甲子保存校验。
+  - 每日模式仍按日本当天日期自动计算；课堂案例的手动干支只在明确启用 override 时覆盖日期自动值。
+- Tests / exact checks:
+  - 完整内嵌 JavaScript 通过 V8 语法编译。
+  - 静态初始化顺序检查通过：`PILLAR_KEYS` 的声明位置早于所有选择器事件绑定。
+  - worksheet sidecar 调用已置于 `worksheetReady` 分支中，避免在 DOM 尚未创建时读取 `dateBranchSidecar`。
+  - 仍需最新 Preview 上的真实浏览器验收：页面日期显示、年月日干支、日历下方纳甲/六亲区域、完整手动选择器、案例保存/重开。
+- Manual browser checks: 修复后待 Preview 部署成功并由用户确认；不可把 V8 编译通过等同于浏览器交互验收。
+- Security and data-preservation checks:
+  - 仅修改 `index.html` 和本维护日志；未更改每日记录数据、GitHub OAuth、Cloudflare Functions、保存 API、main 或 Production。
+  - 未合并 PR。
+- Status: Code committed to existing Draft PR; latest v86 Preview deployment pending.
+- Next step: 验证 Cloudflare 最新构建成功后，请用户重新打开独立 Preview 地址进行页面验收。
+
+
 ## 2026-11-20 — 三合发动支点优先级与旬空自动识别
 
 - Date: 2026-11-20
