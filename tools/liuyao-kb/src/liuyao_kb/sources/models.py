@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import re
 from collections.abc import Mapping, Sequence
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
@@ -220,6 +221,86 @@ def source_identity_from_path(
 
     uri = canonical_source_uri(path, source_root=source_root)
     return build_source_identity(source_type, uri)
+
+
+def repository_source_uri(
+    repository: str,
+    relative_path: str | Path,
+) -> str:
+    """Return a namespaced ``repo://`` URI for a repository-relative path.
+
+    The URI convention is ``repo://<owner>/<repository>/<relative-path>``,
+    for example ``repo://symbi/liuyao-learning-app/docs/lessons/lesson-05.md``.
+    The repository slug is the stable source namespace: two repositories that
+    contain the same relative path therefore produce different URIs and, via
+    :func:`build_source_identity`, different source identities.
+
+    Only the repository slug and the repository-relative path may appear in
+    the URI. Machine absolute paths, temporary directory names, and ``..``
+    segments are rejected, never embedded. A Git commit or other source
+    version belongs in ``revision_ref`` on the parsed document, not here.
+    """
+
+    owner, name = _validate_repository_slug(repository)
+    relative = _normalize_relative_posix_path(relative_path)
+    return f"repo://{owner}/{name}/{relative}"
+
+
+def source_identity_from_repository(
+    source_type: SourceType | str,
+    repository: str,
+    relative_path: str | Path,
+) -> str:
+    """Build a namespaced source identity from a repository and relative path."""
+
+    uri = repository_source_uri(repository, relative_path)
+    return build_source_identity(source_type, uri)
+
+
+def _validate_repository_slug(repository: str) -> tuple[str, str]:
+    """Validate an ``owner/name`` repository slug and return its two parts."""
+
+    if not isinstance(repository, str):
+        raise ValueError("repository must be an 'owner/name' string")
+    parts = repository.strip().split("/")
+    if len(parts) != 2:
+        raise ValueError("repository must be an 'owner/name' slug")
+    for part in parts:
+        if part in {"", ".", ".."} or any(
+            character not in _REPOSITORY_SEGMENT_CHARS for character in part
+        ):
+            raise ValueError("repository must be an 'owner/name' slug")
+    return parts[0], parts[1]
+
+
+def _normalize_relative_posix_path(relative_path: str | Path) -> str:
+    """Normalize a repository-relative path to a safe POSIX form."""
+
+    if isinstance(relative_path, Path):
+        if relative_path.is_absolute():
+            raise ValueError("relative_path must be repository-relative, not absolute")
+        raw = relative_path.as_posix()
+    else:
+        raw = str(relative_path).strip()
+        if raw.startswith("/") or _DRIVE_PREFIX.match(raw):
+            raise ValueError("relative_path must be repository-relative, not absolute")
+    segments: list[str] = []
+    for segment in raw.replace("\\", "/").split("/"):
+        if segment in {"", "."}:
+            continue
+        if segment == "..":
+            raise ValueError("relative_path must not contain '..' segments")
+        segments.append(segment)
+    if not segments:
+        raise ValueError("relative_path must not be empty")
+    return PurePosixPath(*segments).as_posix()
+
+
+_REPOSITORY_SEGMENT_CHARS = frozenset(
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-"
+)
+
+_DRIVE_PREFIX = re.compile(r"^[A-Za-z]:")
 
 
 def _deep_freeze(value: Any) -> Any:
