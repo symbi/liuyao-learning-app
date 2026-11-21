@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v89</title>
+<title>六爻排卦与每日记录 v90</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -436,15 +436,23 @@
   .case-inline-pillar .case-pillar-slot .slot-label{font-size:16px;}
   .case-pillar-slot.filled{border-color:#aebea9;background:#f5f8f1;}
   .case-pillar-slot.drag-over{outline:2px solid var(--jade);outline-offset:2px;}
-  .case-stem-source{display:flex;align-items:center;gap:7px;margin-left:auto;padding:0 8px;flex:0 1 auto;}
-  .case-stem-source-label{font-size:11px;line-height:1;white-space:nowrap;color:var(--muted);font-weight:750;}
+  .case-stem-source{
+    display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
+    gap:5px;margin:0 4px;padding:0;flex:0 1 auto;min-width:0;align-self:flex-start;
+  }
+  .case-token-row{display:flex;align-items:center;justify-content:flex-start;min-height:29px;}
   .case-stem-source .stem-tiles{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;margin:0;}
   .case-stem-source .tile{width:27px;min-width:27px;height:29px;flex:0 0 27px;}
+  .case-stem-source .branch-groups{
+    display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;
+    align-items:stretch;width:max-content;max-width:100%;
+  }
+  .case-stem-source .branch-pair{min-width:31px;padding:2px 1px;border-width:2px;border-radius:7px;gap:2px;}
+  .case-stem-source .branch-pair .tile{width:25px;min-width:25px;height:26px;flex-basis:25px;font-size:12px;}
   .manual-pillar-validation.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
-  .branch-palette-label{margin-top:2px;}
   @media(max-width:680px){
     .date-card.manual-case-pillars .calendar-pillars{flex-wrap:wrap;}
-    .case-stem-source{margin-left:0;padding:0;flex-basis:100%;justify-content:flex-start;}
+    .case-stem-source{margin:0;flex-basis:100%;width:max-content;max-width:100%;}
   }
   .date-card.manual-case-pillars #jianchu-name,
   .date-card.manual-case-pillars #jianchu-guidance,
@@ -948,6 +956,16 @@
           </div>
           <div class="drop-slot kin-filled calendar-drop-slot" data-drop-type="relation" data-calendar-key="dayRelation" role="button" tabindex="0" aria-label="日柱六亲"><span class="slot-label">＋</span></div>
         </div>
+        <div class="case-stem-source" id="case-stem-source" hidden aria-label="课堂案例干支拖拽区">
+          <div class="case-token-row">
+            <div class="tiles stem-tiles" id="stem-tiles" aria-label="十天干项目"></div>
+          </div>
+          <div class="case-token-row">
+            <div class="branch-groups" id="branch-pairs" aria-label="六合地支配对">
+              <!-- Each column groups the two branches of one 六合; outline color shows its 合化 element. -->
+            </div>
+          </div>
+        </div>
         <div class="xunkong-group" aria-label="日干六神与旬空">
           <div class="day-god-hint" id="day-god-hint" aria-hidden="true"></div>
           <div class="drop-slot day-god-drop-slot calendar-drop-slot" data-drop-type="god" data-calendar-key="dayGod" role="button" tabindex="0" aria-label="当天六神起神，按日干确定"><span class="slot-label">＋</span></div>
@@ -956,10 +974,6 @@
             <div class="drop-slot xunkong-drop-slot calendar-drop-slot" data-drop-type="branch" data-calendar-key="xunkong1" role="button" tabindex="0" aria-label="旬空第一个地支"><span class="slot-label">＋</span></div>
             <div class="drop-slot xunkong-drop-slot calendar-drop-slot" data-drop-type="branch" data-calendar-key="xunkong2" role="button" tabindex="0" aria-label="旬空第二个地支"><span class="slot-label">＋</span></div>
           </div>
-        </div>
-        <div class="case-stem-source" id="case-stem-source" hidden aria-label="课堂案例天干选择">
-          <span class="case-stem-source-label">放入天干</span>
-          <div class="tiles stem-tiles" id="stem-tiles" aria-label="十天干项目"></div>
         </div>
       </div>
       <p class="manual-pillar-validation visually-hidden" id="manual-pillar-validation" aria-live="polite"></p>
@@ -995,12 +1009,6 @@
 
   <section class="card palette-card" aria-label="可拖拽项目">
     <div class="palette-grid">
-      <div class="palette-group">
-        <div class="branch-sub branch-palette-label">地支</div>
-        <div class="branch-groups" id="branch-pairs" aria-label="六合地支配对">
-          <!-- Each column groups the two branches of one 六合; outline color shows its 合化 element. -->
-        </div>
-      </div>
       <div class="palette-group">
         <div class="palette-stack">
           <div class="tiles kin-tiles" id="kin-tiles" aria-label="六亲项目"></div>
