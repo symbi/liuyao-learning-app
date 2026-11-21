@@ -133,7 +133,7 @@ JSON 继续作为唯一权威原始记录；每一条具体卦例另外保存一
 
 - 课堂案例（isCase=true 且 caseSource=classroom）：caseMemo 标为「老师分析 Memo」，caseConclusion 标为「老师结论」。
 - 个人练习案例（caseSource=practice）：个人备注标为「个人案例 Memo」，个人结论标为「个人结论」，不冒充老师意见。
-- 普通非案例卦例：日期级 dailyMemo 标为「个人复盘 Memo」，用于保存当天回看卦象与实际经历的反思；若同一天有多条非案例卦例，复盘 Memo 会随这些卦例的 MD 一并提供。
+- 普通每日卦（非案例的 dailyFortune）：日期级 dailyMemo 标为「个人复盘 Memo」，用于保存当天晚上回看上午卦象与实际经历的反思。额外问事的 MD 不会自动附带这份日期级 Memo。
 - 没有相应 Memo 或结论时，Markdown 不生成虚构段落。
 
 Markdown 文件与 JSON 一样保存在 Public 仓库，内容对外可见；不要在 Memo 中写入不希望公开的隐私或机密。
