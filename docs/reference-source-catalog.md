@@ -162,3 +162,4 @@ Chunk 适用于需要语义检索的文本，不是每种数据的强制格式�
 - [第十一课外部参考：日辰、暗动与日破](references/lesson-11-external-sources.md)
 - [Phase 1 实施计划](phase1-implementation-plan.md)
 - [Phase 1 实际运行架构](phase1-operating-model.md)
+- [Source Collector 独立项目章程与 Muse 启动说明](source-collector-project-charter.md)
