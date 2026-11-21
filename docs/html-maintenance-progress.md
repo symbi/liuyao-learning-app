@@ -164,10 +164,10 @@
 - Tests / exact checks:
   - 更新后的完整 HTML 内嵌 JavaScript 已通过 V8 语法编译（154 KB 脚本，无语法错误）。
   - 静态检查通过：年、月、日三组均通过完整 `GANZHI_STEMS` / `GANZHI_BRANCHES` 数组填充；控制函数不含 `.filter()`、配对联动清空或自动删除值的逻辑；保存前六十甲子合法性校验仍在。
-  - 待完成：Cloudflare Pages 最新 Preview 部署与实际 UI 人工验收。
+  - Cloudflare Pages Preview 已构建成功：commit `564804d`，独立预览 `https://13cbb327.liuyao-learning-app.pages.dev`；Branch Preview `https://fix-trine-anchor-auto-xunkon.liuyao-learning-app.pages.dev`。
 - Manual browser checks: 待用户在 Preview 中确认：日常页面仍自动显示当天年月日干支；标记课堂案例后，年/月/日每一柱的天干下拉框可看到完整十项，地支下拉框可看到完整十二项；选择一侧不会影响另一侧；非法组合有提示；合法组合可保存并重开。
 - Security and data-preservation checks:
   - 只更改 `index.html` 和本维护日志；未改 GitHub OAuth、Cloudflare Functions、API 保存路由或 Production 配置。
   - 未写入或改动任何真实每日记录；未合并 PR，未修改 `main`。
-- Status: Code committed to existing Draft PR; Preview deployment and visual acceptance pending.
-- Next step: 验证构建结果并提供 Preview 地址给用户检查。
+- Status: Code committed to existing Draft PR; Cloudflare Preview deployment succeeded; actual browser interaction / visual acceptance remains pending.
+- Next step: 用户打开 Branch Preview，检查每日自动干支与课堂案例完整选择器；确认后再处理可能的视觉微调。
