@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v94</title>
+<title>六爻排卦与每日记录 v95</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -194,7 +194,13 @@
   .effect-select option{font-family:inherit;font-size:13px;font-weight:750;}
   .change-branch-cell{display:flex;align-items:center;justify-content:center;min-width:0;}
   .line-row.trigram-inactive .change-cell,.line-row.trigram-inactive .change-branch-cell,.line-row.trigram-inactive .change-kin-cell{visibility:hidden;pointer-events:none;}
-  .drag-ghost{position:fixed;z-index:1000;pointer-events:none;opacity:.92;transform:translate(-50%,-50%);box-shadow:0 6px 18px #0002;}
+  .drag-ghost{
+    position:fixed !important;z-index:1000;pointer-events:none;opacity:.98;
+    transform:translate(-50%,-50%) !important;
+    box-shadow:0 6px 18px rgba(40,43,37,.24);
+    border-color:var(--gold)!important;background:var(--gold-soft)!important;
+    cursor:grabbing;margin:0;
+  }
   .drop-slot.drag-over{transform:scale(1.04)}
   /* Compact, unframed 64-hexagram memory aid. */
   .palace-reference-card{margin-top:10px;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;}
@@ -436,6 +442,10 @@
     padding:2px;border-radius:6px;background:#fffdf7;font-size:16px;
   }
   .case-inline-pillar .case-pillar-slot .slot-label{font-size:16px;}
+  .case-inline-pillar .case-pillar-slot .drop-token{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:100%;height:100%;font-size:16px;font-weight:850;line-height:1;
+  }
   .case-pillar-slot.filled{border-color:#aebea9;background:#f5f8f1;}
   .case-pillar-slot.drag-over{outline:2px solid var(--jade);outline-offset:2px;}
   .case-stem-source{
@@ -1777,7 +1787,7 @@
         return;
       }
       const token=document.createElement('span');
-      token.className='drop-token'+(part==='stem'?(elementClassForStem(value)||''):(elementClassForBranch(value)||''));
+      token.className='drop-token '+(part==='stem'?(elementClassForStem(value)||''):(elementClassForBranch(value)||''));
       token.textContent=value;
       slot.appendChild(token);
       const clear=document.createElement('button');
@@ -1993,14 +2003,24 @@
     const tile=e.target.closest('.tile');
     if(!tile || e.button===2) return;
     pointerCandidate={pointerId:e.pointerId,tile,type:tile.dataset.tokenType,value:tile.dataset.tokenValue,x:e.clientX,y:e.clientY,dragging:false};
+    // Keep receiving pointer moves even after the pointer leaves the source tile.
+    try{tile.setPointerCapture(e.pointerId);}catch(error){}
   });
   document.addEventListener('pointermove',e=>{
     if(!pointerCandidate || e.pointerId!==pointerCandidate.pointerId) return;
     const p=pointerCandidate;
     if(!p.dragging && Math.hypot(e.clientX-p.x,e.clientY-p.y)>7){
       p.dragging=true; selected={type:p.type,value:p.value}; updateSelectedTiles();
-      dragGhost=p.tile.cloneNode(true); dragGhost.classList.add('drag-ghost');
-      dragGhost.style.width=p.tile.getBoundingClientRect().width+'px';
+      // The source tile has .selected for feedback; do not copy that class to the
+      // fixed-position ghost because .tile.selected otherwise overrides positioning.
+      dragGhost=p.tile.cloneNode(true);
+      dragGhost.classList.remove('selected');
+      dragGhost.classList.add('drag-ghost');
+      const sourceRect=p.tile.getBoundingClientRect();
+      dragGhost.style.width=sourceRect.width+'px';
+      dragGhost.style.height=sourceRect.height+'px';
+      dragGhost.style.left=e.clientX+'px';
+      dragGhost.style.top=e.clientY+'px';
       document.body.appendChild(dragGhost);
     }
     if(p.dragging){
