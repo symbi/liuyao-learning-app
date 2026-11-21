@@ -1,8 +1,8 @@
 # Phase 1 实施计划：Neo4j 知识库、增量 Importer 与 Evidence Pack
 
-> 版本：1.0  
-> 规划日期：2026-11-19  
-> 状态：实施基线，等待用户逐个验收里程碑  
+> 版本：1.1  
+> 规划日期：2026-11-21  
+> 状态：按用户确认调整来源边界；M2-B 已通过代码复审、等待用户本机验收与合并；后续 M2-C 仅做 JSON Adapter  
 > 如果本文与早期概念文档有差异，以本文的实施范围和验收标准为准。概念解释见 [Phase 1 实际运行架构](phase1-operating-model.md)。
 
 ## 1. 目标与最终交付
@@ -10,7 +10,7 @@
 Phase 1 不是上线自动断卦网站，而是先建成可实际使用的“知识库辅助分析工作流”：
 
 1. 用户继续在现有 HTML App 排卦、录入课堂案例、保存每日记录；Cloudflare Pages + Pages Functions + GitHub 流程保持不变。
-2. 在用户 Mac 上运行 Python Importer，把经过选择的课程笔记、案例 JSON、PDF 和外部 GitHub 参考资料增量同步到 Neo4j AuraDB Free 云端图数据库。
+2. 在用户 Mac 上运行 Python Importer，把经过选择的课程笔记、案例 JSON，以及独立 Source Collector 输出的标准 Reference Package 增量同步到 Neo4j AuraDB Free 云端图数据库。
 3. Importer 对主要课程资料执行 Chunk、Embedding 和候选知识抽取；案例 JSON 由确定性的 Case Mapper 读取，不让 LLM 重新猜测卦盘。
 4. 提供本地 Query Tool：输入问题或已保存卦例，搜索 Neo4j，组合向量检索和图关系扩展，产生带出处的 Evidence Pack。
 5. 用户把卦盘 + Evidence Pack 交给 ChatGPT 网页版，由 ChatGPT 完成最终分析报告。
@@ -25,7 +25,9 @@ Phase 1 不是上线自动断卦网站，而是先建成可实际使用的“知
 - 不把 Gemini Embedding 当成最终分析模型；Embedding 只负责向量。
 - 不要求用户逐条人工审核 Neo4j 节点和关系；系统自动保存来源、来源类别、版本和不确定性。
 - 不默认读取或索引 Private raw 中低准确率的 ASR；Raw ASR 与 Curated Notes 保持不同轨道。
-- 不把 PDF、外部开源项目内容混成老师课堂规则。
+- 不把古籍、外部开源项目内容混成老师课堂规则。
+- Phase 1 知识库仓库不负责爬取外部网站、自动翻页或下载文件；由独立 repository `symbi/liuyao-source-collector` 负责。
+- 当前不开发 PDF Adapter 或扫描件 OCR；只有用户选定具体 PDF 并确认使用权后，才单独评估。
 - 不把 Neo4j LLM Knowledge Graph Builder 当成必需运行组件；它只是可选的图谱构建/观察工具。
 
 ## 3. 部署架构与数据流
@@ -36,7 +38,7 @@ flowchart TB
     A["Private raw：录音 + Raw ASR<br/>默认只归档/回查"]
     B["Learning：ChatGPT 整理的课程笔记"]
     C["HTML 保存的课堂案例 / 个人练习 JSON"]
-    D["获准导入的 PDF / 古籍 / 外部 GitHub 项目"]
+    D["独立 Collector 输出的获准 Reference Package"]
   end
 
   subgraph MAC["Mac 本地：Phase 1"]
@@ -110,7 +112,8 @@ flowchart TB
 | classroom_case | materials/class-cases/ 或 HTML JSON | Case Mapper 结构化导入，保存老师分析 Memo 和来源 | 老师课堂案例来源 |
 | personal_practice | HTML JSON | Case Mapper 结构化导入 | 个人练习；不作为老师规则证据 |
 | daily_casting | HTML 每日卦 JSON | 只有配置显式允许时才导入 | 个人记录 |
-| pdf_reference | 用户选定的 PDF | 每页提取文本，保留页码后 Chunk；扫描件 OCR 不在第一版范围 | 外部参考 |
+| external_reference_text | Source Collector 输出的古籍/网页文本包 | 校验 manifest、来源、版权和内容哈希，再按章节导入 | 外部参考，单独分区 |
+| pdf_reference | 将来用户明确选定且获准使用的 PDF | 当前 deferred；无 PDF Adapter、无 OCR | 暂不导入 |
 | external_project_doc | 选定的公开 GitHub README/docs | 记录 URL、commit SHA、作者和 License 后 Chunk | 外部技术参考 |
 | external_project_code | 选定的开源项目源码 | 第二子阶段按文件/类/函数边界切分；不能随机截断 | 外部实现参考 |
 
@@ -120,19 +123,22 @@ flowchart TB
 2. **Source B — Curated**：ChatGPT 整理、结合课堂上下文修订后放入 Learning 的正式课程笔记，是 Phase 1 的主要 Chunk 来源。
 3. 课程笔记应尽可能保留 lessonId、原始 ASR 文件路径或来源引用、段落/标题定位。
 4. 将来 Raw ASR 通过更好的模型生成 v2 时，v2 是同一来源的新 revision；v1 保留，不覆盖。默认仍不提升为正式课程笔记。
-5. PDF、GitHub 外部资料都能 Chunk，不要求先由 ChatGPT 改写。但必须保留外部来源、许可证和来源等级。
+5. 外部古籍/网页/GitHub 资料先由独立 Source Collector 采集并输出标准 Reference Package；知识库只读取经批准的包，不直接访问网站。
+6. PDF 目前不是已确认输入：当前两个仓库最近扫描均未发现 PDF；当前也没有指定要导入的 PDF 版本。因此 PDF Adapter 与 OCR 均 deferred。
 
-### 当前仓库扫描结果（2026-11-19）
+### 当前资料状态（最近核对：2026-11-21）
 
-- liuyao-learning-app 有第 5～17 课的整理笔记、课程外部参考文档和案例目录说明。
-- liuyao-learning-raw 有部分第 5～17 课的原始 ASR TXT。
-- 当前两个仓库的 main 分支树中都没有找到 PDF 文件。
-- materials/class-cases/ 当前只有 README 约定，没有已提交的案例 JSON。
-- daily-records/ 当前没有已提交的每日记录 JSON。
+- liuyao-learning-app 有第 5～20 课整理笔记、外部参考文档和案例目录说明；正式课程笔记以 Markdown 为主。
+- liuyao-learning-raw 有部分课程原始 ASR TXT；Raw ASR 默认不进入主要索引。
+- 2026-11-19 的两个仓库 main 分支扫描均未发现 PDF；2026-11-21 的 ChatGPT Library PDF 清单也没有返回 PDF。当前没有已选定、准备导入的 PDF。
+- materials/class-cases/ 此前扫描时只有 README 约定；M2-C 需根据现有 HTML JSON Schema 实现 Case Mapper，并使用合成 fixtures。
+- daily-records/ 是否有真实记录以同步时重新扫描为准，默认仍不导入个人每日 Memo。
 
-因此第一轮开发必须先用自动化 fixture 测试 Markdown、PDF parser 和 Case Mapper；真实 PDF 与真实课堂案例验收，需要用户之后指定/保存一份合适的文件。不得为了测试伪造老师案例。
+因此 M2 只测试 Markdown/TXT 和结构化 JSON；不为不存在的 PDF 准备 fixture 或解析器。不得为了测试伪造老师案例。
 
 ## 5. 资料来源配置与安全
+
+外部资料目录与两个项目之间的 Package contract 见 [六爻外部参考资料来源目录](reference-source-catalog.md)。
 
 Importer 使用显式 allowlist 配置，不扫描或上传用户电脑全部文件。
 
@@ -140,8 +146,8 @@ Importer 使用显式 allowlist 配置，不扫描或上传用户电脑全部文
 
 - Learning 本地仓库根目录和允许的目录/文件模式；
 - Private raw 本地仓库根目录（默认禁用内容读取）；
-- 外部 GitHub repository URL、选定路径、commit/ref、License 状态；
-- PDF 本地路径及是否允许送到模型服务；
+- Source Catalog 中的 source_id、获准 Reference Package 路径、选定章节/文件、固定版本/commit、License/版权及 allowlist 状态；
+- PDF 仅作为未来可选来源；当前不配置 PDF 路径，不启用 PDF parser；
 - 是否导入每日卦例、是否只导入 isCase=true 的记录。
 
 **默认安全设置：**
@@ -149,7 +155,8 @@ Importer 使用显式 allowlist 配置，不扫描或上传用户电脑全部文
 - raw_asr.enabled=false
 - daily_records.include=false，或者仅允许用户显式选中的案例记录；不要默认把所有每日 Memo 传给模型。
 - external_projects 为空，须由用户选择和核对 License 后添加。
-- PDF 只导入用户明确选定的文件；不把受版权保护或不允许上传的 PDF 送入云端模型。
+- 不从知识库 Importer 内爬取或下载外部资料；只读取显式批准的 Reference Package。
+- PDF 当前关闭；未来只有选定具体文件并确认允许本地处理/云端处理后才开启。
 - 不把原始录音、ASR、私人案例或其他不适合提交给第三方模型的内容发送到 Gemini。
 - .env、API Key、Neo4j password、下载缓存和本地输出都必须在 .gitignore 中；仓库只提交 .env.example。
 - 绝不把 Gemini API Key、Neo4j 凭据、GitHub Token 写入 HTML、公开文档、测试快照或日志。
@@ -177,9 +184,8 @@ tools/liuyao-kb/
 │   ├── sources/
 │   │   ├── markdown.py
 │   │   ├── text.py
-│   │   ├── pdf.py
 │   │   ├── case_json.py
-│   │   └── github_project.py
+│   │   └── reference_package.py
 │   ├── chunking/chunker.py
 │   ├── providers/gemini.py
 │   ├── neo4j/
@@ -219,6 +225,7 @@ tools/liuyao-kb/
 | Concept | 六亲、暗动、日辰等概念 | concept_id、name、aliases |
 | RuleCandidate | LLM 抽取的候选规则 | candidate_id、statement、conditions、uncertainty、extractor_model、status=candidate |
 | ExternalProject | 外部 GitHub 项目来源 | repo_url、commit_sha、license、license_status |
+| ReferencePackage | Source Collector 输出的获准资料包 | package_id、schema_version、collector_version、created_at、validation_status |
 
 关系示例：
 
@@ -318,10 +325,10 @@ liuyao-kb evidence --question "老师在第十一课如何讲暗动？"
 输出为本地 Markdown 文件，默认不自动提交到 Public GitHub。至少包含：
 
 1. 当前卦盘事实（如果通过 record_id 查询）和用户问题；不能凭模型重新计算或改写事实。
-2. 主要课程笔记证据：课次、文件路径、标题/页码/段落位置、短摘录。
+2. 主要课程笔记证据：课次、文件路径、标题/段落位置、短摘录。
 3. 相关课堂案例：课堂案例标签、核对状态、老师分析 Memo 和来源。
 4. 个人练习案例：独立分区，不当作老师规则证据。
-5. 外部 GitHub/PDF 参考：独立分区，附 URL、commit SHA、License 和用途。
+5. 外部古籍/网页/GitHub 参考：独立分区，附书名/作者/版本或 URL、commit SHA、License/版权状态和用途；未核实来源必须显示待核实。
 6. Raw ASR：默认不返回；若用户显式启用，必须放在低置信度单独分区。
 7. 来源冲突、缺少依据和模型不确定性。
 8. 提供一段可直接交给 ChatGPT 网页版的分析任务说明。
@@ -334,11 +341,16 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 |---|---|---|
 | M0：Aura 准备 | AuraDB Free 实例、凭据放本机 .env | Aura Console 显示实例运行；本机 doctor 能连通；秘密不提交 |
 | M1：项目骨架 | Python CLI、配置、日志、单元测试 | doctor、sources list、ingest --dry-run 正常 |
-| M2：来源解析 | Markdown/TXT、PDF 页文本、HTML 案例 JSON Adapter | 测试可显示段落、页码、案例 ID；没有丢失来源路径 |
+| M2-A：来源模型 | 统一 ParsedDocument/Section、Locator、source identity | 已完成；PR #3 的 M2-B 继续独立审核 |
+| M2-B：Markdown/TXT | Markdown 与 TXT Adapter | 代码复审通过；PR #3 Draft，等待用户 Mac 本机 144 tests 验收与合并 |
+| M2-C：课堂案例 JSON | HTML JSON Case Mapper | 只做结构化映射、原字段保留、稳定 record ID；须在 PR #3 合并后启动 |
+| M2-D：PDF | PDF 文本解析 / 页码 Locator | **deferred**；没有当前 PDF 输入，不纳入本轮 M2 |
+| 外部参考包接收 | Reference Package Validator / Adapter | 首批采集验证后实施；知识库不负责爬网站 |
 | M3：Neo4j Schema | 唯一约束、关系、Vector Index、测试节点 | 可创建/查询节点；向量索引 smoke test 成功 |
 | M4：增量 Importer | Manifest、Hash、Chunk、MERGE、版本管理 | 第一次导入新增；第二次重复运行 0 个新 Chunk/Embedding；修改一个段落只处理变化部分 |
 | M5：Gemini 双路径 | Embedding + 结构化候选抽取 | Chunk 有向量；候选知识能回到来源 Chunk；没有自动确认规则 |
-| M6：外部资料 | 选定 PDF、README/docs；随后选定代码文件 | 来源/许可证/版本完整；不混入老师课程来源 |
+| M6：外部参考资料 | 从 Source Catalog 选择并导入获准 Reference Package 中的古籍章节、网页文本、README/docs 或源码文件 | 来源/版本/版权/commit 完整；不混入老师课程来源；不在本仓库内爬取 |
+| PDF 扩展 | 仅在将来用户明确指定 PDF 后单独立项 | 不属于当前 Phase 1 必需交付 |
 | M7：Evidence Pack | 本地 Query Tool、向量检索 + 图关系扩展 | 输入已知问题时找到相关课堂段落/案例；输出可读、可追溯的 Markdown |
 | M8：端到端验收 | 真实课程 + 真实案例 + 允许的 PDF/外部参考 | 你能把 Evidence Pack 交给 ChatGPT，且引用来源正确、分类明确 |
 
@@ -349,8 +361,10 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 - 同一个 Raw ASR v1 再次导入仍然处于 Raw / Low Confidence，不进入主索引。
 - 新建 Raw ASR v2 时保留 v1 与 v2 两个 revision。
 - Case JSON 的六爻原始字段、日期、问题、案例类型和 Memo 不得在映射中丢失。
-- PDF Chunk 必须能追溯到原文件及页码；扫描版若无法抽取，报告明确提示而不是静默跳过。
+- Reference Package 必须能通过 manifest 回溯原始 URL、章节/文件定位、版本和内容哈希。
+- 当前阶段不执行 PDF Parser 测试；将来立项后 PDF Chunk 必须追溯原文件及页码，扫描件 OCR 必须单独验收。
 - 外部开源项目必须显示 repository URL、commit SHA、License；不能被标注成课堂规则。
+- Collector 的采集行为必须符合来源网站条款与版权许可；不绕过登录、付费墙、验证码或反爬控制。
 - 每一条 RuleCandidate / Concept Extraction 都能定位到来源 Chunk。
 - 生成 Evidence Pack 时，课堂、个人练习、外部资料、Raw ASR 分区清楚。
 - Neo4j/Google 请求失败时保留来源文件，不把同步状态标记为成功。
