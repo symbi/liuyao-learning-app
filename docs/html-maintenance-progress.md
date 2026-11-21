@@ -443,3 +443,26 @@
   - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API 或历史记录内容。
   - 未合并 PR，未修改 `main` 或 Production。
 - Status: Updated on the existing PR branch; Preview deployment pending.
+
+
+## 2026-11-21 — 修复指针拖拽跟随与案例干支颜色（v95）
+
+- Task: 用户反馈实际拖动时没有跟随鼠标的视觉效果；点击后放入虽成功，但案例干支目标框内文字没有沿用原项目的五行色样式。
+- Root causes found:
+  - 拖拽影子克隆是在 `updateSelectedTiles()` 之后创建的，克隆本身带有 `.tile.selected`。该规则把 `position:fixed` 覆盖成 `position:relative`，导致影子无法按视口坐标跟随鼠标。
+  - `renderManualPillarInputs()` 拼接类名时漏掉空格，将 `drop-token` 和 `element-wood` 合成了 `drop-tokenelement-wood` 等无效类名，故五行颜色规则未生效。
+- Implementation summary:
+  - 拖拽开始时克隆来源项目后移除 `.selected` 类，再赋予独立 `.drag-ghost` 类。
+  - 对拖拽影子的 `position:fixed` 和居中 transform 使用高优先级规则；创建时同时设置宽、高、left、top，后续每次 pointermove 更新到指针坐标。
+  - pointerdown 时调用 `setPointerCapture(pointerId)`，让源项目在拖动越过其他元素后仍持续接收指针事件。
+  - 修复案例年月日输入框 token 的 className 分隔符，使天干、地支正确附加 `element-wood / element-fire / element-earth / element-metal / element-water` 等五行类。
+  - 案例干支显示字号调整为 16px、加粗，匹配 36px 目标格；点击选择回退和数据存储逻辑不变。
+- Tests / exact checks:
+  - 内嵌 JavaScript 通过 V8 语法编译。
+  - 静态检查确认拖拽影子移除 selected 冲突类、固定定位与 translate 居中规则存在、pointer capture 已启用，left/top 随 pointermove 更新。
+  - 静态检查确认案例 token 类名正确包含空格，五行 CSS 类可生效，字体 16px/850 weight。
+  - 尚未通过用户真实鼠标操作完成视觉验收；请在 Preview 里测试直接拖动是否跟随鼠标，并检查木属性干支是否显示绿色。
+- Security and data-preservation checks:
+  - 仅修改 HTML 与维护日志；未改 OAuth、Cloudflare Functions、API、记录 schema 或历史记录。
+  - 未合并 PR，未修改 `main` 或 Production。
+- Status: Updated on the existing PR branch; Preview deployment pending.
