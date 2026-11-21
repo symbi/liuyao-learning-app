@@ -1226,7 +1226,7 @@
     questionUseGodEl.textContent=category?category.useGod:'—';
     questionHintEl.textContent=category?category.hint:'';
   }
-  questionCategoryEl.addEventListener('change',()=>setQuestionCategory(questionCategoryEl.value));
+  questionCategoryEl.addEventListener('change',()=>{setQuestionCategory(questionCategoryEl.value);refreshHiddenSpiritDisplays();});
   // A new entry starts as the user's daily fortune reading; saved records restore their own category.
   setQuestionCategory('daily');
   function getQuestionSnapshot(){
@@ -2312,7 +2312,7 @@
     const lines=Array.isArray(recordLines)?recordLines:[];
     if(lines.length!==6) return {status:'incomplete',useGod,palace:hexagram.palace,candidates:[],reason:'需要完整六爻资料'};
     const observed=lines.map(line=>line?.relation||getSixRelativeForBranch(line?.branch,hexagram.element));
-    if(observed.every(value=>!value)) return {status:'incomplete',useGod,palace:hexagram.palace,candidates:[],reason:'六亲或纳甲地支尚未填写'};
+    if(observed.some(value=>!value)) return {status:'incomplete',useGod,palace:hexagram.palace,candidates:[],reason:'六爻中仍有爻位缺少六亲和纳甲地支，不能确认用神缺失'};
     const appearances=observed.map((relation,index)=>relation===useGod?{lineNumber:index+1,branch:lines[index]?.branch||null,relation}:null).filter(Boolean);
     if(appearances.length) return {status:'present',useGod,palace:hexagram.palace,candidates:[],appearances,reason:'主要用神已在本卦出现'};
     const pureBranches=PURE_PALACE_NAJIA[hexagram.palace];
