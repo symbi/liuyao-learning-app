@@ -649,7 +649,7 @@
 - Memo provenance:
   - Classroom case: caseMemo ->「老师分析 Memo」; caseConclusion ->「老师结论」.
   - Personal practice case: caseMemo ->「个人案例 Memo」; caseConclusion ->「个人结论」.
-  - Non-case dailyFortune: date-level dailyMemo ->「个人复盘 Memo」. It represents the user's evening reflection on the morning reading.
+  - Non-case readings: date-level dailyMemo ->「个人复盘 Memo」. It represents the user's daily reflection and is included in non-case Markdown records for that date.
   - Missing Memo / conclusion sections are omitted; no teacher note or conclusion is fabricated for ordinary readings.
 - Markdown content:
   - Uses Markdown headings and includes the human-readable chart facts, line-by-line states, Memo when applicable, and the portable original JSON / analysisSnapshot in a fenced JSON block.
