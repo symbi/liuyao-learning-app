@@ -4,7 +4,7 @@
 
 ## 1. 一句话结论
 
-**Phase 1 不部署新的在线 Backend Container。** 先在用户 Mac 上运行一个 Python Importer（虚拟环境即可），从 GitHub 读取整理后的课程资料、HTML 保存的卦例和选定的外部参考资料；Importer 调用 Gemini 的生成模型做结构化抽取，调用 Embedding 模型生成向量，再通过 Neo4j Python Driver 把结果写入 Neo4j AuraDB Free 云数据库。
+**Phase 1 不部署新的在线 Backend Container。** 先在用户 Mac 上运行 Python Importer（虚拟环境即可），读取整理后的课程资料、HTML 保存的卦例，以及由独立 Source Collector 采集并经批准的标准 Reference Package；Importer 调用 Gemini 生成模型做结构化抽取，调用 Embedding 模型生成向量，再通过 Neo4j Python Driver 写入 Neo4j AuraDB Free。采集器和知识库 Importer 是两个独立项目，Importer 不直接爬取网页。
 
 - 原始文件和版本来源继续保存在 GitHub。
 - Neo4j AuraDB 是 Phase 1 的知识图谱数据库；课程、文本片段、概念、规则候选和案例都可以作为节点/关系存放在同一个 Neo4j 数据库中。
@@ -89,6 +89,37 @@ Pages Functions 是 Cloudflare 托管的执行环境，不是我们维护的 Doc
 | Neo4j AuraDB Free | Neo4j 托管云数据库 | 否（由 Neo4j 管理） |
 | Neo4j LLM Knowledge Graph Builder | 可选在线工具 | 不由我们部署；不是自有 App 后端 |
 
+## 2.1 外部参考采集器：独立 repository
+
+外部网页采集不是知识库 Importer 的职责。拟建独立仓库：`symbi/liuyao-source-collector`（建议先 Private；远端 repository 尚待通过 GitHub UI 或 `gh repo create` 创建）。
+
+**Project A — Source Collector**
+- 负责发现并读取经允许访问的古籍网站、网页文本、GitHub README/docs/选定源码及将来经批准的文件下载源。
+- 为不同网站实现独立 adapter，处理目录、章节、分页、SPA 页面正文、GitHub 文件路径与版本。
+- 提供速率限制、断点续采、页码/章节顺序检查、重复检测、内容哈希和失败报告。
+- 只采集符合网站条款、版权许可和访问权限的内容；不绕过登录、付费墙、验证码、访问控制或反爬机制。
+- 输出 Reference Package；不做 Chunk、Embedding、LLM 抽取、Neo4j 写入或最终检索。
+- 采集全文和网站快照存本机或获准的私有存储，不进入公共代码仓库。
+
+**Project B — 本仓库 Knowledge Base**
+- 维护外部 Reference Source Catalog 和 allowlist。
+- 验证 Collector 输出的 manifest、版本、内容哈希、原文定位和许可字段。
+- 对批准的 Markdown/TXT/源码等进行解析与 Chunk，必要时 Embedding/结构化抽取并写入 Neo4j。
+- 不直接访问外部网站，也不承担自动翻页或下载。
+
+**Reference Package v1（拟定）**
+```text
+reference-package/
+  package-manifest.json
+  sources/<source-id>/
+    source.json
+    documents/<chapter-or-file-id>.md
+```
+
+Package manifest 至少包含 package/schema ID、collector 名称/版本、生成时间、source_id、标题/作者、canonical URL、具体章节/文件 URL、版本/commit、采集时间、版权状态、允许云端处理/再分发标记、内容哈希和原文定位。没有许可依据或不允许云端处理的资料可以登记但不得送入 Gemini。Package v1 schema 以 [外部参考资料来源目录](reference-source-catalog.md) 为设计依据。
+
+> GitHub 集成当前不提供直接创建 repository 的操作；本次已确定仓库名称和职责，但远端创建尚未完成。不得把计划中的 Collector repository 说成已存在。
+
 ## 3. Importer 的输入、处理和输出
 
 ### 输入
@@ -111,7 +142,8 @@ Phase 1 必须把课程资料的两个来源轨道分开保存，不能把原始
 另外还有：
 
 1. **HTML 卦例 JSON**：从 `daily-records/` 或后续案例目录读取。用 Case Mapper 按结构化字段写入 Case 节点，不让 LLM 重新猜测卦盘字段。
-2. **GitHub 中的 PDF / 古籍 / 外部文档**：可以作为独立 SourceDocument 导入。文字型 PDF 先抽取文字，再按页码、章节和段落切 Chunk；扫描版 PDF 需要 OCR，表格、卦图和复杂版面要保留页码并抽样检查。原始 PDF 仍留在 GitHub，Neo4j 存必要文本片段和来源定位。
+2. **外部 Reference Package**：只导入由独立 Source Collector 输出、且 Source Catalog 明确批准的章节文本、网页正文、README/docs 或选定源码。必须保留原始 URL、版本/commit、章节/文件 locator、许可状态和内容哈希。知识库 Importer 不直接爬取网页。
+3. **PDF**：当前没有已确认要导入的 PDF，因此 PDF Adapter 与 OCR 暂缓；只有用户指定具体文件、确认版本及使用权后再单独立项。
 3. **外部 GitHub 参考项目**：可以参考，但不能把整个 Repository 当成一篇长文。先登记仓库 URL、作者、License、commit SHA，再选择 README、docs、规则文件和有价值源码。README/Markdown 按标题和段落切块；源码按文件、类、函数或符号边界切块。所有内容标记为 `external_reference`，不能混入老师课堂规则。
 
 ### 处理
@@ -124,7 +156,7 @@ Phase 1 必须把课程资料的两个来源轨道分开保存，不能把原始
        ├─ Raw ASR：默认只登记来源与版本，不进入主抽取流程
        ├─ Curated Notes：Markdown Parser -> Chunker -> Curated Chunks
        ├─ Case JSON：Case Mapper -> 结构化 Case
-       └─ External GitHub：仅处理选定文件，标记 external
+       └─ Reference Package：验证 manifest/rights/hash 后，按选定文件处理，标记 external
   -> 对 Curated Chunk 并行执行两条路径：
        ├─ Embedding Model：Chunk -> Vector -> 写入 Chunk / Vector Index
        └─ Generative LLM：Chunk -> 候选 Concept / Entity / Relation / RuleCandidate
