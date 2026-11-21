@@ -34,6 +34,8 @@ These instructions apply to Claude Code, Codex, ChatGPT-assisted edits, and any 
 - Keep Raw ASR separate from Curated Lesson Notes. Raw ASR is disabled by default and must not silently enter the main chunk/vector/rule extraction pipeline.
 - LLM-extracted knowledge remains candidate; never promote it to confirmed classroom rules.
 - Use allowlisted sources only. Do not crawl/import an entire GitHub repository by default.
+- External collection is a separate repository: `symbi/liuyao-source-collector` (planned, not yet created; owned by a separate workstream) collects allowed web/GitHub material and outputs a standard Reference Package. This repository never implements crawlers or website collectors, and never collects external sites directly; it only receives, validates, and imports approved Reference Packages. The intake contract is `docs/reference-source-catalog.md` section 5 and `docs/reference-package-v1.schema.json`. Registration in the Source Catalog is not approval: candidate sources must not be described as downloaded, verified, or imported.
+- PDF adapter and PDF OCR are deferred (decided 2026-11-21). There is currently no selected PDF input, so do not add PDF parsing/OCR dependencies or fixtures. Re-evaluate only when the user selects a concrete PDF and its rights status is confirmed.
 - Keep original source path, commit/revision, page/heading/paragraph, source type, trust level, and model provenance.
 - Re-import must be idempotent. Never create duplicate nodes or re-call models for unchanged chunks.
 - HTML tests must use temporary or fixture data and must not overwrite real daily records or classroom cases.
