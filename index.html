@@ -937,9 +937,9 @@
       <div class="case-pillar-editor" id="case-pillar-editor" hidden>
         <label class="manual-pillar-toggle" for="manual-case-pillars">
           <input id="manual-case-pillars" type="checkbox">
-          <strong>手动指定案例年月日干支</strong>
+          <strong>手动选择本案例的年月日干支</strong>
         </label>
-        <p class="manual-pillar-note">上方日期只用于保存和归档，不代表老师案例的起卦日期。请按老师提供的干支填写；年柱不确定可以留空，月柱和日柱请填写完整。</p>
+        <p class="manual-pillar-note">每日记录仍按当天日期自动计算年、月、日干支。只有本案例启用手动输入时，以下选择才会代替自动值。天干、地支分别选择；年柱未知可两项留空，月柱和日柱需填写完整。记录日期仅用于归档。</p>
         <div class="manual-pillar-grid" id="manual-pillar-grid" hidden>
           <div class="manual-pillar-item">
             <strong>年柱 <small>可留空</small></strong>
@@ -1754,21 +1754,15 @@
     });
     select.value=values.includes(value)?value:'';
   }
-  function syncPillarPairControls(key,changed=null){
+  function syncPillarPairControls(key){
     const item=manualPillarOverride[key];
     const stemSelect=document.getElementById('manual-'+key+'-stem');
     const branchSelect=document.getElementById('manual-'+key+'-branch');
     if(!stemSelect||!branchSelect) return;
-    if(changed==='stem'&&item.branch&&!isValidGanzhiPair(item.stem,item.branch)) item.branch='';
-    if(changed==='branch'&&item.stem&&!isValidGanzhiPair(item.stem,item.branch)) item.stem='';
-    const allowedBranches=item.stem
-      ?GANZHI_BRANCHES.filter(branch=>isValidGanzhiPair(item.stem,branch))
-      :GANZHI_BRANCHES;
-    const allowedStems=item.branch
-      ?GANZHI_STEMS.filter(stem=>isValidGanzhiPair(stem,item.branch))
-      :GANZHI_STEMS;
-    populatePillarSelect(stemSelect,allowedStems,item.stem,key==='year'?'未知':'请选择');
-    populatePillarSelect(branchSelect,allowedBranches,item.branch,key==='year'?'未知':'请选择');
+    // Keep the two selectors independent: always expose all ten stems and twelve branches.
+    // Never silently filter options or clear the user's previous choice.
+    populatePillarSelect(stemSelect,GANZHI_STEMS,item.stem,key==='year'?'未知':'请选择');
+    populatePillarSelect(branchSelect,GANZHI_BRANCHES,item.branch,key==='year'?'未知':'请选择');
     item.stem=stemSelect.value;item.branch=branchSelect.value;
   }
   function manualPillarProblem(){
@@ -1776,11 +1770,11 @@
     for(const key of ['month','day']){
       const item=manualPillarOverride[key]||{};
       if(!item.stem||!item.branch) return (key==='month'?'月柱':'日柱')+'尚未填写完整，请同时选择天干和地支。';
-      if(!isValidGanzhiPair(item.stem,item.branch)) return (key==='month'?'月柱':'日柱')+'干支组合无效，请重新选择。';
+      if(!isValidGanzhiPair(item.stem,item.branch)) return (key==='month'?'月柱':'日柱')+'不是六十甲子中的有效组合，请核对老师给出的干支。';
     }
     const year=manualPillarOverride.year||{};
     if((year.stem&&!year.branch)||(!year.stem&&year.branch)) return '年柱请同时填写天干和地支，未知时两项都留空。';
-    if(year.stem&&year.branch&&!isValidGanzhiPair(year.stem,year.branch)) return '年柱干支组合无效，请重新选择。';
+    if(year.stem&&year.branch&&!isValidGanzhiPair(year.stem,year.branch)) return '年柱不是六十甲子中的有效组合，请核对老师给出的干支。';
     return '';
   }
   function renderManualPillarInputs(){
