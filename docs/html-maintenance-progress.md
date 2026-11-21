@@ -563,3 +563,33 @@
   - 未修改 main、未合并 PR #1、未部署 Production。
 - Status: Implemented on existing PR #1 branch; browser Preview verification pending.
 - Next step: 检查 Cloudflare Preview 部署后实际交互与保存/重新打开行为，再按反馈调整。
+
+
+## 2026-11-21 — 自动装卦反馈文案与 AI 文字卦盘补全（v98 follow-up）
+
+- User feedback: 自动装卦从全空白卦盘开始时，不应把程序刚填写的字段报告成「正确 24 项」；只有用户原本手工填写的内容存在错误时才列出错误。用户还要求复制给 AI 的文字能逐爻完整说明月令状态、月破、旬空等信息。
+- Auto-fill / checker changes:
+  - 点击自动装卦前先保存一份原始字段快照；仅将原来为空的字段自动补上。
+  - 自动补上的值不再进入「用户填写正确/错误」统计；汇总只说补了多少空白字段，不列正确数。
+  - 对原来已经手工填写的值逐项核对：错误会标明当前值、正确值并保留原值；检查按钮只列错误与缺失项，不列正确项目。
+  - 如果没有空白项，显示「没有需要自动填写的空白项目」，避免显示自动填写 0 项。
+- AI-readable text export changes:
+  - 增加本卦上卦、下卦、卦宫五行、卦宫世次，以及世爻/应爻的纳甲五行关系。
+  - 每爻逐一输出阴阳摇卦标记、纳甲地支与五行、月令旺相休囚死、旬空/不旬空、月破/不月破、月建对本爻的五行生克/六冲/六合、日辰对本爻的五行生克/六冲/六合、六亲、六神、世应身份、动静状态和人工伏藏标记。
+  - 动爻若缺少变卦纳甲或变爻六亲，会明确写「未填写」；全卦皆静时明确写「无明动或暗动，未形成变卦」。
+  - 明确输出年/月/日柱、日干起六神、旬空地支、三合/六合识别、老师分析 Memo、老师结论，并继续附上原始 JSON / analysisSnapshot。
+- Factory modification case reviewed from the user's saved main-branch record:
+  - Record ID: `7e0a6b19-92f2-4f8c-b7b0-8771955ad45b`; question: 厂房改造是否可以成功，能否中标。
+  - Saved chart: 火风鼎，离宫火，二世；上离、下巽；乙卯月、戊午日；旬空子丑；二爻世、五爻应；应克世。
+  - Lines from 初爻 to 上爻: 丑土子孙勾陈（囚、旬空）；亥水官鬼螣蛇（休、世）；酉金妻财白虎（死、月破）；酉金妻财玄武（死、月破）；未土子孙青龙（囚、应）；巳火兄弟朱雀（相）。六爻皆静。
+  - The export now spells out that 午火克酉金; the two 酉金妻财 lines are both 静爻、卯月月破, not旬空. It also spells out all other lines' month/day interactions.
+  - User memo has the parenthetical phrase「日克（用神克日建）」. From the saved 戊午日 and 酉金用神 branches, the computed direction is 日支午火克爻支酉金; the original Memo is preserved verbatim and not rewritten.
+- Tests / exact checks:
+  - Inline JavaScript passed V8 syntax compilation after each follow-up change.
+  - Auto-fill logic now compares only fields that were non-empty before automatic filling; no success count is generated for newly auto-filled values.
+  - Static inspection confirms full line-level month/day relations and seasonal states are included in AI-readable text.
+  - Actual browser click-through and copied-text clipboard review still need user-side Preview acceptance; no claim of end-to-end browser interaction testing.
+- Security and data-preservation:
+  - Only `index.html` and this maintenance log are changed on PR #1 branch. The saved factory case JSON and original Memo/conclusion were not modified.
+  - `main`, Production, Pages Functions, OAuth, credentials and original course records remain untouched.
+- Status: Updated on existing PR #1 branch; Preview deployment and user's browser acceptance pending.
