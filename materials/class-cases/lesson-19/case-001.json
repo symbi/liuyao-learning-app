@@ -1,0 +1,225 @@
+{
+  "recordType": "class-case",
+  "id": "L19-C01-work-transfer",
+  "lessonId": "lesson-19",
+  "category": "promotion",
+  "tagOrRealQuestion": "体制内工作调动是否成功（具体岗位竞争）",
+  "matchStatus": "verified",
+  "verificationBasis": [
+    "第十九课 ASR 开头直接提及同一位学员前一晚的工作调动卦，并明确问体制内工作调动是否成功。",
+    "老师讲到两重兄弟爻、一爻兄弟发动化财、官鬼伏在该动爻之下；与用户保存的六爻记录结构相吻合。",
+    "完整爻位、纳甲地支和世应以用户于 2026-11-21 保存的 HTML 每日记录为准；ASR 本身不能独立重建完整卦盘。"
+  ],
+  "dailyRecord": {
+    "repository": "symbi/liuyao-learning-app",
+    "path": "daily-records/2026/11/2026-11-21.json",
+    "recordId": "9f89c47a-ba51-44d1-81b5-ffba16a30ca2",
+    "savedRecordUrl": "https://github.com/symbi/liuyao-learning-app/blob/main/daily-records/2026/11/2026-11-21.json",
+    "savedOn": "2026-11-21",
+    "note": "recordDate/savedAt 是保存记录的日期时间，不应自动当作实际起卦日期时间。"
+  },
+  "sources": {
+    "lessonNotes": {
+      "repository": "symbi/liuyao-learning-app",
+      "path": "docs/lessons/lesson-19-notes-v0.1.md"
+    },
+    "rawTranscript": {
+      "repository": "symbi/liuyao-learning-raw",
+      "path": "lessons/lesson-19/transcript-asr-raw.txt",
+      "location": "第 1 段，约 0 分钟起，工作调动案例开头",
+      "url": "https://github.com/symbi/liuyao-learning-raw/blob/main/lessons/lesson-19/transcript-asr-raw.txt",
+      "limitation": "当前 Private raw 目录中归档的是 ASR 文本和 README；未见原始 WAV/M4A 音频文件或配套课件。"
+    },
+    "methodLesson": {
+      "repository": "symbi/liuyao-learning-app",
+      "path": "docs/lessons/lesson-06-notes-v0.1.md",
+      "supplementedBy": "用户于 2026-11-21 口述核对的八宫纳甲与伏神定位方法"
+    }
+  },
+  "casting": {
+    "question": "工作调动是不是成功，男，体制内的工作",
+    "yearPillar": null,
+    "monthPillar": "甲寅",
+    "dayPillar": "乙卯",
+    "xunkong": [
+      "子",
+      "丑"
+    ],
+    "originalHexagram": {
+      "name": "天水讼",
+      "upperTrigram": "乾",
+      "lowerTrigram": "坎",
+      "palace": "离",
+      "palaceElement": "火",
+      "palaceStage": "游魂"
+    },
+    "transformedHexagram": {
+      "name": "天风姤",
+      "changeLineNumbers": [
+        3
+      ],
+      "derivation": "天水讼第三爻变；下卦由坎变巽，上卦乾不变。原每日记录保存了动爻变支，但未单独保存完整变卦名称；本案例档案将其明确记出。"
+    },
+    "shiLineNumber": 4,
+    "yingLineNumber": 1,
+    "shiYingRelation": "应生世（应爻寅木生世爻午火）",
+    "lines": [
+      {
+        "lineNumber": 1,
+        "position": "初爻",
+        "yinYang": "阴",
+        "role": "应爻",
+        "flowers": 2,
+        "branch": "寅",
+        "element": "木",
+        "relation": "父母",
+        "sixGod": "青龙",
+        "movement": null,
+        "xunkong": false
+      },
+      {
+        "lineNumber": 2,
+        "position": "二爻",
+        "yinYang": "阳",
+        "role": null,
+        "flowers": 1,
+        "branch": "辰",
+        "element": "土",
+        "relation": "子孙",
+        "sixGod": "朱雀",
+        "movement": null,
+        "xunkong": false
+      },
+      {
+        "lineNumber": 3,
+        "position": "三爻",
+        "yinYang": "阴",
+        "role": null,
+        "flowers": 3,
+        "branch": "午",
+        "element": "火",
+        "relation": "兄弟",
+        "sixGod": "勾陈",
+        "movement": "明动",
+        "hiddenRelation": "官鬼",
+        "transformed": {
+          "yinYang": "阳",
+          "branch": "酉",
+          "element": "金",
+          "relation": "妻财"
+        },
+        "xunkong": false
+      },
+      {
+        "lineNumber": 4,
+        "position": "四爻",
+        "yinYang": "阳",
+        "role": "世爻",
+        "flowers": 1,
+        "branch": "午",
+        "element": "火",
+        "relation": "兄弟",
+        "sixGod": "螣蛇",
+        "movement": null,
+        "xunkong": false
+      },
+      {
+        "lineNumber": 5,
+        "position": "五爻",
+        "yinYang": "阳",
+        "role": null,
+        "flowers": 1,
+        "branch": "申",
+        "element": "金",
+        "relation": "妻财",
+        "sixGod": "白虎",
+        "movement": null,
+        "monthBreak": true,
+        "xunkong": false
+      },
+      {
+        "lineNumber": 6,
+        "position": "上爻",
+        "yinYang": "阳",
+        "role": null,
+        "flowers": 1,
+        "branch": "戌",
+        "element": "土",
+        "relation": "子孙",
+        "sixGod": "玄武",
+        "movement": null,
+        "xunkong": false
+      }
+    ],
+    "calendarSnapshot": {
+      "monthBranch": "寅",
+      "dayBranch": "卯",
+      "monthAndDayRelation": "月建、日辰地支均属木；对离宫火而言，木生火，六亲均为父母",
+      "monthWangXiang": "木旺、火相",
+      "monthBreak": "五爻申金受寅月冲，为月破（依据保存快照）",
+      "xunkong": "子丑"
+    },
+    "recordedBranchRelations": [
+      "应爻寅木生世爻午火。",
+      "二爻辰土与三爻变爻酉金构成辰酉六合；保存的分析快照同时记录辰土生酉金。"
+    ]
+  },
+  "hiddenSpirit": {
+    "targetUseGod": "官鬼",
+    "absentFromOriginalHexagram": true,
+    "palace": "离",
+    "palaceElement": "火",
+    "palacePureHexagram": "离为火",
+    "palacePureHexagramNajiaBranchesBottomToTop": [
+      "卯",
+      "丑",
+      "亥",
+      "酉",
+      "未",
+      "巳"
+    ],
+    "palacePureHexagramRelationsBottomToTop": [
+      "父母",
+      "子孙",
+      "官鬼",
+      "妻财",
+      "子孙",
+      "兄弟"
+    ],
+    "hiddenLineNumber": 3,
+    "hiddenRelation": "官鬼",
+    "hiddenBranch": "亥",
+    "hiddenElement": "水",
+    "flyingSpirit": {
+      "lineNumber": 3,
+      "branch": "午",
+      "element": "火",
+      "relation": "兄弟"
+    },
+    "hiddenFlyingFiveElementRelation": "亥水克午火，即伏神克飞神（伏克飞）",
+    "calculationSource": "按用户补充的八宫纳甲/伏神规则，使用已保存卦盘复算。ASR 只可辨认老师说官鬼伏在动爻下面，未可靠识别亥水这个地支。",
+    "htmlStorageBoundary": "HTML 当前人工标注字段保存 hiddenRelation=官鬼；亥水是本案例分析按本宫纯卦纳甲推算出来的结果，不应误写成原始 HTML 已保存字段。"
+  },
+  "teacherAnalysis": {
+    "sourceType": "第十九课原始 ASR 的归纳整理，不是逐字稿",
+    "points": [
+      "老师确认问事是体制内工作调动，目标岗位较明确。",
+      "老师指出卦中有两重兄弟爻，并将其放在竞争关系中比较：世爻兄弟代表求测者一方，另一兄弟爻代表竞争者。",
+      "老师先看到世爻兄弟得月日帮扶，父母爻也得月日支持，因此一开始认为调动并非完全没有希望；父母爻还被联系到领导/支持因素。",
+      "另一个兄弟爻发动并化妻财。老师将对方的发动状态与世爻静而不动进行比较，认为竞争者一方更占优势。",
+      "老师指出官鬼用神没有明现，伏在发动的兄弟爻下面。",
+      "老师最后倾向认为此次工作调动成功机会很小，建议不要在这件事上投入太多精力。"
+    ],
+    "conclusion": "成功机会很小，竞争者一方更占优势；可以适度努力，但不宜投入过多精力。",
+    "sourceCaution": "ASR 对个别六爻术语、重复句和领导身份描述存在误识。有关副职领导的细节可作为课堂笔记线索，不当作已完成逐字校订的原话。"
+  },
+  "aiCaseAnalysis": {
+    "coreStructure": "求官/工作调动，以官鬼为用神；官鬼不现于本卦六爻，按离宫本宫纯卦查得官鬼亥水，伏于三爻兄弟午火之下。三爻兄弟明动化妻财酉金；四爻兄弟午火持世而静。",
+    "comparison": "世爻午火受寅、卯木生扶，且应爻寅木生世；但另一兄弟爻发动并化妻财，老师据此将竞争者视为更有优势。不能仅凭世爻得月日生扶就断调动成功。",
+    "hiddenSpiritNote": "伏神亥水克飞神午火，记录为伏克飞；此五行关系需继续结合伏神旺衰、飞神状态、月建日辰与动变分析，不单独作为吉凶结论。",
+    "caution": "“用神不上卦通常较难成”是课堂总结中的经验提醒，不转换成固定概率或自动判断规则。此例的结论以老师对具体竞争结构的综合判断为主。"
+  },
+  "appConclusionAsSaved": "工作调动不能成功，有竞争者，竞争不过",
+  "conclusionWordingReview": "保存字段的“不能成功”比 ASR 中老师反复表达的“成功率很小”更绝对。复盘稿采用更贴近 ASR 的“成功机会很小”；是否同步修改 HTML 原记录，待用户确认。",
+  "status": "verified_chart_to_classroom_case; raw_audio_not_archived"
+}
