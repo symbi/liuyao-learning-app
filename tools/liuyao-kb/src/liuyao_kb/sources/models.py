@@ -136,7 +136,7 @@ class ParsedDocument(BaseModel):
     parser_version: str = Field(min_length=1)
     title: str | None = None
     sections: tuple[ParsedSection, ...] = ()
-    metadata: Mapping[str, Any] = Field(default_factory=dict)
+    metadata: Mapping[str, Any] = Field(default_factory=dict, validate_default=True)
 
     @field_validator("metadata", mode="after")
     @classmethod

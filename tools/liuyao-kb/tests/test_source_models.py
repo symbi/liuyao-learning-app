@@ -182,6 +182,22 @@ class TestParsedDocument:
         assert document.metadata["nested"]["value"] == "original"  # type: ignore[index]
         assert document.metadata["items"][0] == "first"  # type: ignore[index]
 
+    def test_default_metadata_is_immutable_and_serializable(self) -> None:
+        document = ParsedDocument(
+            source_type=SourceType.TEXT,
+            source_identity="text:fixture.txt",
+            source_uri="fixture.txt",
+            content_hash=sha256_text("text"),
+            parser_version="text-1",
+        )
+
+        assert document.metadata == {}
+        with pytest.raises(TypeError):
+            document.metadata["x"] = "y"  # type: ignore[index]
+        assert document.model_dump()["metadata"] == {}
+        assert document.model_dump(mode="json")["metadata"] == {}
+        assert json.loads(document.model_dump_json())["metadata"] == {}
+
     def test_nested_metadata_serializes_in_all_pydantic_modes(self) -> None:
         metadata = {
             "nested": {"name": "巽为风", "flags": [True, False], "count": 2},
