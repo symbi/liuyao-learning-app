@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v96</title>
+<title>六爻排卦与每日记录 v97</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -148,8 +148,11 @@
   .calendar-char.element-metal{color:#b98519}
   .calendar-divider{color:#999687;font-weight:500;padding:0 3px}
   .trigram-group-rows{display:flex;flex-direction:column;gap:7px;min-width:0}
-  .line-row{display:grid;width:max-content;max-width:100%;grid-template-columns:116px 52px 29px 46px 52px 29px 46px 6em 88px;gap:6px;align-items:center;border:1px solid #e8e0d1;border-radius:9px;padding:6px 8px;background:#fffefb;transition:border-color .15s,background .15s;overflow-x:auto}
+  .line-row{display:grid;width:max-content;max-width:100%;grid-template-columns:116px 52px 52px 46px 52px 29px 46px 6em 88px;gap:6px;align-items:center;border:1px solid #e8e0d1;border-radius:9px;padding:6px 8px;background:#fffefb;transition:border-color .15s,background .15s;overflow-x:auto}
   .line-row:hover{border-color:#c9d6c9}
+  .branch-cell-group{display:flex;align-items:center;gap:2px;width:100%;min-width:0;}
+  .branch-cell-group>.hidden-relation-cell{flex:0 0 21px;width:21px;min-width:21px;height:31px;min-height:31px;padding:0;font-size:9px;}
+  .branch-cell-group>.branch-cell{flex:1 1 0;width:auto;min-width:0;}
   .cell-label{display:none;font-size:10px;color:var(--muted);margin-bottom:3px}
   .flower-options{display:flex;gap:3px;flex-wrap:nowrap;justify-content:flex-start}
   .flower-btn{width:26px;min-width:26px;height:29px;flex:0 0 26px;border:1px solid #e0d8c8;border-radius:6px;padding:3px 0;background:#faf7ef;color:#535349;font-size:14px;line-height:1;font-weight:800;white-space:nowrap}
@@ -229,7 +232,7 @@
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(15px);background:#283e32;color:#fff;padding:10px 15px;border-radius:10px;box-shadow:0 7px 24px #0002;opacity:0;pointer-events:none;transition:.2s;z-index:10;font-size:12px}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(max-width:1120px){
-    .line-row{grid-template-columns:116px 48px 28px 44px 48px 28px 44px 6em 88px;gap:5px;padding:6px}
+    .line-row{grid-template-columns:116px 48px 52px 44px 48px 28px 44px 6em 88px;gap:5px;padding:6px}
   }
   @media(max-width:820px){
     .trigram-group{grid-template-columns:48px minmax(0,1fr);gap:6px}
@@ -240,7 +243,7 @@
     .prototype-tag{font-size:10px;padding:6px 9px}
     .palette-grid{grid-template-columns:1fr;gap:16px}
     .palette-group+.palette-group{border-left:0;border-top:1px solid var(--line);padding:15px 0 0}
-    .line-row{grid-template-columns:112px 45px 27px 42px 45px 27px 42px 6em 88px;gap:4px;padding:6px}
+    .line-row{grid-template-columns:112px 45px 52px 42px 45px 27px 42px 6em 88px;gap:4px;padding:6px}
     .flower-cell{grid-area:auto}
     .symbol-cell{grid-area:auto}
     .branch-cell{grid-area:auto}
@@ -275,7 +278,7 @@
     .palette-grid{grid-template-columns:1fr;gap:9px}
     .palette-group+.palette-group{border-left:0;border-top:1px solid var(--line);padding:9px 0 0}
     .branch-groups{grid-template-columns:auto auto;gap:8px}
-    .line-row{overflow-x:auto;grid-template-columns:108px 42px 26px 40px 42px 26px 40px 6em 88px;gap:3px;padding:5px 4px}
+    .line-row{overflow-x:auto;grid-template-columns:108px 42px 52px 40px 42px 26px 40px 6em 88px;gap:3px;padding:5px 4px}
     .effect-select{height:29px;font-family:inherit;font-size:13px;font-weight:750;width:6em;min-width:6em;max-width:6em;padding-left:7px;padding-right:26px}
   }
 
@@ -473,7 +476,7 @@
   .sixgod-caption{font-size:11px;color:var(--muted);font-weight:700;white-space:nowrap;}
   .god-tiles{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
   .god-tiles .tile{width:44px;min-width:44px;height:30px;font-size:12px;}
-  .line-row{grid-template-columns:116px 52px 29px 46px 46px 52px 29px 46px 6em 88px;}
+  .line-row{grid-template-columns:116px 52px 52px 46px 46px 52px 29px 46px 6em 88px;}
   .drop-slot.inactive-change-slot{visibility:hidden;pointer-events:none;}
   .shen-cell{width:46px;min-width:46px;}
   .drop-slot.shen-filled{background:#f2eff8;border-color:#d1c8df;}
@@ -536,13 +539,13 @@
   .day-god-drop-slot .drop-token{font-size:13px;}
   /* Six-spirit palette tiles share one consistent button treatment; no automatic tile outline. */
 
-  @media(max-width:1120px){.line-row{grid-template-columns:116px 48px 28px 44px 44px 48px 28px 44px 6em 88px;gap:5px;padding:6px;}}
+  @media(max-width:1120px){.line-row{grid-template-columns:116px 48px 52px 44px 44px 48px 28px 44px 6em 88px;gap:5px;padding:6px;}}
   @media(max-width:820px){
     .calendar-topline{align-items:flex-start;flex-direction:column;gap:8px;}
     .jianchu-guidance{max-width:min(92vw,720px);}
     .record-controls{justify-content:flex-start;}
     .palette-stack{gap:7px;}
-    .line-row{grid-template-columns:112px 45px 27px 42px 42px 45px 27px 42px 6em 88px;gap:4px;padding:6px;}
+    .line-row{grid-template-columns:112px 45px 52px 42px 42px 45px 27px 42px 6em 88px;gap:4px;padding:6px;}
     .god-tiles .tile{width:42px;min-width:42px;}
   }
   /* v71 mobile: the six-column worksheet remains horizontally scrollable on narrow phones. */
@@ -555,7 +558,7 @@
     .jianchu-guidance{flex:1 1 100%;width:100%;max-width:100%;margin-left:2px;padding-left:3px;gap:1px;font-size:13px;}
     .jianchu-guidance>span{flex:0 0 auto;white-space:nowrap;}
     .record-controls{width:100%;justify-content:flex-start;}
-    .line-row{grid-template-columns:108px 42px 26px 40px 40px 42px 26px 40px 6em 88px;gap:3px;padding:5px 4px;}
+    .line-row{grid-template-columns:108px 42px 52px 40px 40px 42px 26px 40px 6em 88px;gap:3px;padding:5px 4px;}
     .shen-cell{width:40px;min-width:40px;}
     .god-tiles .tile{width:40px;min-width:40px;}
   }
@@ -675,11 +678,6 @@
   .branch-relation-hint strong{font-size:11px;font-weight:900;white-space:nowrap;}
   .branch-relation-hint small{font-size:9px;color:#786d5a;white-space:nowrap;}
   .branch-relation-hint.has-control{border-color:#d6aa91;background:#fff1e9;color:#9f4e38;}
-  .hidden-spirit-display{grid-column:1/-1;display:flex;align-items:center;flex-wrap:wrap;gap:5px;min-width:0;margin-top:-2px;padding:3px 5px 1px;border-top:1px dashed #d9d1c2;color:#5b5b51;font-size:11px;line-height:1.35;}
-  .hidden-spirit-display:empty{display:none;}
-  .hidden-spirit-badge{display:inline-flex;align-items:center;justify-content:center;padding:1px 5px;border-radius:4px;background:#e7f1f7;color:#286887;font-size:10px;font-weight:900;}
-  .hidden-spirit-name{font-size:12px;font-weight:900;color:#286887;white-space:nowrap;}
-  .hidden-spirit-detail{font-size:10px;color:#746e61;}
   .liuhe-overlay{position:absolute;left:0;top:0;z-index:11;display:block;overflow:visible;pointer-events:none;}
   .liuhe-overlay .liuhe-edge{fill:none;stroke-width:2.8;stroke-linecap:round;stroke-dasharray:5 5;opacity:.84;}
   .liuhe-overlay .liuhe-endpoint{stroke:#fffdf7;stroke-width:1.1;}
@@ -1226,7 +1224,7 @@
     questionUseGodEl.textContent=category?category.useGod:'—';
     questionHintEl.textContent=category?category.hint:'';
   }
-  questionCategoryEl.addEventListener('change',()=>{setQuestionCategory(questionCategoryEl.value);refreshHiddenSpiritDisplays();});
+  questionCategoryEl.addEventListener('change',()=>setQuestionCategory(questionCategoryEl.value));
   // A new entry starts as the user's daily fortune reading; saved records restore their own category.
   setQuestionCategory('daily');
   function getQuestionSnapshot(){
@@ -1911,7 +1909,7 @@
     2:{yang:false,moving:false,label:'••'},
     3:{yang:false,moving:true,label:'X'}
   };
-  let state = Array.from({length:6}, ()=>({flowers:null, branch:null, relation:null, shen:null, changeBranch:null, changeRelation:null, effect:''}));
+  let state = Array.from({length:6}, ()=>({flowers:null, branch:null, relation:null, hiddenRelation:null, shen:null, changeBranch:null, changeRelation:null, effect:''}));
   let selected = null;
   document.querySelectorAll('.case-pillar-slot').forEach(slot=>{
     slot.addEventListener('click',()=>{
@@ -2144,7 +2142,10 @@
     const count=document.createElement('div'); count.className='cell flower-cell';
     count.innerHTML='<div class="flower-options" role="group" aria-label="第'+meta.cast+'摇的记号">'+[{n:1,s:'•',a:'一花两字'},{n:2,s:'••',a:'两花一字'},{n:3,s:'X',a:'三花',moving:true},{n:0,s:'O',a:'三字',moving:true}].map(o=>'<button class="flower-btn'+(o.moving?' moving-option':'')+'" type="button" data-flower="'+o.n+'"'+(o.moving?' data-moving="true"':'')+' title="'+o.a+'" aria-label="'+o.a+'">'+o.s+'</button>').join('')+'</div>';
     const symbol=document.createElement('div'); symbol.className='cell line-result symbol-cell'; symbol.innerHTML='<div class="yao-mark"><span class="yangbar"></span></div><span class="line-indicators"><span class="shi-indicator"></span><span class="ying-indicator"></span></span>'; 
+    const branchGroup=document.createElement('div'); branchGroup.className='branch-cell-group';
+    const hiddenRelation=document.createElement('div'); hiddenRelation.className='drop-slot kin-cell hidden-relation-cell'; hiddenRelation.dataset.dropType='relation'; hiddenRelation.dataset.zone='hiddenRelation'; hiddenRelation.dataset.lineId=meta.id; hiddenRelation.setAttribute('role','button'); hiddenRelation.setAttribute('tabindex','0'); hiddenRelation.setAttribute('aria-label',meta.pos+'伏藏六亲标记'); hiddenRelation.title='可选：拖入伏藏六亲'; hiddenRelation.innerHTML='<span class="slot-label">＋</span>';
     const branch=document.createElement('div'); branch.className='drop-slot branch-cell'; branch.dataset.dropType='branch'; branch.dataset.zone='branch'; branch.dataset.lineId=meta.id; branch.setAttribute('role','button'); branch.setAttribute('tabindex','0'); branch.setAttribute('aria-label',meta.pos+'地支'); branch.innerHTML='<span class="slot-label">＋</span>';
+    branchGroup.append(hiddenRelation,branch);
     const kin=document.createElement('div'); kin.className='drop-slot kin-cell'; kin.dataset.dropType='relation'; kin.dataset.zone='relation'; kin.dataset.lineId=meta.id; kin.setAttribute('role','button'); kin.setAttribute('tabindex','0'); kin.setAttribute('aria-label',meta.pos+'六亲'); kin.innerHTML='<span class="slot-label">＋</span>';
     const shen=document.createElement('div'); shen.className='drop-slot kin-cell shen-cell'; shen.dataset.dropType='god'; shen.dataset.zone='shen'; shen.dataset.lineId=meta.id; shen.setAttribute('role','button'); shen.setAttribute('tabindex','0'); shen.setAttribute('aria-label',meta.pos+'六神'); shen.innerHTML='<span class="slot-label">＋</span>';
     const change=document.createElement('div'); change.className='change-cell'; change.setAttribute('aria-label',meta.pos+'变卦爻位'); change.innerHTML='<div class="change-mark empty"><span class="yangbar"></span></div>';
@@ -2156,7 +2157,7 @@
     count.querySelectorAll('[data-flower]').forEach(btn=>btn.addEventListener('click',()=>{
       state[meta.id].flowers=Number(btn.dataset.flower); state.forEach((_,i)=>renderRow(i));
     }));
-    [branch,kin,shen,changeBranch,changeKin].forEach(slot=>{
+    [hiddenRelation,branch,kin,shen,changeBranch,changeKin].forEach(slot=>{
       slot.addEventListener('dragover',e=>{e.preventDefault();slot.classList.add('drag-over');});
       slot.addEventListener('dragleave',()=>slot.classList.remove('drag-over'));
       slot.addEventListener('drop',e=>{
@@ -2176,8 +2177,7 @@
       slot.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&selected){e.preventDefault();if(selected.type===slot.dataset.dropType)assignToken(meta.id,selected.type,selected.value,slot.dataset.zone);}});
     });
     const branchRelationHint=document.createElement('div');branchRelationHint.className='branch-relation-hint';branchRelationHint.setAttribute('aria-live','polite');
-    const hiddenSpiritDisplay=document.createElement('div');hiddenSpiritDisplay.className='hidden-spirit-display';hiddenSpiritDisplay.setAttribute('aria-live','polite');
-    row.append(count,symbol,branch,kin,shen,change,changeBranch,changeKin,effect,branchRelationHint,hiddenSpiritDisplay);
+    row.append(count,symbol,branchGroup,kin,shen,change,changeBranch,changeKin,effect,branchRelationHint);
     return row;
   }
   function assignToken(lineId,type,value,zone){
@@ -2237,6 +2237,7 @@
       changeMark.innerHTML='<span class="yangbar"></span>';
       changeMark.style.visibility='hidden';
     }
+    filledSlot(row.querySelector('[data-zone="hiddenRelation"]'),item.hiddenRelation,'relation');
     filledSlot(row.querySelector('[data-zone="branch"]'),item.branch,'branch');
     filledSlot(row.querySelector('[data-zone="relation"]'),item.relation,'relation');
     filledSlot(row.querySelector('[data-zone="shen"]'),item.shen,'god');
@@ -2276,94 +2277,6 @@
   const hexagramData = {"111111":{"full":"乾为天","label":"乾为天","palace":"乾","element":"metal","stage":"本宫","shi":6},"011111":{"full":"天风姤","label":"姤","palace":"乾","element":"metal","stage":"一世","shi":1},"001111":{"full":"天山遁","label":"遁","palace":"乾","element":"metal","stage":"二世","shi":2},"000111":{"full":"天地否","label":"否","palace":"乾","element":"metal","stage":"三世","shi":3},"000011":{"full":"风地观","label":"观","palace":"乾","element":"metal","stage":"四世","shi":4},"000001":{"full":"山地剥","label":"剥","palace":"乾","element":"metal","stage":"五世","shi":5},"000101":{"full":"火地晋","label":"晋","palace":"乾","element":"metal","stage":"游魂","shi":4},"111101":{"full":"火天大有","label":"大有","palace":"乾","element":"metal","stage":"归魂","shi":3},"010010":{"full":"坎为水","label":"坎为水","palace":"坎","element":"water","stage":"本宫","shi":6},"110010":{"full":"水泽节","label":"节","palace":"坎","element":"water","stage":"一世","shi":1},"100010":{"full":"水雷屯","label":"屯","palace":"坎","element":"water","stage":"二世","shi":2},"101010":{"full":"水火既济","label":"既济","palace":"坎","element":"water","stage":"三世","shi":3},"101110":{"full":"泽火革","label":"革","palace":"坎","element":"water","stage":"四世","shi":4},"101100":{"full":"雷火丰","label":"丰","palace":"坎","element":"water","stage":"五世","shi":5},"101000":{"full":"地火明夷","label":"明夷","palace":"坎","element":"water","stage":"游魂","shi":4},"010000":{"full":"地水师","label":"师","palace":"坎","element":"water","stage":"归魂","shi":3},"001001":{"full":"艮为山","label":"艮为山","palace":"艮","element":"earth","stage":"本宫","shi":6},"101001":{"full":"山火贲","label":"贲","palace":"艮","element":"earth","stage":"一世","shi":1},"111001":{"full":"山天大畜","label":"大畜","palace":"艮","element":"earth","stage":"二世","shi":2},"110001":{"full":"山泽损","label":"损","palace":"艮","element":"earth","stage":"三世","shi":3},"110101":{"full":"火泽睽","label":"睽","palace":"艮","element":"earth","stage":"四世","shi":4},"110111":{"full":"天泽履","label":"履","palace":"艮","element":"earth","stage":"五世","shi":5},"110011":{"full":"风泽中孚","label":"中孚","palace":"艮","element":"earth","stage":"游魂","shi":4},"001011":{"full":"风山渐","label":"渐","palace":"艮","element":"earth","stage":"归魂","shi":3},"100100":{"full":"震为雷","label":"震为雷","palace":"震","element":"wood","stage":"本宫","shi":6},"000100":{"full":"雷地豫","label":"豫","palace":"震","element":"wood","stage":"一世","shi":1},"010100":{"full":"雷水解","label":"解","palace":"震","element":"wood","stage":"二世","shi":2},"011100":{"full":"雷风恒","label":"恒","palace":"震","element":"wood","stage":"三世","shi":3},"011000":{"full":"地风升","label":"升","palace":"震","element":"wood","stage":"四世","shi":4},"011010":{"full":"水风井","label":"井","palace":"震","element":"wood","stage":"五世","shi":5},"011110":{"full":"泽风大过","label":"大过","palace":"震","element":"wood","stage":"游魂","shi":4},"100110":{"full":"泽雷随","label":"随","palace":"震","element":"wood","stage":"归魂","shi":3},"011011":{"full":"巽为风","label":"巽为风","palace":"巽","element":"wood","stage":"本宫","shi":6},"111011":{"full":"风天小畜","label":"小畜","palace":"巽","element":"wood","stage":"一世","shi":1},"101011":{"full":"风火家人","label":"家人","palace":"巽","element":"wood","stage":"二世","shi":2},"100011":{"full":"风雷益","label":"益","palace":"巽","element":"wood","stage":"三世","shi":3},"100111":{"full":"天雷无妄","label":"无妄","palace":"巽","element":"wood","stage":"四世","shi":4},"100101":{"full":"火雷噬嗑","label":"噬嗑","palace":"巽","element":"wood","stage":"五世","shi":5},"100001":{"full":"山雷颐","label":"颐","palace":"巽","element":"wood","stage":"游魂","shi":4},"011001":{"full":"山风蛊","label":"蛊","palace":"巽","element":"wood","stage":"归魂","shi":3},"101101":{"full":"离为火","label":"离为火","palace":"离","element":"fire","stage":"本宫","shi":6},"001101":{"full":"火山旅","label":"旅","palace":"离","element":"fire","stage":"一世","shi":1},"011101":{"full":"火风鼎","label":"鼎","palace":"离","element":"fire","stage":"二世","shi":2},"010101":{"full":"火水未济","label":"未济","palace":"离","element":"fire","stage":"三世","shi":3},"010001":{"full":"山水蒙","label":"蒙","palace":"离","element":"fire","stage":"四世","shi":4},"010011":{"full":"风水涣","label":"涣","palace":"离","element":"fire","stage":"五世","shi":5},"010111":{"full":"天水讼","label":"讼","palace":"离","element":"fire","stage":"游魂","shi":4},"101111":{"full":"天火同人","label":"同人","palace":"离","element":"fire","stage":"归魂","shi":3},"000000":{"full":"坤为地","label":"坤为地","palace":"坤","element":"earth","stage":"本宫","shi":6},"100000":{"full":"地雷复","label":"复","palace":"坤","element":"earth","stage":"一世","shi":1},"110000":{"full":"地泽临","label":"临","palace":"坤","element":"earth","stage":"二世","shi":2},"111000":{"full":"地天泰","label":"泰","palace":"坤","element":"earth","stage":"三世","shi":3},"111100":{"full":"雷天大壮","label":"大壮","palace":"坤","element":"earth","stage":"四世","shi":4},"111110":{"full":"泽天夬","label":"夬","palace":"坤","element":"earth","stage":"五世","shi":5},"111010":{"full":"水天需","label":"需","palace":"坤","element":"earth","stage":"游魂","shi":4},"000010":{"full":"水地比","label":"比","palace":"坤","element":"earth","stage":"归魂","shi":3},"110110":{"full":"兑为泽","label":"兑为泽","palace":"兑","element":"metal","stage":"本宫","shi":6},"010110":{"full":"泽水困","label":"困","palace":"兑","element":"metal","stage":"一世","shi":1},"000110":{"full":"泽地萃","label":"萃","palace":"兑","element":"metal","stage":"二世","shi":2},"001110":{"full":"泽山咸","label":"咸","palace":"兑","element":"metal","stage":"三世","shi":3},"001010":{"full":"水山蹇","label":"蹇","palace":"兑","element":"metal","stage":"四世","shi":4},"001000":{"full":"地山谦","label":"谦","palace":"兑","element":"metal","stage":"五世","shi":5},"001100":{"full":"雷山小过","label":"小过","palace":"兑","element":"metal","stage":"游魂","shi":4},"110100":{"full":"雷泽归妹","label":"归妹","palace":"兑","element":"metal","stage":"归魂","shi":3}};
   const elementClasses = ['element-water','element-wood','element-earth','element-fire','element-metal'];
   let currentHexagramInfo = null;
-  // 八宫首卦纳甲地支，自初爻到上爻。用于本卦缺六亲时按同爻位取伏神。
-  const PURE_PALACE_NAJIA = {
-    '乾':['子','寅','辰','午','申','戌'],
-    '坎':['寅','辰','午','申','戌','子'],
-    '艮':['辰','午','申','戌','子','寅'],
-    '震':['子','寅','辰','午','申','戌'],
-    '巽':['丑','亥','酉','未','巳','卯'],
-    '离':['卯','丑','亥','酉','未','巳'],
-    '坤':['未','巳','卯','丑','亥','酉'],
-    '兑':['巳','卯','丑','亥','酉','未']
-  };
-  function getSixRelativeForBranch(branch,palaceElement){
-    const branchElement=branchElements[branch];
-    if(!branchElement||!palaceElement) return null;
-    if(branchElement===palaceElement) return '兄弟';
-    if(generates[branchElement]===palaceElement) return '父母';
-    if(controls[branchElement]===palaceElement) return '官鬼';
-    if(generates[palaceElement]===branchElement) return '子孙';
-    if(controls[palaceElement]===branchElement) return '妻财';
-    return null;
-  }
-  function getFlyingHiddenRelation(flyingElement,hiddenElement){
-    if(!flyingElement||!hiddenElement) return null;
-    if(flyingElement===hiddenElement) return '比和';
-    if(controls[hiddenElement]===flyingElement) return '伏克飞';
-    if(controls[flyingElement]===hiddenElement) return '飞克伏';
-    if(generates[flyingElement]===hiddenElement) return '飞生伏';
-    if(generates[hiddenElement]===flyingElement) return '伏生飞';
-    return null;
-  }
-  function deriveHiddenSpiritAnalysis(recordLines,useGod,hexagram){
-    if(!relations.includes(useGod)) return {status:'not-applicable',useGod:useGod||null,candidates:[],reason:'当前主要用神不是六亲'};
-    if(!hexagram?.palace||!hexagram?.element) return {status:'unavailable',useGod,palace:hexagram?.palace||null,candidates:[],reason:'卦象或卦宫资料不完整'};
-    const lines=Array.isArray(recordLines)?recordLines:[];
-    if(lines.length!==6) return {status:'incomplete',useGod,palace:hexagram.palace,candidates:[],reason:'需要完整六爻资料'};
-    const observed=lines.map(line=>line?.relation||getSixRelativeForBranch(line?.branch,hexagram.element));
-    if(observed.some(value=>!value)) return {status:'incomplete',useGod,palace:hexagram.palace,candidates:[],reason:'六爻中仍有爻位缺少六亲和纳甲地支，不能确认用神缺失'};
-    const appearances=observed.map((relation,index)=>relation===useGod?{lineNumber:index+1,branch:lines[index]?.branch||null,relation}:null).filter(Boolean);
-    if(appearances.length) return {status:'present',useGod,palace:hexagram.palace,candidates:[],appearances,reason:'主要用神已在本卦出现'};
-    const pureBranches=PURE_PALACE_NAJIA[hexagram.palace];
-    if(!pureBranches) return {status:'unavailable',useGod,palace:hexagram.palace,candidates:[],reason:'缺少该卦宫的本宫纳甲表'};
-    const baseHexagram=Object.values(hexagramData).find(item=>item.palace===hexagram.palace&&item.stage==='本宫');
-    const candidates=pureBranches.map((branch,index)=>{
-      if(getSixRelativeForBranch(branch,hexagram.element)!==useGod) return null;
-      const flyingLine=lines[index]||{},flyingBranch=flyingLine.branch||null;
-      const flyingElement=flyingBranch?branchElements[flyingBranch]||null:null,hiddenElement=branchElements[branch]||null;
-      return {
-        lineNumber:index+1,position:['初爻','二爻','三爻','四爻','五爻','上爻'][index],
-        relation:useGod,branch,element:hiddenElement,elementName:({water:'水',wood:'木',earth:'土',fire:'火',metal:'金'})[hiddenElement]||null,
-        source:'palace-pure-hexagram',sourceHexagram:baseHexagram?.full||null,
-        flying:{lineNumber:index+1,branch:flyingBranch,relation:observed[index]||null,element:flyingElement,
-          elementName:({water:'水',wood:'木',earth:'土',fire:'火',metal:'金'})[flyingElement]||null,
-          movement:mapping[flyingLine.flowers]?.moving?'明动':null,
-          relationToHidden:getFlyingHiddenRelation(flyingElement,hiddenElement)}
-      };
-    }).filter(Boolean);
-    return candidates.length
-      ?{status:'hidden',useGod,palace:hexagram.palace,palaceBaseHexagram:baseHexagram?.full||null,method:'八宫本宫首卦同爻位取伏神',candidates,reason:'主要用神未在本卦出现'}
-      :{status:'not-found',useGod,palace:hexagram.palace,palaceBaseHexagram:baseHexagram?.full||null,method:'八宫本宫首卦同爻位取伏神',candidates:[],reason:'本宫首卦未找到对应六亲，需人工核查纳甲口径'};
-  }
-
-  function refreshHiddenSpiritDisplays(){
-    if(!rowsHost||!Array.isArray(state)) return;
-    const pattern=state.length===6&&state.every(item=>item.flowers!==null)
-      ?state.map(item=>mapping[item.flowers]?.yang?'1':'0').join(''):null;
-    const hexagram=pattern?hexagramData[pattern]||null:null;
-    const category=QUESTION_CATALOG.find(item=>item.value===questionCategoryEl.value);
-    const analysis=deriveHiddenSpiritAnalysis(state.map(item=>({flowers:item.flowers,branch:item.branch,relation:item.relation})),category?.useGod||'',hexagram);
-    const candidateByLine=new Map((analysis.status==='hidden'?analysis.candidates:[]).map(item=>[item.lineNumber,item]));
-    rowsHost.querySelectorAll('.line-row').forEach(row=>{
-      const display=row.querySelector('.hidden-spirit-display');
-      if(!display) return;
-      display.replaceChildren();
-      const candidate=candidateByLine.get(Number(row.dataset.lineId)+1);
-      if(!candidate) return;
-      const badge=document.createElement('span');badge.className='hidden-spirit-badge';badge.textContent='伏';
-      const name=document.createElement('strong');name.className='hidden-spirit-name';
-      name.textContent=candidate.relation+' '+candidate.branch+candidate.elementName;
-      const detail=document.createElement('span');detail.className='hidden-spirit-detail';
-      const flying=candidate.flying||{};
-      detail.textContent=(flying.relationToHidden||'飞伏关系待核')+
-        (flying.branch?' · 飞神：'+(flying.relation||'六亲未标')+' '+flying.branch+(flying.elementName||''):' · 飞神地支未填写')+
-        (flying.movement?' · '+flying.movement:'');
-      display.append(badge,name,detail);
-      display.setAttribute('aria-label','伏神：'+candidate.relation+' '+candidate.branch+(candidate.elementName||'')+'；'+detail.textContent);
-    });
-  }
-
   const palaceDisplayOrder = ['乾','坎','艮','震','巽','离','坤','兑'];
   const palaceStageOrder = ['本宫','一世','二世','三世','四世','五世','游魂','归魂'];
   let palaceReferenceRendered = false;
@@ -2514,7 +2427,6 @@
     });
     renderHexagramName();
     renderLineIndicators();
-    refreshHiddenSpiritDisplays();
   }
   function getDarkMovementInfo(item,dayBranch=currentDayBranch){
     if(!item || item.flowers===null || !item.branch || !dayBranch) return null;
@@ -2718,7 +2630,7 @@
       const movement=getLineMovementInfo(line,dayBranch);
       return {lineNumber:index+1,position:['初爻','二爻','三爻','四爻','五爻','上爻'][index]||'',
         role:index+1===shiLineNumber?'世爻':(index+1===yingLineNumber?'应爻':null),flowers:line.flowers,
-        relation:line.relation||null,sixGod:line.shen||null,movement:movement?movement.kind:null,
+        relation:line.relation||null,hiddenRelation:relations.includes(line.hiddenRelation)?line.hiddenRelation:null,sixGod:line.shen||null,movement:movement?movement.kind:null,
         original:branchSnapshot(line.branch),transformed:movement&&line.changeBranch?branchSnapshot(line.changeBranch):null,
         changeRelation:movement?(line.changeRelation||null):null,effect:movement?(line.effect||''):''};
     });
@@ -2765,12 +2677,10 @@
         shiYing={kind,shiLineNumber,yingLineNumber,shiBranch,yingBranch,shiElement,yingElement};
       }
     }
-    const hiddenSpirits=deriveHiddenSpiritAnalysis(recordLines,record?.question?.mainUseGod,hexagram);
-    if(hiddenSpirits.status==='hidden') hiddenSpirits.candidates=hiddenSpirits.candidates.map(candidate=>({...candidate,branchState:branchSnapshot(candidate.branch),flying:{...candidate.flying,branchState:branchSnapshot(candidate.flying.branch)}}));
     const dateCombinations=findDateTrineCombinations(recordLines,monthBranch,dayBranch);
     const dateTrines=dateCombinations.map(item=>serializeDateTrineCombination(item,recordLines,monthBranch,dayBranch));
     const intraTrines=findIntraHexagramTrines(recordLines,dayBranch,dateCombinations);
-    return {schemaVersion:4,calculatedAt:new Date().toISOString(),calculationSource:'saved-pillars-and-line-inputs',
+    return {schemaVersion:5,calculatedAt:new Date().toISOString(),calculationSource:'saved-pillars-and-line-inputs',
       calendar:{yearPillar:String(record?.pillars?.year||'')||null,monthPillar:monthPillar||null,dayPillar:dayPillar||null,
         pillarSource:record?.pillarSource||'calendar-date',
         monthBranch,dayBranch,monthWangXiangRule:monthRule?.label||null,
@@ -2778,7 +2688,7 @@
       pillarOverride:record?.pillarOverride?.enabled?JSON.parse(JSON.stringify(record.pillarOverride)):null,
       hexagram:hexagram?{name:hexagram.full,palace:hexagram.palace,element:hexagram.element,
         elementName:elementNames[hexagram.element]||null,stage:hexagram.stage,shiLineNumber,yingLineNumber}:null,
-      lines:lineSnapshots,hiddenSpirits,shiYing,trines:{dateBased:dateTrines,withinHexagram:intraTrines},
+      lines:lineSnapshots,shiYing,trines:{dateBased:dateTrines,withinHexagram:intraTrines},
       branchRelations:{sameLineLiuHe,betweenLinesLiuHe,lessonRule:liuHeRule}};
   }
 
@@ -3305,7 +3215,7 @@
   }
   function makeRecordSnapshot(){
     const record={
-      schemaVersion:15,
+      schemaVersion:16,
       id:editingRecordId||(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(16).slice(2)),
       savedAt:new Date().toISOString(),date:document.getElementById('record-date').value||selectedDateKey,timezone:JAPAN_TZ,
       question:getQuestionSnapshot(),isCase:isCaseRecord,
@@ -3322,7 +3232,7 @@
       // Keep user input separate from calculated analysis, so records can be independently re-evaluated.
       lines:state.map(item=>{
         const isMoving=!!getLineMovementInfo(item);
-        return {flowers:item.flowers,branch:item.branch,relation:item.relation,shen:item.shen,
+        return {flowers:item.flowers,branch:item.branch,relation:item.relation,hiddenRelation:item.hiddenRelation||null,shen:item.shen,
           changeBranch:isMoving?item.changeBranch:null,changeRelation:isMoving?item.changeRelation:null,
           effect:isMoving?(item.effect||''):''};
       }),
@@ -3451,6 +3361,7 @@
       flowers:[0,1,2,3].includes(line.flowers)?line.flowers:null,
       branch:typeof line.branch==='string'?line.branch:null,
       relation:relations.includes(line.relation)?line.relation:null,
+      hiddenRelation:relations.includes(line.hiddenRelation)?line.hiddenRelation:null,
       shen:sixGods.includes(line.shen)?line.shen:null,
       changeBranch:typeof line.changeBranch==='string'?line.changeBranch:null,
       changeRelation:relations.includes(line.changeRelation)?line.changeRelation:null,
@@ -3555,9 +3466,9 @@
   }
   function exportRecords(records){
     if(!Array.isArray(records)||!records.length){showToast('请先勾选要导出的卦例');return;}
-    const portableRecords=records.map(record=>({...record,schemaVersion:15,
-      analysisSnapshot:record.analysisSnapshot?.schemaVersion>=4?record.analysisSnapshot:buildRecordAnalysisSnapshot(record)}));
-    const payload={app:'liuyao-learning-app',schemaVersion:15,exportedAt:new Date().toISOString(),records:portableRecords};
+    const portableRecords=records.map(record=>({...record,schemaVersion:16,
+      analysisSnapshot:record.analysisSnapshot?.schemaVersion>=5?record.analysisSnapshot:buildRecordAnalysisSnapshot(record)}));
+    const payload={app:'liuyao-learning-app',schemaVersion:16,exportedAt:new Date().toISOString(),records:portableRecords};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;
     const datePart=portableRecords.length===1?(portableRecords[0].date||'record'):'selected';
@@ -3569,8 +3480,7 @@
     const question=record.question||{};
     const flowerLabels={0:'O（三字，老阳／动爻）',1:'•（一花两字，少阳／静爻）',2:'••（两花一字，少阴／静爻）',3:'X（三花，老阴／动爻）'};
     const recordLines=Array.isArray(record.lines)?record.lines:[];
-    const savedAnalysisSnapshot=record.analysisSnapshot?.schemaVersion>=3?record.analysisSnapshot:buildRecordAnalysisSnapshot(record);
-    const analysisSnapshot={...savedAnalysisSnapshot,schemaVersion:4,hiddenSpirits:savedAnalysisSnapshot.hiddenSpirits||deriveHiddenSpiritAnalysis(recordLines,question.mainUseGod,savedAnalysisSnapshot.hexagram)};
+    const analysisSnapshot=record.analysisSnapshot?.schemaVersion>=5?record.analysisSnapshot:buildRecordAnalysisSnapshot(record);
     const analysisLines=Array.isArray(analysisSnapshot.lines)?analysisSnapshot.lines:[];
     function branchStatusText(status){
       if(!status) return '未记录地支';
@@ -3585,6 +3495,7 @@
       const fields=['摇卦：'+(flowerLabels[line.flowers]||'未记录')];
       if(line.branch) fields.push('纳甲地支：'+line.branch+(savedLine.original?.elementName||'')+'（'+branchStatusText(savedLine.original)+'）');
       if(line.relation) fields.push('六亲：'+line.relation);
+      if(line.hiddenRelation) fields.push('伏藏六亲（人工标注）：'+line.hiddenRelation);
       if(line.shen) fields.push('六神：'+line.shen);
       if(isMoving&&line.changeBranch) fields.push('变爻地支：'+line.changeBranch+(savedLine.transformed?.elementName||'')+'（'+branchStatusText(savedLine.transformed)+'）');
       if(isMoving&&line.changeRelation) fields.push('变爻六亲：'+line.changeRelation);
@@ -3635,19 +3546,16 @@
     const shiYingText=analysisSnapshot.shiYing
       ?'世应关系：第'+analysisSnapshot.shiYing.shiLineNumber+'爻世爻（'+analysisSnapshot.shiYing.shiBranch+'）与第'+analysisSnapshot.shiYing.yingLineNumber+'爻应爻（'+analysisSnapshot.shiYing.yingBranch+'）：'+analysisSnapshot.shiYing.kind
       :'世应关系：纳甲资料不足，暂不能判断';
-    const hiddenSpiritText=analysisSnapshot.hiddenSpirits?.status==='hidden'
-      ?'【伏神与飞神】'+analysisSnapshot.hiddenSpirits.candidates.map(item=>'第'+item.lineNumber+'爻：伏神'+item.relation+' '+item.branch+(item.elementName||'')+'；飞神'+(item.flying?.relation||'六亲未标')+' '+(item.flying?.branch||'未填写')+(item.flying?.elementName||'')+'；'+(item.flying?.relationToHidden||'飞伏生克待核')+(item.flying?.movement?'；飞神'+item.flying.movement:'')+'；取自'+(item.sourceHexagram||analysisSnapshot.hiddenSpirits.palaceBaseHexagram||'本宫首卦')).join('；')
-      :analysisSnapshot.hiddenSpirits?.status==='present'?'【伏神与飞神】主要用神'+analysisSnapshot.hiddenSpirits.useGod+'已在本卦出现，不另取伏神。'
-      :analysisSnapshot.hiddenSpirits?.status==='not-applicable'?'【伏神与飞神】当前主要用神不是六亲，本次未自动推算伏神。'
-      :analysisSnapshot.hiddenSpirits?.status==='incomplete'?'【伏神与飞神】六爻资料不完整，暂不能可靠判断是否伏藏。'
-      :analysisSnapshot.hiddenSpirits?.status==='not-found'?'【伏神与飞神】按本宫首卦同爻位未找到该用神，请人工核对纳甲表。'
-      :analysisSnapshot.hiddenSpirits?.status==='unavailable'?'【伏神与飞神】缺少卦宫或本宫纳甲资料，暂不能推算。'
-      :'【伏神与飞神】当前资料无法判断。';
-    const portableRecord={...record,schemaVersion:15,analysisSnapshot,
+    const portableRecord={...record,schemaVersion:16,analysisSnapshot,
       lines:recordLines.map((line,index)=>{
         const isBrightMoving=!!mapping[line.flowers]?.moving,isMoving=isBrightMoving||!!analysisLines[index]?.movement;
         return {...line,changeBranch:isMoving?(line.changeBranch||null):null,changeRelation:isMoving?(line.changeRelation||null):null,effect:isMoving?(line.effect||''):''};
       })};
+    const allSixRelationsKnown=recordLines.length===6&&recordLines.every(line=>relations.includes(line.relation));
+    const visibleUseGod=question.mainUseGod&&recordLines.some(line=>line.relation===question.mainUseGod);
+    const hasManualHiddenRelation=recordLines.some(line=>relations.includes(line.hiddenRelation));
+    const hiddenCheckText=allSixRelationsKnown&&question.mainUseGod&&!visibleUseGod&&!hasManualHiddenRelation
+      ?'提示：六爻已记录的六亲中未见主要用神'+question.mainUseGod+'，且尚未手动标记伏藏位置，请人工核对。':'';
     const result=[
       '【六爻卦例｜供 AI 分析】','日期：'+(record.date||'未注明'),'卦名：'+recordHexagramName(record),
       record.pillarSource==='manual-case'
@@ -3658,13 +3566,13 @@
       record.isCase?'案例类型：'+(record.caseSource==='practice'?'个人练习案例':'课堂案例（老师讲解）'):'',
       record.isCase&&record.caseSource!=='practice'?'案例核对状态：'+(CASE_REVIEW_LABELS[record.caseReviewStatus]||'待核对'):'',
       '','【六爻记录｜从初爻到上爻｜含本卦与变卦状态】',...lines,'',
-      '【年月日及旬空标注】\n'+calendarText.join('\n'),shiYingText,hiddenSpiritText,'',
+      '【年月日及旬空标注】\n'+calendarText.join('\n'),shiYingText,hiddenCheckText,'',
       '【三合识别结果】',...(trineTexts.length?trineTexts:['当前保存资料中未识别到符合页面规则的三合局']),
       '','【六合与合中带克】',liuHeRuleText,...(liuHeTexts.length?liuHeTexts:['当前保存的本卦与变爻地支中未识别到六合配对']),
       record.isCase&&record.caseMemo?'【老师分析过程】\n'+record.caseMemo:(!record.isCase&&record.dailyMemo?'【每日记录 Memo】\n'+record.dailyMemo:''),
       record.isCase&&record.caseConclusion?'【老师结论】\n'+record.caseConclusion:'',
       record.jianchu?.name?'建除：'+record.jianchu.name:'',record.twentyEight?.name?'二十八宿：'+record.twentyEight.name:'',
-      '保存时间：'+(record.savedAt||'未记录'),'','【原始记录 JSON｜schemaVersion 15，含 analysisSnapshot v4（含伏神）】',JSON.stringify(portableRecord,null,2)
+      '保存时间：'+(record.savedAt||'未记录'),'','【原始记录 JSON｜schemaVersion 16，含 analysisSnapshot v5（含人工伏藏标记）】',JSON.stringify(portableRecord,null,2)
     ].filter(value=>value!==''||value===0);
     return result.join('\n');
   }
@@ -3771,7 +3679,7 @@
   }
   document.getElementById('save-record').addEventListener('click',saveCurrentRecord);
   function resetToNewEntry(){
-    state=Array.from({length:6},()=>({flowers:null,branch:null,relation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}));
+    state=Array.from({length:6},()=>({flowers:null,branch:null,relation:null,hiddenRelation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}));
     calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
     selected=null;editingRecordId=null;forceNewRecord=true;
     setCaseEditor(null);setQuestionCategory('daily');questionTextEl.value='';memoTextarea.value='';caseConclusionTextarea.value='';
