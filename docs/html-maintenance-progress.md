@@ -394,3 +394,27 @@
   - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API、记录 schema 或真实记录。
   - 未合并 PR，未修改 `main` 或 Production。
 - Status: Updated on the existing PR branch; Preview deployment pending.
+
+
+## 2026-11-21 — 加强干支拖拽项目的悬停与选中动画（v93）
+
+- Task: 用户认为 v92 的上浮和放大比例仍不够明显。
+- User acceptance criteria:
+  - 悬停状态比 v92 更明显，能看见项目上浮和放大。
+  - 选中状态比悬停再突出一档，便于确认当前选择。
+  - 动画过渡平滑；鼠标抓取/拖动光标反馈保留。
+  - 不改变干支项目本身的布局尺寸和数据/拖拽逻辑。
+- Implementation summary:
+  - 普通悬停改为上浮 4px、放大 1.12 倍，并增加柔和阴影。
+  - 点击选中改为上浮 6px、放大 1.18 倍，金色边框和阴影更明显。
+  - 六合地支项目使用相同的悬停及选中动画；增加选中且悬停时的覆盖规则，避免原有六合 hover 样式覆盖选中效果。
+  - 过渡时间由 0.14s 调为 0.2s 缓动；保留 grab / grabbing 光标。
+- Tests / exact checks:
+  - 内嵌 JavaScript 通过 V8 语法编译。
+  - 静态检查确认悬停 translateY(-4px)/scale(1.12)、选中 translateY(-6px)/scale(1.18)、六合地支覆盖规则和鼠标抓取光标均存在。
+  - 顶部干支基础格子尺寸没有变化。
+  - 待用户在 Preview 中实际确认动画幅度。
+- Security and data-preservation checks:
+  - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API、记录 schema 或真实记录。
+  - 未合并 PR，未修改 `main` 或 Production。
+- Status: Updated on the existing PR branch; Preview deployment pending.
