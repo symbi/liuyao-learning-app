@@ -418,3 +418,28 @@
   - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API、记录 schema 或真实记录。
   - 未合并 PR，未修改 `main` 或 Production。
 - Status: Updated on the existing PR branch; Preview deployment pending.
+
+
+## 2026-11-21 — 课堂案例 Memo 简化为纯输入框（v94）
+
+- Task: 根据用户反馈，课堂案例记录只需要直接输入老师的分析内容，不需要“课堂案例 Memo”、案例类型、核对状态或说明文案。
+- User acceptance criteria:
+  - 课堂案例模式下不显示 Memo 标题。
+  - 不显示“案例类型”及其选项；课堂案例默认沿用课堂来源。
+  - 不显示“核对状态”及待核对/已核实/存在分歧选项。
+  - 不显示案例说明文字或输入框 placeholder，只保留直接输入老师分析的 textarea。
+  - 每日排卦模式的“每日记录 Memo”标题与日常记录 placeholder 保持原样。
+  - 课堂案例分析仍保存到 `caseMemo`，重新打开时恢复内容。
+- Implementation summary:
+  - 课堂案例模式隐藏 memo header 和 legacy case metadata 区；textarea 不显示标题或 placeholder。
+  - 通过 textarea 的无障碍标签标识“老师的分析”，视觉上没有额外文案。
+  - 继续保留隐藏的旧 metadata DOM/读取兼容字段，避免影响旧记录载入；新保存记录不再写入 `caseReviewStatus`。
+  - 课堂案例的 `caseMemo` 存储和重新打开恢复逻辑保持不变；每日记录 Memo 不变。
+- Tests / exact checks:
+  - 内嵌 JavaScript 通过 V8 语法编译。
+  - 静态检查确认案例模式隐藏标题和 metadata、空 placeholder、保留 caseMemo 写入/读取、每日模式原有标题仍保留。
+  - 待用户在 Preview 中确认视觉效果和保存/重开。
+- Security and data-preservation checks:
+  - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API 或历史记录内容。
+  - 未合并 PR，未修改 `main` 或 Production。
+- Status: Updated on the existing PR branch; Preview deployment pending.
