@@ -7,13 +7,13 @@
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
 - Status: in_progress
-- Current milestone: M2-A — Common Models and Source Provenance
+- Current milestone: M2 — Source Adapters（M2-A 已通过审查；M2-B 准备开始）
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: M1 approved_merged; M2-A implementation in progress
+- Implementation code status: M1 approved_merged; M2-A 代码审查通过; M2 整体 in_progress
 - Active implementation branch: phase1/m2-source-adapters
 - Active PR: none yet
 - Last completed milestone: M1
-- Next action: 等待 M2-A 最终审核；M2-B 尚未开始
+- Next action: 在同一分支开始 M2-B Markdown/TXT Adapters；完成后创建 Draft PR 等待 ChatGPT 审核；不合并、不开始 M2 后续阶段
 - Latest M2 implementation commit: 3b89bbc
 - Active M2 PR: none
 - Last updated: 2026-11-21
@@ -39,7 +39,7 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/PDF/JSON Source Adapters | in_progress | No Draft PR | M2-A common models/provenance implemented on `phase1/m2-source-adapters`; awaiting ChatGPT review of commit `3b89bbc`; M2-B not started; daily JSON excluded from classroom-case ingestion |
+| M2 | Markdown/TXT/PDF/JSON Source Adapters | in_progress | No Draft PR | M2-A common models/provenance 已通过 ChatGPT 代码审查（`3b89bbc` / `d4d55fb`）；M2-B Markdown/TXT Adapters 准备开始；未合并；daily JSON excluded from classroom-case ingestion |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
@@ -152,7 +152,13 @@
 
 ### M2-A checkpoint (2026-11-21)
 
-- Status: implementation_complete_pending_checkpoint
+> **Superseded / 历史 checkpoint：** 本节是 M2-A 的早期快照，已被本文件后面的
+> 《M2-A final pre-review fix (2026-11-21)》和《M2-A 审查通过与 M2-B 启动
+> (2026-11-21)》取代。本节中的 Status 与 “Next: commit/push M2-A, then begin
+> M2-B” 是当时的状态与计划，不是当前事实；当前事实以本文件顶部「当前状态」
+> 和最新交接记录为准，请勿按本节判断进度。
+
+- Status: implementation_complete_pending_checkpoint（历史值，见上方说明）
 - Branch: `phase1/m2-source-adapters`
 - Implemented: common ParsedDocument/ParsedSection models, type-specific locators, source identity/URI helpers, SHA-256 helpers, revision_ref and parser_version.
 - Privacy: no Neo4j, Gemini, Raw ASR, dailyMemo, or HTML behavior.
@@ -190,3 +196,13 @@ Secrets, credentials, private audio/transcripts, and personal records must never
   - `git diff --check` — passed.
 - No Draft PR exists. M2-B has not started.
 - M2-B identity requirement: source identity must include repository/source namespace so `docs/lesson-05.md` in two repositories remains distinct. M2-A does not need large restructuring now; this requirement will be implemented and tested in M2-B.
+
+### M2-A 审查通过与 M2-B 启动 (2026-11-21)
+
+- Status: in_progress
+- Branch: `phase1/m2-source-adapters`
+- M2-A: 已通过 ChatGPT 代码审查。最近提交：`3b89bbc`（默认 metadata 验证和深度冻结修复）、`d4d55fb`（进度文档更新）。
+- 整体 M2: in_progress，未合并，没有 Draft PR。
+- 历史状态处理：较早的《M2-A checkpoint (2026-11-21)》已明确标记为 superseded / 历史 checkpoint；其“准备开始 M2-B”是当时的计划记录，不再与最新状态冲突。
+- M2-B: 准备开始。本阶段只做 Markdown/TXT Adapters，使用 M2-A 的 ParsedDocument、ParsedSection 和 Locator 模型；source_uri 必须包含稳定 source namespace（例如 `repo://symbi/liuyao-learning-app/docs/lessons/lesson-05.md`），不同 repository 的相同相对路径必须得到不同 source_identity；revision_ref 与 source identity 分离。
+- M2-B 完成后：更新本文件、创建 Draft PR（目标 main），等待 ChatGPT 审核；不合并、不开始 M2 后续阶段（PDF/JSON）。
