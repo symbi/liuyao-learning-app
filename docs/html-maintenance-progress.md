@@ -7,10 +7,10 @@
 - Project: `symbi/liuyao-learning-app`
 - Workstream: HTML maintenance
 - Status: In review (Draft PR open)
-- Current task: 课堂案例干支选择器改为完整选项、天干地支独立选择
+- Current task: 在原 HTML 模板中加入明确录入模式与天干/地支拖拽式课堂案例输入
 - Target branch: `fix/trine-anchor-auto-xunkong`
 - Active PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
-- Last completed task: v85 修正课堂案例干支选择器交互
+- Last completed task: v87 原模板录入模式切换与干支拖拽输入
 - Last updated: 2026-11-20
 
 ## 开始任务前
@@ -60,6 +60,46 @@
 - Next step:
 
 ## 最近任务
+
+## 2026-11-21 — 原模板加入录入模式切换与干支拖拽（v87）
+
+- Date: 2026-11-21
+- Task: 不另做一套页面，直接在原 HTML 模板基础上增加清楚的「每日排卦 / 输入课堂案例」入口；复用原有底部拖拽方式，让课堂案例年月日干支直接从天干、地支素材区拖入。
+- User acceptance criteria:
+  - 保留原页面 date-card、今日日期和建除/二十八宿区域、问事分类、六爻 worksheet、Memo、底部六亲/六神/地支六合拖拽区、八宫卦序等现有模板。
+  - 顶部新增清楚的「每日排卦」与「输入课堂案例」模式按钮；问事分类仍只负责选择占问主题，不承载录入模式。
+  - 默认每日排卦模式继续根据日本当天日期自动显示年月日干支；原有纳甲地支/六亲等下方区域继续存在。
+  - 选择「输入课堂案例」后，在原日期卡片内展开年、月、日的天干/地支各自拖拽目标格，不再使用此前隐藏的下拉列表。
+  - 复用既有六合地支 palette；在其上方新增十天干 tile palette；支持拖动，也保留点击 tile 后点击目标格的回退交互。
+  - 每个 pillar 的干/支独立放置、不自动过滤或清除另一边；年柱可两项留空，月柱和日柱须完整、合法六十甲子后才能保存。
+  - 手动柱继续使用原有 `pillarOverride` / `pillarSource` 保存结构，并参与月令、日辰、旬空、六神和卦例分析；归档日期仍独立。
+- Branch: `fix/trine-anchor-auto-xunkong`
+- PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
+- Implementation commits:
+  - `330b9eeb84d089745cc55ba7da46735a48697b67` — 新增录入模式、课堂干支拖拽目标和十干 palette
+  - `1fbae07f143ecb8bf017b8c32d11a8542406f42d` — 拖拽/点击放入后清除选中态，避免重复落点
+- Files changed: `index.html`, `docs/html-maintenance-progress.md`
+- Implementation summary:
+  - 在原 date-card 顶部日历控制行下新增两个模式按钮；问事分类 dropdown 原样保留，不把录入模式混入占问分类。
+  - 保留旧 `toggle-case` DOM 入口为隐藏兼容元素，显示入口改为 `mode-daily` / `mode-classroom`；模式切换更新 `isCaseRecord` 与现有 `pillarOverride.enabled`。
+  - 将原手动六个 select 改为六个 `drop-slot` 目标：年干/年支、月干/月支、日干/日支。
+  - 在原六个六合配对地支区域上方新增十天干 tile 区；地支仍沿用原 branch-pairs，不复制一套新的地支 palette。
+  - 扩展现有 pointer-based drag handler，将天干/地支 token 分别写入指定 pillar；并为目标格保留点击选中后点击落点的操作方式。
+  - 每个目标格显示已放入的字符，提供单项清除按钮；保存时继续校验月/日完整、干支有效及年柱完整或未知。
+  - 保留原有历史记录字段与分析流程；无新增记录 schema 字段。
+- Tests / exact checks:
+  - 完整内嵌 JavaScript 通过 V8 语法编译。
+  - 静态检查通过：顶部两个 mode buttons、六个 case drop targets、十天干 palette、原 branch-pairs、原 question-category、原 worksheet rows 均存在。
+  - 指针拖拽路由检查通过：case pillar target 在普通爻位 assignToken 之前分流到 `assignManualPillarToken`；drop type 不匹配仍会被拒绝。
+  - 手动保存校验及 `pillarOverride` / `pillarSource` 原有持久化字段保留。
+  - 尚未完成真实浏览器拖放验收；需检查鼠标拖动、点选回退、清除、保存、重开。
+- Manual browser checks: 待 v87 Preview 部署后，验证默认每日模式日期干支与原模板、切到课堂案例后六个目标格、底部十干与原六合地支拖拽区、问事分类、六爻 worksheet 和保存/重开。
+- Security and data-preservation checks:
+  - 仅改 `index.html` 与维护日志；未改 GitHub OAuth、Cloudflare Functions、API 保存路由、每日记录 JSON、`main` 或 Production。
+  - 未合并 PR，未写入真实卦例。
+- Status: Code committed to the existing PR branch; Preview build / real browser acceptance pending.
+- Next step: 等待当前 Preview 构建成功后，在原模板上检查模式切换与拖拽操作。
+  
 
 ## 2026-11-21 — 修复日历与手动干支控件初始化中断（v86）
 
