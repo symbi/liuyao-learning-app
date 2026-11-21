@@ -604,3 +604,26 @@
   - Two wrong + one blank → fills only the blank, reports the two pre-existing manual errors, and preserves both wrong values untouched.
   - Check-only with one correct, one wrong, one blank → reports one error and one missing item, lists neither correct item, and writes nothing.
 - These are isolated function tests, not full browser interaction tests. Preview click-through and record save/reopen remain for user acceptance.
+
+
+### v98 follow-up — 自动伏神判断与精简反馈（2026-11-21）
+
+- User clarified that the factory-modification case Memo should read「日辰克用神」；the chart calculation remains 午火克妻财酉金. The saved original record was not edited.
+- Automatic hidden-six-kin rule:
+  - Read the primary use god from the selected question category.
+  - Only 六亲 use gods (父母、兄弟、子孙、妻财、官鬼) participate. Daily / annual fortune categories are explicitly marked「无固定用神」; 世爻 remains the main reading focus, but it is not treated as a 六亲用神 for hidden-kin generation.
+  - If the selected 六亲 appears anywhere among the six 本卦 lines, do not add 伏神.
+  - If it is absent, find the current hexagram's palace 本宫 pure hexagram, calculate its Najia branches and six kin, and place that missing use god in the existing hiddenRelation slot at the corresponding line position (under the current hexagram's 飞神).
+  - Auto-fill only fills an empty hiddenRelation slot. A pre-existing manual value is never overwritten; if the expected slot already contains a different value, the normal checker reports the mismatch.
+  - If the palace pure-hexagram position cannot be uniquely determined, stop rather than guess.
+- Feedback UI:
+  - Removed「自动装卦结果」/「卦盘检查结果」titles and success summaries/counts.
+  - Removed explanatory dark-movement note and the obsolete message saying hidden kin is manual-only.
+  - Successful fill/check produces only a short toast. The report area appears only for actual mismatches, missing values, or a blocking condition.
+- Tests:
+  - All 64 hexagrams × all 5 六亲 use-god categories were checked (320 scenarios); 56 scenarios required 伏神 and all mapped to the unique matching line in the palace 本宫 pure hexagram.
+  - All 64 hexagrams were checked with the daily fortune category; none generated a hidden 六亲.
+  - Promotion fixture「天水讼 / 离宫 / 官鬼用神」correctly places 官鬼伏神 at the third line, matching the already-saved classroom record.
+  - Wealth fixture「火风鼎 / 离宫 / 妻财用神」contains 妻财 in the visible本卦 lines and correctly generates no 伏神.
+  - Inline JavaScript syntax validation passed. These are isolated code/fixture tests, not browser click-through tests.
+- This section supersedes the earlier v98 rule note that treated 伏藏 as manual-only. Browser Preview and save/reopen acceptance remain pending; PR #1 remains open and has not been merged.
