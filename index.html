@@ -3166,7 +3166,7 @@
     const issues=[...errors,...missing];
     let summary='';
     if(mode==='fill'){
-      summary='已自动填写 '+filledCount+' 个原本空白的项目。';
+      summary=filledCount?'已自动填写 '+filledCount+' 个原本空白的项目。':'没有需要自动填写的空白项目。';
       if(errors.length) summary+='另外发现 '+errors.length+' 个原有手工填写与计算结果不一致，已保留原值。';
       if(missing.length) summary+='仍有 '+missing.length+' 个项目未填写。';
     }else{
