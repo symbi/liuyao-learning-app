@@ -1,0 +1,279 @@
+{
+  "recordType": "class-case",
+  "id": "L19-C01-work-transfer",
+  "lessonId": "lesson-19",
+  "category": "promotion",
+  "tagOrRealQuestion": "体制内工作调动是否成功（具体岗位竞争）",
+  "matchStatus": "verified",
+  "verificationBasis": [
+    "第十九课 ASR 开头直接提及同一位学员前一晚的工作调动卦，并明确问体制内工作调动是否成功。",
+    "老师讲到两重兄弟爻、一爻兄弟发动化财、官鬼伏在该动爻之下；与用户保存的六爻记录结构相吻合。",
+    "完整爻位、纳甲地支和世应以用户于 2026-11-21 保存的 HTML 每日记录为准；ASR 本身不能独立重建完整卦盘。",
+    "来源权重遵循：老师课堂 ASR 中可辨认的讲解优先于用户课堂 memo；用户补充的完整卦盘作为盘面结构来源，AI 计算单独标注。"
+  ],
+  "dailyRecord": {
+    "repository": "symbi/liuyao-learning-app",
+    "path": "daily-records/2026/11/2026-11-21.json",
+    "recordId": "9f89c47a-ba51-44d1-81b5-ffba16a30ca2",
+    "savedRecordUrl": "https://github.com/symbi/liuyao-learning-app/blob/main/daily-records/2026/11/2026-11-21.json",
+    "savedOn": "2026-11-21",
+    "note": "recordDate/savedAt 是保存记录的日期时间，不应自动当作实际起卦日期时间。"
+  },
+  "sources": {
+    "lessonNotes": {
+      "repository": "symbi/liuyao-learning-app",
+      "path": "docs/lessons/lesson-19-notes-v0.1.md"
+    },
+    "rawTranscript": {
+      "repository": "symbi/liuyao-learning-raw",
+      "path": "lessons/lesson-19/transcript-asr-raw.txt",
+      "location": "第 1 段，约 0 分钟起，工作调动案例开头",
+      "url": "https://github.com/symbi/liuyao-learning-raw/blob/main/lessons/lesson-19/transcript-asr-raw.txt",
+      "limitation": "当前 Private raw 第十九课目录仅归档 README 与未经校对的 ASR 文本，没有 WAV/M4A 原始音频。因此 ASR 是目前老师讲解的首要可用来源，但转录中有误识风险；后续补入原音再回听校正。"
+    },
+    "methodLesson": {
+      "repository": "symbi/liuyao-learning-app",
+      "path": "docs/lessons/lesson-06-notes-v0.1.md",
+      "supplementedBy": "用户于 2026-11-21 口述核对的八宫纳甲与伏神定位方法；具体推算必须与老师讲解分开标注。"
+    }
+  },
+  "casting": {
+    "question": "工作调动是不是成功，男，体制内的工作",
+    "yearPillar": null,
+    "monthPillar": "甲寅",
+    "dayPillar": "乙卯",
+    "xunkong": [
+      "子",
+      "丑"
+    ],
+    "originalHexagram": {
+      "displayName": "天水讼",
+      "nameRole": "仅作卦象识别标签，不作为六爻吉凶判断依据",
+      "upperTrigram": "乾",
+      "lowerTrigram": "坎",
+      "palace": "离",
+      "palaceElement": "火",
+      "stage": "游魂"
+    },
+    "shiLineNumber": 4,
+    "yingLineNumber": 1,
+    "shiYingRelation": "应生世（应爻寅木生世爻午火）",
+    "lines": [
+      {
+        "lineNumber": 1,
+        "position": "初爻",
+        "yinYang": "阴",
+        "role": "应爻",
+        "flowers": 2,
+        "branch": "寅",
+        "element": "木",
+        "relation": "父母",
+        "sixGod": "青龙",
+        "movement": null,
+        "xunkong": false
+      },
+      {
+        "lineNumber": 2,
+        "position": "二爻",
+        "yinYang": "阳",
+        "role": null,
+        "flowers": 1,
+        "branch": "辰",
+        "element": "土",
+        "relation": "子孙",
+        "sixGod": "朱雀",
+        "movement": null,
+        "xunkong": false
+      },
+      {
+        "lineNumber": 3,
+        "position": "三爻",
+        "yinYang": "阴",
+        "role": null,
+        "flowers": 3,
+        "branch": "午",
+        "element": "火",
+        "relation": "兄弟",
+        "sixGod": "勾陈",
+        "movement": "明动",
+        "hiddenRelation": "官鬼",
+        "transformed": {
+          "yinYang": "阳",
+          "branch": "酉",
+          "element": "金",
+          "relation": "妻财"
+        },
+        "xunkong": false
+      },
+      {
+        "lineNumber": 4,
+        "position": "四爻",
+        "yinYang": "阳",
+        "role": "世爻",
+        "flowers": 1,
+        "branch": "午",
+        "element": "火",
+        "relation": "兄弟",
+        "sixGod": "螣蛇",
+        "movement": null,
+        "xunkong": false
+      },
+      {
+        "lineNumber": 5,
+        "position": "五爻",
+        "yinYang": "阳",
+        "role": null,
+        "flowers": 1,
+        "branch": "申",
+        "element": "金",
+        "relation": "妻财",
+        "sixGod": "白虎",
+        "movement": null,
+        "monthBreak": true,
+        "xunkong": false
+      },
+      {
+        "lineNumber": 6,
+        "position": "上爻",
+        "yinYang": "阳",
+        "role": null,
+        "flowers": 1,
+        "branch": "戌",
+        "element": "土",
+        "relation": "子孙",
+        "sixGod": "玄武",
+        "movement": null,
+        "xunkong": false
+      }
+    ],
+    "calendarSnapshot": {
+      "monthBranch": "寅",
+      "dayBranch": "卯",
+      "monthAndDayRelation": "月建、日辰地支均属木；对离宫火而言，木生火，六亲均为父母",
+      "monthWangXiang": "木旺、火相",
+      "monthBreak": "五爻申金受寅月冲，为月破（依据保存快照）",
+      "xunkong": "子丑"
+    },
+    "recordedBranchRelations": [
+      "应爻寅木生世爻午火。",
+      "二爻辰土与三爻变爻酉金构成辰酉六合；保存的分析快照同时记录辰土生酉金。"
+    ],
+    "transformedStructure": {
+      "upperTrigram": "乾",
+      "lowerTrigram": "巽",
+      "changedLineNumbers": [
+        3
+      ],
+      "lineChange": {
+        "lineNumber": 3,
+        "from": "阴",
+        "to": "阳"
+      },
+      "najiaBranchesBottomToTop": [
+        "丑",
+        "亥",
+        "酉",
+        "午",
+        "申",
+        "戌"
+      ],
+      "sixKinBottomToTop": [
+        "子孙",
+        "官鬼",
+        "妻财",
+        "兄弟",
+        "妻财",
+        "子孙"
+      ],
+      "changedLineNajia": {
+        "lineNumber": 3,
+        "branch": "酉",
+        "element": "金",
+        "relation": "妻财"
+      },
+      "displayName": "天风姤",
+      "nameRole": "仅作卦象识别标签；变卦结构和纳甲才是六爻计算所需信息"
+    }
+  },
+  "hiddenSpirit": {
+    "targetUseGod": "官鬼",
+    "absentFromOriginalHexagram": true,
+    "palace": "离",
+    "palaceElement": "火",
+    "palacePureHexagram": "离为火",
+    "palacePureHexagramNajiaBranchesBottomToTop": [
+      "卯",
+      "丑",
+      "亥",
+      "酉",
+      "未",
+      "巳"
+    ],
+    "palacePureHexagramRelationsBottomToTop": [
+      "父母",
+      "子孙",
+      "官鬼",
+      "妻财",
+      "子孙",
+      "兄弟"
+    ],
+    "hiddenLineNumber": 3,
+    "hiddenRelation": "官鬼",
+    "hiddenBranch": "亥",
+    "hiddenElement": "水",
+    "flyingSpirit": {
+      "lineNumber": 3,
+      "branch": "午",
+      "element": "火",
+      "relation": "兄弟"
+    },
+    "hiddenFlyingFiveElementRelation": "亥水克午火，即伏神克飞神（伏克飞）",
+    "calculationSource": "按用户补充的八宫纳甲/伏神规则，使用已保存卦盘复算。ASR 只可辨认老师说官鬼伏在动爻下面，未可靠识别亥水这个地支。",
+    "htmlStorageBoundary": "HTML 当前人工标注字段保存 hiddenRelation=官鬼；亥水是本案例分析按本宫纯卦纳甲推算出来的结果，不应误写成原始 HTML 已保存字段。"
+  },
+  "teacherAnalysis": {
+    "sourceType": "第十九课老师讲解的现有依据：原始 ASR 转录（未经音频校正）；本段为归纳整理，不是逐字稿。",
+    "points": [
+      "老师确认问事是体制内工作调动，目标岗位较明确。",
+      "老师指出卦中有两重兄弟爻，并将其放在竞争关系中比较：世爻兄弟代表求测者一方，另一兄弟爻代表竞争者。",
+      "老师先看到世爻兄弟得月日帮扶，父母爻也得月日支持，因此一开始认为调动并非完全没有希望；父母爻还被联系到领导/支持因素。",
+      "另一个兄弟爻发动并化妻财。老师将对方的发动状态与世爻静而不动进行比较，认为竞争者一方更占优势。",
+      "老师指出官鬼用神没有明现，伏在发动的兄弟爻下面。",
+      "老师最后倾向认为此次工作调动成功机会很小，建议不要在这件事上投入太多精力。"
+    ],
+    "conclusion": "成功机会很小，竞争者一方更占优势；可以适度努力，但不宜投入过多精力。",
+    "sourceCaution": "ASR 对个别六爻术语、重复句和领导身份描述存在误识。有关副职领导的细节可作为课堂笔记线索，不当作已完成逐字校订的原话。"
+  },
+  "aiCaseAnalysis": {
+    "coreStructure": "求官/工作调动，以官鬼为用神；官鬼不现于本卦六爻，按离宫本宫纯卦查得官鬼亥水，伏于三爻兄弟午火之下。三爻兄弟明动化妻财酉金；四爻兄弟午火持世而静。",
+    "comparison": "世爻午火受寅、卯木生扶，且应爻寅木生世；但另一兄弟爻发动并化妻财，老师据此将竞争者视为更有优势。不能仅凭世爻得月日生扶就断调动成功。",
+    "hiddenSpiritNote": "伏神亥水克飞神午火，记录为伏克飞；此五行关系需继续结合伏神旺衰、飞神状态、月建日辰与动变分析，不单独作为吉凶结论。",
+    "caution": "“用神不上卦通常较难成”是课堂总结中的经验提醒，不转换成固定概率或自动判断规则。此例的结论以老师对具体竞争结构的综合判断为主。"
+  },
+  "appConclusionAsSaved": "工作调动不能成功，有竞争者，竞争不过",
+  "conclusionWordingReview": "老师结论以第十九课 ASR 为准：成功机会很小、竞争者有优势、不宜投入太多精力。HTML caseConclusion 原样保留为当时的用户 memo/理解，不覆盖老师 ASR。若未来有原始音频，回听后再确认措辞。",
+  "status": "teacher_asr_primary_chart_reconstructed_by_user_asr_not_audio_verified",
+  "schemaVersion": 1,
+  "sourceAuthority": {
+    "teacherExplanation": {
+      "priority": 1,
+      "currentSource": "symbi/liuyao-learning-raw/lessons/lesson-19/transcript-asr-raw.txt",
+      "sourceType": "未经校对的 ASR 转录",
+      "audioAvailable": false,
+      "rule": "优先依据 ASR 中可辨认的老师讲解；没有原始音频时不得声称逐字准确"
+    },
+    "userProvidedChart": {
+      "role": "提供老师当时分析的卦盘结构、爻位、纳甲、六亲、世应、动变；不是老师讲解内容的替代来源"
+    },
+    "userClassMemo": {
+      "role": "用于识别案例、补充背景和定位课堂段落",
+      "precedence": "若与老师 ASR 中可辨认的讲解冲突，不用 memo 覆盖老师说法"
+    },
+    "assistantCalculation": {
+      "role": "独立推算并标记计算来源，例如由离宫纯卦纳甲推得官鬼亥水",
+      "restriction": "不能写成老师原话"
+    },
+    "conflictHandling": "保留不同来源、各自标注；待原音或可靠资料补充后再校正，不静默合并。"
+  },
+  "appConclusionAsSavedRole": "HTML 原记录中的用户课堂 memo/理解；不是当前复盘所采用的老师结论来源。"
+}
