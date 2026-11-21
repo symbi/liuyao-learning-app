@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v86</title>
+<title>六爻排卦与每日记录 v87</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -424,25 +424,34 @@
   .case-field{display:grid;gap:3px;color:#686b5d;font-size:11px;font-weight:750;}
   .case-field select{width:100%;min-width:0;padding:6px 7px;border:1px solid #ded5c2;border-radius:7px;background:#fffdf7;color:#34362f;font:inherit;font-size:12px;}
   .case-hint{margin:0;color:var(--muted);font-size:11px;line-height:1.4;}
+  .entry-mode-switch{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0 3px;}
+  .entry-mode-button{border:1px solid #d8d0bf;border-radius:7px;background:#fffdf7;color:#5f6358;padding:7px 13px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;}
+  .entry-mode-button.active{background:#e8efe8;border-color:#89a18d;color:#3f654b;box-shadow:inset 0 0 0 1px rgba(63,101,75,.08);}
+  .entry-mode-hint{font-size:11px;color:var(--muted);line-height:1.4;}
   .case-pillar-editor{
     margin-top:9px;padding:9px 11px;border:1px solid #e5dcc9;border-radius:9px;
     background:#fbf7ed;display:grid;gap:7px;
   }
   .case-pillar-editor[hidden],.manual-pillar-grid[hidden]{display:none;}
-  .manual-pillar-toggle{display:flex;align-items:center;gap:7px;color:#4e5b4d;font-size:12px;font-weight:800;cursor:pointer;}
-  .manual-pillar-toggle input{accent-color:var(--jade);width:15px;height:15px;margin:0;}
+  .manual-pillar-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#4b5d4f;font-size:12px;}
+  .manual-pillar-heading span{font-size:10px;color:var(--muted);font-weight:600;}
   .manual-pillar-note{margin:0;color:var(--muted);font-size:11px;line-height:1.45;}
   .manual-pillar-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
   .manual-pillar-item{min-width:0;padding:7px;border:1px solid #e5dcc9;border-radius:8px;background:#fffdf7;}
   .manual-pillar-item>strong{display:flex;align-items:center;gap:5px;margin-bottom:5px;font-size:12px;color:#4b5d4f;}
   .manual-pillar-item>strong small{font-size:10px;color:var(--muted);font-weight:600;}
   .manual-pillar-pair{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
-  .manual-pillar-pair label{display:grid;gap:2px;font-size:10px;color:var(--muted);font-weight:700;}
-  .manual-pillar-pair select{width:100%;min-width:0;padding:5px 3px;border:1px solid #ded5c2;border-radius:6px;background:#fff;color:var(--ink);font:inherit;font-size:12px;}
+  .manual-pillar-pair label{display:grid;gap:3px;font-size:10px;color:var(--muted);font-weight:700;}
+  .case-pillar-slot{width:100%;min-width:0;height:32px;padding:3px 5px;font-size:12px;border-radius:6px;background:#fffdf7;}
+  .case-pillar-slot.filled{border-color:#aebea9;background:#f5f8f1;}
+  .case-pillar-slot.drag-over{outline:2px solid var(--jade);outline-offset:2px;}
   .manual-pillar-validation{margin:0;font-size:11px;line-height:1.4;color:#9f4e38;}
   .manual-pillar-validation:empty{display:none;}
   .pillar-source-indicator{margin-top:6px;color:#7c6640;font-size:11px;line-height:1.35;}
   .pillar-source-indicator[hidden]{display:none;}
+  .stem-tiles{margin:2px 0 9px;}
+  .stem-tiles .tile{background:#f7f5ee;}
+  .branch-palette-label{margin-top:2px;}
   .date-card.manual-case-pillars #jianchu-name,
   .date-card.manual-case-pillars #jianchu-guidance,
   .date-card.manual-case-pillars #mansions-panel{display:none;}
@@ -881,12 +890,17 @@
           <div class="jianchu-guidance" id="jianchu-guidance" role="status" aria-live="polite" aria-label="当天宜忌"></div>
         </div>
         <div class="record-controls">
-          <button type="button" class="small-action" id="toggle-case" aria-pressed="false">标记为案例</button>
+          <button type="button" class="small-action" id="toggle-case" aria-pressed="false" hidden>标记为案例</button>
           <button type="button" class="small-action primary" id="save-record">保存卦例</button>
           <button type="button" class="small-action" id="open-records">卦例记录 <span id="record-count">0</span></button>
           <button type="button" class="small-action" id="github-login">连接 GitHub</button>
           <span id="github-sync-status" class="section-note" role="status" aria-live="polite">GitHub 未连接</span>
         </div>
+      </div>
+      <div class="entry-mode-switch" role="group" aria-label="录入模式">
+        <button type="button" class="entry-mode-button active" id="mode-daily" aria-pressed="true">每日排卦</button>
+        <button type="button" class="entry-mode-button" id="mode-classroom" aria-pressed="false">输入课堂案例</button>
+        <span class="entry-mode-hint" id="entry-mode-hint">默认模式：按日本当天日期自动计算年月日干支。</span>
       </div>
       <section class="mansions-panel" id="mansions-panel" data-symbol="朱雀" aria-label="二十八宿">
         <div class="mansions-list" id="mansions-list" aria-label="当前四象所属七宿"></div>
@@ -935,31 +949,32 @@
         </div>
       </div>
       <div class="case-pillar-editor" id="case-pillar-editor" hidden>
-        <label class="manual-pillar-toggle" for="manual-case-pillars">
-          <input id="manual-case-pillars" type="checkbox">
-          <strong>手动选择本案例的年月日干支</strong>
-        </label>
-        <p class="manual-pillar-note">每日记录仍按当天日期自动计算年、月、日干支。只有本案例启用手动输入时，以下选择才会代替自动值。天干、地支分别选择；年柱未知可两项留空，月柱和日柱需填写完整。记录日期仅用于归档。</p>
+        <div class="manual-pillar-heading">
+          <strong>老师案例的年月日干支</strong>
+          <span>从页面下方拖入天干、地支</span>
+        </div>
+        <p class="manual-pillar-note">请按老师原文分别拖入天干和地支。年柱未知可留空；月柱、日柱请填写完整。下方地支仍沿用原来的六合配对拖拽区，新增天干拖拽区。记录日期只用于归档。</p>
+        <input id="manual-case-pillars" type="checkbox" hidden>
         <div class="manual-pillar-grid" id="manual-pillar-grid" hidden>
           <div class="manual-pillar-item">
             <strong>年柱 <small>可留空</small></strong>
             <div class="manual-pillar-pair">
-              <label>天干<select id="manual-year-stem" aria-label="手动指定年干"><option value="">未知</option></select></label>
-              <label>地支<select id="manual-year-branch" aria-label="手动指定年支"><option value="">未知</option></select></label>
+              <label>天干<div class="drop-slot case-pillar-slot" data-drop-type="stem" data-case-pillar-key="year" data-case-pillar-part="stem" role="button" tabindex="0" aria-label="拖入年干">＋干</div></label>
+              <label>地支<div class="drop-slot case-pillar-slot" data-drop-type="branch" data-case-pillar-key="year" data-case-pillar-part="branch" role="button" tabindex="0" aria-label="拖入年支">＋支</div></label>
             </div>
           </div>
           <div class="manual-pillar-item">
             <strong>月柱 <small>请填写</small></strong>
             <div class="manual-pillar-pair">
-              <label>天干<select id="manual-month-stem" aria-label="手动指定月干"><option value="">请选择</option></select></label>
-              <label>地支<select id="manual-month-branch" aria-label="手动指定月支"><option value="">请选择</option></select></label>
+              <label>天干<div class="drop-slot case-pillar-slot" data-drop-type="stem" data-case-pillar-key="month" data-case-pillar-part="stem" role="button" tabindex="0" aria-label="拖入月干">＋干</div></label>
+              <label>地支<div class="drop-slot case-pillar-slot" data-drop-type="branch" data-case-pillar-key="month" data-case-pillar-part="branch" role="button" tabindex="0" aria-label="拖入月支">＋支</div></label>
             </div>
           </div>
           <div class="manual-pillar-item">
             <strong>日柱 <small>请填写</small></strong>
             <div class="manual-pillar-pair">
-              <label>天干<select id="manual-day-stem" aria-label="手动指定日干"><option value="">请选择</option></select></label>
-              <label>地支<select id="manual-day-branch" aria-label="手动指定日支"><option value="">请选择</option></select></label>
+              <label>天干<div class="drop-slot case-pillar-slot" data-drop-type="stem" data-case-pillar-key="day" data-case-pillar-part="stem" role="button" tabindex="0" aria-label="拖入日干">＋干</div></label>
+              <label>地支<div class="drop-slot case-pillar-slot" data-drop-type="branch" data-case-pillar-key="day" data-case-pillar-part="branch" role="button" tabindex="0" aria-label="拖入日支">＋支</div></label>
             </div>
           </div>
         </div>
@@ -999,6 +1014,9 @@
   <section class="card palette-card" aria-label="可拖拽项目">
     <div class="palette-grid">
       <div class="palette-group">
+        <div class="branch-sub">天干（拖入课堂案例的年、月、日干）</div>
+        <div class="tiles stem-tiles" id="stem-tiles" aria-label="十天干项目"></div>
+        <div class="branch-sub branch-palette-label">地支（原有六合配对拖拽区）</div>
         <div class="branch-groups" id="branch-pairs" aria-label="六合地支配对">
           <!-- Each column groups the two branches of one 六合; outline color shows its 合化 element. -->
         </div>
@@ -1115,6 +1133,9 @@
   const manualPillarGrid=document.getElementById('manual-pillar-grid');
   const manualPillarValidation=document.getElementById('manual-pillar-validation');
   const pillarSourceIndicator=document.getElementById('pillar-source-indicator');
+  const dailyModeButton=document.getElementById('mode-daily');
+  const classroomModeButton=document.getElementById('mode-classroom');
+  const entryModeHint=document.getElementById('entry-mode-hint');
   const CASE_REVIEW_LABELS={pending:'待核对',verified:'已核实',disputed:'存在分歧'};
   let isCaseRecord=false;
   let manualPillarOverride={enabled:false,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
@@ -1135,6 +1156,19 @@
     caseMemoHint.textContent=isClassroom
       ?'课堂案例单独保存老师的分析笔记。请确认年月日干支来自老师原始案例，而不是你录入案例时的日期。'
       :'个人练习会单独保存，不会与老师课堂案例混在一起。';
+    if(dailyModeButton){
+      dailyModeButton.classList.toggle('active',!isCaseRecord);
+      dailyModeButton.setAttribute('aria-pressed',String(!isCaseRecord));
+    }
+    if(classroomModeButton){
+      classroomModeButton.classList.toggle('active',isCaseRecord);
+      classroomModeButton.setAttribute('aria-pressed',String(isCaseRecord));
+    }
+    if(entryModeHint){
+      entryModeHint.textContent=isCaseRecord
+        ?'课堂案例模式：从下方天干、地支区拖入老师给出的年月日干支。'
+        :'每日排卦模式：自动采用日本当天日期计算年月日干支。';
+    }
   }
   function setCaseEditor(record=null){
     isCaseRecord=record?.isCase===true;
@@ -1149,20 +1183,18 @@
     };
     updateCaseEditor();
   }
-  caseToggleButton.addEventListener('click',()=>{
-    if(!isCaseRecord){
-      isCaseRecord=true;
-      if(caseSourceSelect.value!=='practice'){
-        manualPillarOverride={enabled:true,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
-      }
-    }else{
-      isCaseRecord=false;
-      manualPillarOverride.enabled=false;
-    }
+  function switchEntryMode(mode){
+    const classroom=mode==='classroom';
+    isCaseRecord=classroom;
+    caseSourceSelect.value='classroom';
+    manualPillarOverride.enabled=classroom;
     updateCaseEditor();
-    if(typeof renderManualPillarInputs==='function') renderManualPillarInputs();
-    if(typeof applyPillarContext==='function') applyPillarContext();
-  });
+    renderManualPillarInputs();
+    applyPillarContext();
+  }
+  dailyModeButton.addEventListener('click',()=>switchEntryMode('daily'));
+  classroomModeButton.addEventListener('click',()=>switchEntryMode('classroom'));
+  caseToggleButton.addEventListener('click',()=>switchEntryMode(isCaseRecord?'daily':'classroom'));
   caseSourceSelect.addEventListener('change',()=>{
     updateCaseEditor();
     renderManualPillarInputs();
@@ -1726,19 +1758,6 @@
     applyPillarContext();
   }
   const PILLAR_KEYS=['year','month','day'];
-  // Bind manual selectors only after PILLAR_KEYS has been initialized.
-  PILLAR_KEYS.forEach(key=>{
-    const stemSelect=document.getElementById('manual-'+key+'-stem');
-    const branchSelect=document.getElementById('manual-'+key+'-branch');
-    stemSelect.addEventListener('change',()=>readManualPillarInputs(key,'stem'));
-    branchSelect.addEventListener('change',()=>readManualPillarInputs(key,'branch'));
-  });
-  manualPillarToggle.addEventListener('change',()=>{
-    manualPillarOverride.enabled=manualPillarToggle.checked;
-    updateCaseEditor();
-    renderManualPillarInputs();
-    applyPillarContext();
-  });
   function isValidGanzhiPair(stem,branch){
     const stemIndex=GANZHI_STEMS.indexOf(stem),branchIndex=GANZHI_BRANCHES.indexOf(branch);
     return stemIndex>=0&&branchIndex>=0&&(stemIndex%2)===(branchIndex%2);
@@ -1747,30 +1766,11 @@
     const item=manualPillarOverride[key]||{};
     return isValidGanzhiPair(item.stem,item.branch)?item.stem+item.branch:'';
   }
-  function populatePillarSelect(select,values,value,placeholder){
-    select.replaceChildren();
-    const blank=document.createElement('option');blank.value='';blank.textContent=placeholder;select.appendChild(blank);
-    values.forEach(item=>{
-      const option=document.createElement('option');option.value=item;option.textContent=item;select.appendChild(option);
-    });
-    select.value=values.includes(value)?value:'';
-  }
-  function syncPillarPairControls(key){
-    const item=manualPillarOverride[key];
-    const stemSelect=document.getElementById('manual-'+key+'-stem');
-    const branchSelect=document.getElementById('manual-'+key+'-branch');
-    if(!stemSelect||!branchSelect) return;
-    // Keep the two selectors independent: always expose all ten stems and twelve branches.
-    // Never silently filter options or clear the user's previous choice.
-    populatePillarSelect(stemSelect,GANZHI_STEMS,item.stem,key==='year'?'未知':'请选择');
-    populatePillarSelect(branchSelect,GANZHI_BRANCHES,item.branch,key==='year'?'未知':'请选择');
-    item.stem=stemSelect.value;item.branch=branchSelect.value;
-  }
   function manualPillarProblem(){
     if(!isCaseRecord||!manualPillarOverride.enabled) return '';
     for(const key of ['month','day']){
       const item=manualPillarOverride[key]||{};
-      if(!item.stem||!item.branch) return (key==='month'?'月柱':'日柱')+'尚未填写完整，请同时选择天干和地支。';
+      if(!item.stem||!item.branch) return (key==='month'?'月柱':'日柱')+'尚未填写完整，请分别拖入天干和地支。';
       if(!isValidGanzhiPair(item.stem,item.branch)) return (key==='month'?'月柱':'日柱')+'不是六十甲子中的有效组合，请核对老师给出的干支。';
     }
     const year=manualPillarOverride.year||{};
@@ -1779,18 +1779,46 @@
     return '';
   }
   function renderManualPillarInputs(){
-    PILLAR_KEYS.forEach(key=>syncPillarPairControls(key));
+    document.querySelectorAll('.case-pillar-slot').forEach(slot=>{
+      const key=slot.dataset.casePillarKey;
+      const part=slot.dataset.casePillarPart;
+      const value=manualPillarOverride[key]?.[part]||'';
+      slot.classList.toggle('filled',!!value);
+      slot.replaceChildren();
+      if(!value){
+        const prompt=document.createElement('span');
+        prompt.className='slot-label';
+        prompt.textContent=part==='stem'?'＋干':'＋支';
+        slot.appendChild(prompt);
+        return;
+      }
+      const token=document.createElement('span');
+      token.className='drop-token'+(part==='stem'?(elementClassForStem(value)||''):(elementClassForBranch(value)||''));
+      token.textContent=value;
+      slot.appendChild(token);
+      const clear=document.createElement('button');
+      clear.type='button';clear.className='clear-slot';clear.title='清除此项';
+      clear.setAttribute('aria-label','清除'+value);clear.textContent='×';
+      clear.addEventListener('click',event=>{
+        event.stopPropagation();
+        manualPillarOverride[key][part]='';
+        renderManualPillarInputs();
+        applyPillarContext();
+      });
+      slot.appendChild(clear);
+      slot.setAttribute('aria-label',(key==='year'?'年':key==='month'?'月':'日')+(part==='stem'?'干':'支')+value);
+    });
     if(manualPillarToggle) manualPillarToggle.checked=!!manualPillarOverride.enabled;
     if(manualPillarGrid) manualPillarGrid.hidden=!isCaseRecord||!manualPillarOverride.enabled;
     if(manualPillarValidation) manualPillarValidation.textContent=manualPillarProblem();
   }
-  function readManualPillarInputs(key,changed){
-    const item=manualPillarOverride[key];
-    item.stem=document.getElementById('manual-'+key+'-stem').value;
-    item.branch=document.getElementById('manual-'+key+'-branch').value;
-    syncPillarPairControls(key,changed);
-    if(manualPillarValidation) manualPillarValidation.textContent=manualPillarProblem();
+  function assignManualPillarToken(key,part,value){
+    if(!isCaseRecord||!manualPillarOverride.enabled){showToast('请先切换到输入课堂案例模式');return;}
+    if(!['year','month','day'].includes(key)||!['stem','branch'].includes(part)) return;
+    manualPillarOverride[key][part]=value;
+    renderManualPillarInputs();
     applyPillarContext();
+    showToast('已放入'+(key==='year'?'年':key==='month'?'月':'日')+(part==='stem'?'干':'支')+'：'+value);
   }
   function applyPillarContext(){
     const manualActive=isCaseRecord&&manualPillarOverride.enabled;
@@ -1879,6 +1907,23 @@
   };
   let state = Array.from({length:6}, ()=>({flowers:null, branch:null, relation:null, shen:null, changeBranch:null, changeRelation:null, effect:''}));
   let selected = null;
+  document.querySelectorAll('.case-pillar-slot').forEach(slot=>{
+    slot.addEventListener('click',()=>{
+      if(!selected) return;
+      if(selected.type!==slot.dataset.dropType){showToast(slot.dataset.dropType==='stem'?'这里需要天干':'这里需要地支');return;}
+      assignManualPillarToken(slot.dataset.casePillarKey,slot.dataset.casePillarPart,selected.value);
+      selected=null;updateSelectedTiles();
+    });
+    slot.addEventListener('keydown',event=>{
+      if((event.key==='Enter'||event.key===' ')&&selected){
+        event.preventDefault();
+        if(selected.type===slot.dataset.dropType){
+          assignManualPillarToken(slot.dataset.casePillarKey,slot.dataset.casePillarPart,selected.value);
+          selected=null;updateSelectedTiles();
+        }
+      }
+    });
+  });
   let toastTimer = null;
   let pointerCandidate = null;
   let dragGhost = null;
@@ -1915,10 +1960,11 @@
   function addTiles(container, values, type, styleClass){
     values.forEach(value=>{
       const tile=document.createElement('button');
-      tile.type='button'; tile.className='tile '+(styleClass||'')+(type==='branch'&&elementClassForBranch(value)?' '+elementClassForBranch(value):'')+(type==='god'&&sixGodClasses[value]?' '+sixGodClasses[value]:''); tile.textContent=value;
+      tile.type='button'; tile.className='tile '+(styleClass||'')+(type==='branch'&&elementClassForBranch(value)?' '+elementClassForBranch(value):'')+(type==='stem'&&elementClassForStem(value)?' '+elementClassForStem(value):'')+(type==='god'&&sixGodClasses[value]?' '+sixGodClasses[value]:''); tile.textContent=value;
       tile.draggable=false; tile.dataset.tokenType=type; tile.dataset.tokenValue=value;
-      if(type==='branch'){tile.dataset.branch=value;tile.setAttribute('aria-label','地支'+value+'；拖动到爻位，或点选后点击目标位置');}
-      tile.setAttribute('aria-label','拖动'+value+'到对应位置，或点选后再点目标位置');
+      if(type==='branch') tile.dataset.branch=value;
+      const typeName=type==='branch'?'地支':type==='stem'?'天干':type==='god'?'六神':'六亲';
+      tile.setAttribute('aria-label','拖动'+typeName+value+'到对应位置，或点选后再点目标位置');
       tile.addEventListener('click',e=>{
         if(suppressTileClick){e.preventDefault();e.stopPropagation();return;}
         if(selected && selected.value===value && selected.type===type){selected=null;} else {selected={type,value};}
@@ -1943,6 +1989,7 @@
     {values:['申','巳'], groupClass:'liuhe-water', label:'巳申合化水'},
     {values:['戌','卯'], groupClass:'liuhe-fire', label:'卯戌合化火'}
   ];
+  addTiles(document.getElementById('stem-tiles'),GANZHI_STEMS,'stem','');
   const branchPairHost=document.getElementById('branch-pairs');
   branchPairDefinitions.forEach(pair=>{
     const group=document.createElement('div');
@@ -1993,7 +2040,8 @@
     suppressTileClick=true; clearTimeout(suppressResetTimer); suppressResetTimer=setTimeout(()=>suppressTileClick=false,0);
     if(target){
       if(target.dataset.dropType!==p.type){selected=null;updateSelectedTiles();showToast('这个项目不能放在这里');return;}
-      if(target.dataset.calendarKey) assignCalendarToken(target.dataset.calendarKey,p.type,p.value);
+      if(target.dataset.casePillarKey) assignManualPillarToken(target.dataset.casePillarKey,target.dataset.casePillarPart,p.value);
+      else if(target.dataset.calendarKey) assignCalendarToken(target.dataset.calendarKey,p.type,p.value);
       else assignToken(Number(target.dataset.lineId),p.type,p.value,target.dataset.zone);
     }else{
       selected=null; updateSelectedTiles(); showToast('把项目拖到对应的小格里');
