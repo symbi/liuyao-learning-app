@@ -27,7 +27,7 @@ flowchart TB
   end
   subgraph GH["GitHub — 已使用"]
     L["liuyao-learning-app：整理笔记、规则、案例、daily-records JSON"]
-    R["liuyao-learning-raw（Private）：原始录音、ASR、PDF"]
+    R["liuyao-learning-raw（Private）：原始录音、ASR、未整理来源资料"]
   end
   F -->|"GitHub App API"| L
 
@@ -335,7 +335,7 @@ Phase 1 不需要额外部署 PostgreSQL / Supabase。只有将来需要多用�
 2. M1–M3：建立 Python CLI、来源 Parser、Chunker、Neo4j Schema 和唯一约束。
 3. M4：先完成不依赖模型调用的增量 Importer 核心，验证 Hash、Revision、Chunk ID、MERGE 和重复运行。
 4. M5：对 Curated Chunk 并行执行 Gemini Embedding 和 Generative LLM 候选知识抽取。
-5. M6：按 allowlist 导入用户选定的 PDF / GitHub 外部项目，保留来源和 License。
+5. M6：按 allowlist 导入经过 Source Catalog 审核、由 Collector 输出的 Reference Package（古籍章节、网页文字、选定 GitHub 文档/源码）；保留来源、版本和 License。PDF 当前不在验收范围。
 6. M7：实现本地 Query Tool，生成可交给 ChatGPT 网页版的 Evidence Pack。
 7. M8：用真实课程、真实课堂案例和用户允许的参考资料完成端到端验收。
 
