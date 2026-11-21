@@ -7,10 +7,10 @@
 - Project: `symbi/liuyao-learning-app`
 - Workstream: HTML maintenance
 - Status: In review (Draft PR open)
-- Current task: 在原 HTML 模板中加入明确录入模式与天干/地支拖拽式课堂案例输入
+- Current task: 把课堂案例的年月日干支拖拽框直接放入原日历三柱位置，移除独立输入区
 - Target branch: `fix/trine-anchor-auto-xunkong`
 - Active PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
-- Last completed task: v87 原模板录入模式切换与干支拖拽输入
+- Last completed task: v88 原三柱位置直接切换为课堂案例拖拽框
 - Last updated: 2026-11-20
 
 ## 开始任务前
@@ -60,6 +60,44 @@
 - Next step:
 
 ## 最近任务
+
+## 2026-11-21 — 原三柱位置直接变成课堂案例拖拽框（v88）
+
+- Date: 2026-11-21
+- Task: 按用户最新确认的设计，不在日期卡片下面另放一整块「课堂案例年月日干支」；直接复用原本显示自动年月日干支的三个位置作为课堂案例的干支拖拽框。
+- User acceptance criteria:
+  - 原 HTML 模板、日期卡片、问事分类、六爻 worksheet、Memo、底部六亲/六神/地支六合拖拽区和八宫卦序保持不变。
+  - 每日排卦模式：原来的年、月、日三柱照常显示自动计算的日期干支。
+  - 输入课堂案例模式：原来的年、月、日三柱值位置本身变为手动拖拽区域；每柱上下两格，分别拖入天干和地支，格子右侧直接标注「天干」「地支」。
+  - 不显示额外独立案例年月日输入面板；不显示长篇模式提示、手动干支来源说明。
+  - 天干从底部十干 palette 拖入；地支从原有六合地支 palette 拖入；仍可点击 palette 项后点击目标格。
+  - 年柱允许未知（两格留空）；月柱、日柱必须填完整合法六十甲子；保存、打开、导出和 AI copy 继续使用原有 `pillarOverride` 持久化结构。
+- Branch: `fix/trine-anchor-auto-xunkong`
+- PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
+- Implementation commits:
+  - `b84e64902e6c9d6462595eba4993705f03e7581d` — 在原三柱显示位置加入六个内联拖拽框，移除独立输入区和说明
+  - `e6f637578a3cfd9e264847ace8058b5b39b12828` — 修正原干支显示与拖拽框显隐，避免 CSS 覆盖 hidden
+- Files changed: `index.html`, `docs/html-maintenance-progress.md`
+- Implementation summary:
+  - 在原 `year-pillar`、`month-pillar`、`day-pillar` 三个 `.cal-cell` 内增加两个小目标：stem 和 branch；右侧标签分别为「天干」「地支」。
+  - 每日模式隐藏内联目标、显示原 `.calendar-value`；课堂案例模式隐藏自动字符，显示这三组内联目标。没有添加第二套柱区。
+  - 删除旧 `case-pillar-editor`、`manual-pillar-grid`、`pillar-source-indicator` 和模式说明句；保留简洁的两个模式按钮。
+  - 底部 palette 保留原有六合地支组，在天干 palette 中只标「天干」，地支区只标「地支」。
+  - 原有拖拽事件将字符直接写入原三柱的目标格；每格支持清除；六十甲子保存校验及 record `pillarOverride` schema 均保持不变。
+- Tests / exact checks:
+  - 完整内嵌 JavaScript 通过 V8 语法编译。
+  - 静态检查确认只有六个课堂案例目标格，全部位于原 year/month/day pillar cells 内；旧独立案例输入容器、来源说明和长篇操作说明均已移除。
+  - 静态检查确认原十干 palette、六合地支 palette、问事分类、六爻 rows、八宫参考区仍存在。
+  - 使用最小 DOM 模拟环境执行切换/拖拽：每日模式启动日期为 `2026.11.21`、日期字段为 `2026-11-21`；课堂模式显示原三柱内的六个拖拽目标。
+  - 模拟拖入年柱丙午、月柱己亥、日柱戊戌后，六个原位目标都显示相应字符，月柱/日柱校验无错误；切回每日模式会隐藏拖拽区并恢复原自动值显示。
+  - 真实浏览器鼠标/触控拖放、记录保存/重开仍待 Preview 上人工验收。
+- Manual browser checks: 待最新 v88 Preview 部署成功并让用户确认原三柱位置、天干/地支标签与底部 palette 拖放体验。
+- Security and data-preservation checks:
+  - 只修改 `index.html` 和维护日志；未修改每日记录 JSON、GitHub OAuth、Cloudflare Functions、API 保存路由、`main` 或 Production。
+  - 未合并 PR，未写入真实卦例。
+- Status: Code committed on existing PR branch; static and simulated UI checks passed; latest Preview deployment pending.
+- Next step: 验证 v88 Preview 构建成功后，邀请用户检查原三柱位置的拖拽交互。
+  
 
 ## 2026-11-21 — 原模板加入录入模式切换与干支拖拽（v87）
 
