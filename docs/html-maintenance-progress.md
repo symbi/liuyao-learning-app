@@ -86,13 +86,14 @@
 - Tests / exact checks:
   - 完整内嵌 JavaScript 通过 V8 语法编译。
   - 静态初始化顺序检查通过：`PILLAR_KEYS` 的声明位置早于所有选择器事件绑定。
+  - 使用最小 DOM 模拟环境执行日历启动流程，未发生运行时异常；模拟输出日期 `2026.11.21`、年柱 `丙午`、月柱 `己亥`、日柱 `己亥`；六组选择器均填充 10 个天干与 12 个地支选项。
   - worksheet sidecar 调用已置于 `worksheetReady` 分支中，避免在 DOM 尚未创建时读取 `dateBranchSidecar`。
   - 仍需最新 Preview 上的真实浏览器验收：页面日期显示、年月日干支、日历下方纳甲/六亲区域、完整手动选择器、案例保存/重开。
 - Manual browser checks: 修复后待 Preview 部署成功并由用户确认；不可把 V8 编译通过等同于浏览器交互验收。
 - Security and data-preservation checks:
   - 仅修改 `index.html` 和本维护日志；未更改每日记录数据、GitHub OAuth、Cloudflare Functions、保存 API、main 或 Production。
   - 未合并 PR。
-- Status: Code committed to existing Draft PR; latest v86 Preview deployment pending.
+- Status: Code committed to existing Draft PR; syntax and simulated startup checks passed; latest v86 Preview deployment pending and visual/browser acceptance remains.
 - Next step: 验证 Cloudflare 最新构建成功后，请用户重新打开独立 Preview 地址进行页面验收。
 
 
