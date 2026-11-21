@@ -6,15 +6,17 @@
 
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
-- Status: approved_merged
-- Current milestone: M2 — Source Adapters
+- Status: in_progress
+- Current milestone: M2-A — Common Models and Source Provenance
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: M1 approved_merged; M2 not_started
-- Active implementation branch: none
-- Active PR: none
+- Implementation code status: M1 approved_merged; M2-A implementation in progress
+- Active implementation branch: phase1/m2-source-adapters
+- Active PR: none yet
 - Last completed milestone: M1
-- Next action: 从最新 main 创建 `phase1/m2-source-adapters`，按 M2 范围实现 Markdown/TXT/PDF/JSON Source Adapters；完成后更新本文件并创建 Draft PR，等待 ChatGPT 审核
-- Last updated: 2026-11-20
+- Next action: 等待 M2-A 最终审核；M2-B 尚未开始
+- Latest M2 implementation commit: 3b89bbc
+- Active M2 PR: none
+- Last updated: 2026-11-21
 
 ## 已冻结的架构决定
 
@@ -37,7 +39,7 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/PDF/JSON Source Adapters | not_started | — | PDF 真实样本需用户提供，先用 fixture |
+| M2 | Markdown/TXT/PDF/JSON Source Adapters | in_progress | No Draft PR | M2-A common models/provenance implemented on `phase1/m2-source-adapters`; awaiting ChatGPT review of commit `3b89bbc`; M2-B not started; daily JSON excluded from classroom-case ingestion |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
@@ -101,7 +103,7 @@
 - Types: `.venv/bin/python -m mypy` — passed with no issues in 8 source files.
 - Manual/security checks: `git diff --check` passed; no secret-like env file is tracked; only `.env.example` is tracked; no actual credentials or private `.env` values were copied into the repository or progress file.
 - Known limitations: M1 remains a scaffold; ingestion, embeddings, LLM extraction, GraphRAG, and evidence retrieval remain for later milestones.
-- Next step: resolve review comments only, update PR #2, and request another ChatGPT review. Do not merge or start M2.
+- Next step: resolve review comments only, update PR #2, and request another ChatGPT review.
 
 ## 2026-11-20 — M1 第三轮小修与最终审核准备
 
@@ -148,6 +150,15 @@
 - Expected result: adapters preserve source provenance and content faithfully; tests cover parser behavior, page/heading locations, malformed/unsupported inputs, and structured JSON field preservation. Do not silently discard unparseable content.
 - At completion: run tests/lint/type checks, inspect diff and secret scan, update this progress file with exact commands/results, push the M2 branch, and open a Draft PR. Stop for ChatGPT review; do not merge or begin M3.
 
+### M2-A checkpoint (2026-11-21)
+
+- Status: implementation_complete_pending_checkpoint
+- Branch: `phase1/m2-source-adapters`
+- Implemented: common ParsedDocument/ParsedSection models, type-specific locators, source identity/URI helpers, SHA-256 helpers, revision_ref and parser_version.
+- Privacy: no Neo4j, Gemini, Raw ASR, dailyMemo, or HTML behavior.
+- Tests: source models plus source config passed (24 tests); focused Ruff check and format check passed.
+- Next: commit/push M2-A, then begin M2-B Markdown/TXT adapters.
+
 ### Cross-model execution protocol
 
 1. Any available VS Code Agent/model, Claude Code, Codex, or other coding agent may execute the task. Model identity and quota do not define project state.
@@ -159,3 +170,23 @@
 7. No model may merge the Draft PR, approve its own work, or begin M3. ChatGPT reviews the PR; the user controls merge authorization.
 
 Secrets, credentials, private audio/transcripts, and personal records must never be copied into this progress file.
+
+### M2-A final pre-review fix (2026-11-21)
+
+- Status: in_progress / awaiting ChatGPT review
+- Branch: `phase1/m2-source-adapters`
+- Implementation checkpoint: `3b89bbc`
+- Earlier M2-A review fixes: `1372db6` and `9d12245`.
+- Metadata fix: `Field(default_factory=dict, validate_default=True)` validates and deep-freezes default empty metadata.
+- Default metadata test: omission, immutable assignment, `model_dump()`, `model_dump(mode="json")`, and `model_dump_json()` pass.
+- M2-A model: source identity/URI, SHA-256, revision/ref locator, parser version, JSON-compatible deep metadata, and RFC 6901 JSON Pointer support.
+- Actual verification:
+  - `.venv/bin/python -m pytest tests/test_source_models.py -q` — 31 passed.
+  - `.venv/bin/python -m pytest -q` — 106 passed.
+  - `.venv/bin/python -m pytest` — 106 passed in 0.68s.
+  - `.venv/bin/python -m ruff check .` — passed.
+  - `.venv/bin/python -m ruff format --check .` — passed; 15 files already formatted.
+  - `.venv/bin/python -m mypy` — passed; no issues in 9 source files.
+  - `git diff --check` — passed.
+- No Draft PR exists. M2-B has not started.
+- M2-B identity requirement: source identity must include repository/source namespace so `docs/lesson-05.md` in two repositories remains distinct. M2-A does not need large restructuring now; this requirement will be implemented and tested in M2-B.
