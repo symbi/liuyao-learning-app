@@ -315,3 +315,29 @@
   - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API、记录 schema 或真实记录。
   - 未合并 PR，未修改 `main` 或 Production。
 - Status: Updated on the existing PR branch; Preview deployment pending.
+
+
+## 2026-11-21 — 天干与地支拖拽区合并到年月日输入框旁（v90）
+
+- Task: 按用户检查 v89 后的反馈，移除天干/地支文字标题，并把两组拖拽来源集中到年月日手动输入框旁。
+- User acceptance criteria:
+  - 不再显示“放入天干”或单独的“地支”提示字。
+  - 十天干排在第一行，六合配对地支紧接着排在第二行。
+  - 两行来源区域靠左，紧挨年、月、日干支输入框，便于拖动到目标格。
+  - 页面底部不再单独保留地支拖拽区；六亲、六神区域继续保留。
+- Branch: `fix/trine-anchor-auto-xunkong`
+- Draft PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
+- Files changed: `index.html`, `docs/html-maintenance-progress.md`
+- Implementation summary:
+  - 将 `#stem-tiles` 与 `#branch-pairs` 两个原有拖拽来源都放进顶部同一个容器，按天干行、地支行上下排列。
+  - 容器按年月日输入区域左侧的自然顺序紧接日柱目标框，不再通过 `margin-left:auto` 推到右下角。
+  - 删除“放入天干”和底部“地支”标题；底部仅保留六亲、六神拖拽项。
+  - 拖拽 token、六合配对样式、六十甲子校验和 `pillarOverride` 数据逻辑均沿用原实现。
+- Tests / exact checks:
+  - 内嵌 JavaScript 通过 V8 语法编译。
+  - 静态检查确认十天干与六合地支各只有一个容器，且均位于日柱输入框之后、旬空组件之前；两个来源行上下排列，均无可见标题。
+  - 待用户在 Preview 中检查桌面布局与窄屏换行，并实际测试拖拽、保存和重开。
+- Security and data-preservation checks:
+  - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API、记录 schema 或真实记录。
+  - 未合并 PR，未修改 `main` 或 Production。
+- Status: Updated on the existing PR branch; Preview deployment pending.
