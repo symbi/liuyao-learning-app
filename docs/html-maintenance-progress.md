@@ -466,3 +466,33 @@
   - 仅修改 HTML 与维护日志；未改 OAuth、Cloudflare Functions、API、记录 schema 或历史记录。
   - 未合并 PR，未修改 `main` 或 Production。
 - Status: Updated on the existing PR branch; Preview deployment pending.
+
+## 2026-11-21 — 自动识别伏神并独立保存老师结论（v96）
+
+- Task: 用户希望课堂案例在主要用神不上卦时能显示伏神，并把老师分析过程与最终结论分开记录。
+- User acceptance criteria:
+  - 不增加第七爻；伏神显示在本卦对应飞神的同爻位下方。
+  - 当主要用神属于六亲、且本卦六爻均没有该六亲时，从本宫首卦同爻位取伏神。
+  - 显示伏神六亲、纳甲地支、五行，以及飞神与伏神之间的五行关系；保存并进入 AI 导出。
+  - 若用神已在本卦出现，不重复添加伏神；主要用神不是六亲或资料不完整时，不假装得出结果。
+  - 课堂案例保留原老师分析文本框，并新增独立「老师结论」输入框；支持保存、重新打开、JSON 导出和 AI 复制。
+  - 每日记录模式不显示课堂结论框；旧记录缺少结论字段时按空值兼容，不覆盖原案例分析。
+- Implementation summary:
+  - 新增八宫首卦纳甲地支表（自初爻至上爻），按卦宫五行计算六亲；主要用神在本卦缺失时，从本宫首卦对应爻位取伏神。
+  - 新增结构化 `analysisSnapshot.hiddenSpirits`，包含伏神爻位、六亲、地支、五行、本宫首卦来源、同位飞神及飞伏五行关系。
+  - 伏神只在有对应数据时显示在原爻行下方，不增加第七爻、不改变现有爻位和纳甲输入布局。
+  - 课堂案例新增「老师结论」框；原有 `caseMemo` 保存分析过程，新字段 `caseConclusion` 独立保存。
+  - 保存、重新打开、未保存修改检测、记录列表摘要、JSON 导出及 AI 复制均包含新结论；AI 复制也包含伏神/飞神可读分析和 JSON 结构。
+  - 记录 schema 更新为 v15，analysisSnapshot 更新为 v4；旧 v14 / snapshot v3 仍可读取，旧快照在 AI 复制时会补算伏神。
+- Tests / exact checks:
+  - HTML 内嵌 JavaScript 通过 V8 语法编译。
+  - 天水讼（离宫）fixture：离为火本宫纳甲为卯、丑、亥、酉、未、巳；六亲依次父母、子孙、官鬼、妻财、子孙、兄弟；官鬼亥水落第三爻。
+  - 本案例第三爻飞神为兄弟午火，伏神为官鬼亥水；五行关系为「伏克飞」。
+  - 静态检查确认 v96、结论保存与 AI 导出、八宫首卦纳甲表、hiddenSpirits 快照、六爻下方显示及 schema v15 / snapshot v4。
+  - 尚未执行真实浏览器视觉验收；需在 Cloudflare Preview 中检查伏神显示、结论框显示/隐藏、保存后重开与 AI 复制。
+- Security and data-preservation checks:
+  - 仅更新 `index.html` 与本维护日志，没有修改任何既有 daily-records JSON 或老师原始分析内容。
+  - 保留旧 `caseMemo` 字段和旧记录兼容；无 OAuth、Cloudflare Functions、API 或凭据逻辑变更。
+  - 未合并 PR，未修改 `main` 或 Production。
+- Status: Updated on existing HTML maintenance PR #1 branch; Preview deployment and browser acceptance pending.
+- Next step: 用户在 Branch Preview 检查 v96 伏神显示及老师结论输入框，并核对保存/重开和 AI 复制。
