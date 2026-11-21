@@ -21,6 +21,12 @@ Conventions shared by both adapters:
   whitespace-only) are separators only; every other line's content is
   preserved exactly, including internal line breaks. Nothing else is
   silently dropped.
+* Markdown fenced blocks follow the usual fence rules without a full
+  CommonMark parser: a fence has at most three leading spaces; a closing
+  fence must use the opening character, be at least as long as the opener,
+  and carry nothing after it but spaces or tabs. Shorter runs, the other
+  fence character, and fence-shaped lines with trailing text are content
+  inside the block, never block boundaries.
 * Empty and whitespace-only sources raise :class:`EmptySourceError`, and
   bytes that are not valid UTF-8 raise :class:`InvalidSourceEncodingError`.
   An empty source is never reported as a successful zero-content import.
@@ -62,7 +68,10 @@ class InvalidSourceEncodingError(SourceAdapterError):
 
 
 _HEADING_RE = re.compile(r"^ {0,3}(#{1,6})[ \t]+(\S.*?)[ \t]*$")
-_FENCE_RE = re.compile(r"^(```+|~~~+)")
+# A fence line has at most three leading spaces, then a run of at least
+# three backticks or tildes, then the rest of the line (an info string on an
+# opening fence; only spaces/tabs on a closing fence).
+_FENCE_LINE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 _CLOSING_HASHES_RE = re.compile(r"[ \t]+#+$")
 _ABSOLUTE_PATH_RE = re.compile(r"^([A-Za-z]:[\\/]|/|\\\\)")
 
@@ -183,6 +192,32 @@ def _parse_text_document(
     )
 
 
+def _is_opening_fence(match: re.Match[str]) -> bool:
+    """Whether a fence-shaped line opens a fenced block.
+
+    An opening fence may carry an info string, except that a backtick
+    fence's info string must not itself contain a backtick.
+    """
+
+    run = match.group(1)
+    return run[0] == "~" or "`" not in match.group(2)
+
+
+def _is_closing_fence(match: re.Match[str], fence_char: str, fence_length: int) -> bool:
+    """Whether a fence-shaped line closes the currently open fenced block.
+
+    A closing fence must use the same character as the opener, be at least
+    as long as the opener, and have nothing after it but spaces or tabs.
+    A shorter run, a different character, or trailing text such as
+    ``python`` makes the line ordinary fenced content instead.
+    """
+
+    run = match.group(1)
+    if run[0] != fence_char or len(run) < fence_length:
+        return False
+    return not match.group(2).strip(" \t")
+
+
 def _parse_markdown_document(
     text: str,
     *,
@@ -201,6 +236,7 @@ def _parse_markdown_document(
     current_block: list[_Line] = []
     in_fence = False
     fence_char = ""
+    fence_length = 0
 
     def flush_block() -> None:
         nonlocal paragraph
@@ -226,19 +262,24 @@ def _parse_markdown_document(
 
     for line in _iter_lines(text):
         stripped = line.content.strip()
-        fence = _FENCE_RE.match(stripped)
-        if fence is not None:
-            marker = fence.group(1)[0]
-            if not in_fence:
-                in_fence = True
-                fence_char = marker
-            elif marker == fence_char:
-                in_fence = False
-            current_block.append(line)
-            continue
+        fence_match = _FENCE_LINE_RE.match(line.content)
         if in_fence:
             # Fenced content is preserved verbatim: no heading detection and
-            # no paragraph split on blank lines inside the fence.
+            # no paragraph split on blank lines inside the fence. Only a
+            # valid closing fence (same character, at least the opening
+            # length, nothing but spaces/tabs after it, at most three
+            # leading spaces) ends the block; every other line is content.
+            if fence_match is not None and _is_closing_fence(fence_match, fence_char, fence_length):
+                in_fence = False
+                fence_char = ""
+                fence_length = 0
+            current_block.append(line)
+            continue
+        if fence_match is not None and _is_opening_fence(fence_match):
+            run = fence_match.group(1)
+            in_fence = True
+            fence_char = run[0]
+            fence_length = len(run)
             current_block.append(line)
             continue
         heading_match = _HEADING_RE.match(line.content)

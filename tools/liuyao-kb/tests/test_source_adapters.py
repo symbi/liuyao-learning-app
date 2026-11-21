@@ -145,6 +145,89 @@ class TestMarkdownAdapter:
         assert "世爻" in document.sections[1].text
 
 
+class TestMarkdownFences:
+    """Regression tests for the PR #3 ChatGPT fence review."""
+
+    def test_shorter_inner_fence_does_not_close_longer_block(self) -> None:
+        # The exact review reproduction: a four-backtick block may contain
+        # a three-backtick line and a ```python line as content.
+        source = "# 说明\n\n````text\n```python\n# 这行仍是代码\n````\n\n正文。\n"
+        document = parse_markdown_text(source, source_uri="repo://example/notes/a.md")
+
+        texts = [section.text for section in document.sections]
+        assert texts == [
+            "# 说明",
+            "````text\n```python\n# 这行仍是代码\n````",
+            "正文。",
+        ]
+        assert document.title == "说明"
+        assert_offsets_match(source, document.sections)
+
+    def test_info_text_line_does_not_close_block(self) -> None:
+        source = "```\n```python\n# 代码中的行\n```\n\n正文。\n"
+        document = parse_markdown_text(source, source_uri="repo://example/notes/a.md")
+
+        texts = [section.text for section in document.sections]
+        assert texts == ["```\n```python\n# 代码中的行\n```", "正文。"]
+        assert document.title is None
+        assert_offsets_match(source, document.sections)
+
+    def test_different_fence_character_does_not_close_block(self) -> None:
+        source = "```text\n~~~\n# 代码中的行\n```\n\n正文。\n"
+        document = parse_markdown_text(source, source_uri="repo://example/notes/a.md")
+
+        texts = [section.text for section in document.sections]
+        assert texts == ["```text\n~~~\n# 代码中的行\n```", "正文。"]
+        assert_offsets_match(source, document.sections)
+
+        tilde_source = "~~~text\n```\n# 代码中的行\n~~~\n\n正文。\n"
+        tilde_document = parse_markdown_text(tilde_source, source_uri="repo://example/notes/a.md")
+        assert [section.text for section in tilde_document.sections] == [
+            "~~~text\n```\n# 代码中的行\n~~~",
+            "正文。",
+        ]
+        assert_offsets_match(tilde_source, tilde_document.sections)
+
+    def test_longer_closing_fence_with_trailing_whitespace_closes_block(self) -> None:
+        source = "```\n代码一行\n````` \t\n\n# 真标题\n\n正文。\n"
+        document = parse_markdown_text(source, source_uri="repo://example/notes/a.md")
+
+        texts = [section.text for section in document.sections]
+        assert texts == ["```\n代码一行\n````` \t", "# 真标题", "正文。"]
+        assert document.title == "真标题"
+        assert_offsets_match(source, document.sections)
+
+    def test_fence_indented_four_spaces_is_not_a_fence(self) -> None:
+        # Four leading spaces: an indented line, not a fence opening, so
+        # the next line is still parsed as a heading.
+        source = "    ```\n# 这是标题\n"
+        document = parse_markdown_text(source, source_uri="repo://example/notes/a.md")
+
+        assert document.sections[0].text == "    ```"
+        assert document.title == "这是标题"
+        assert_offsets_match(source, document.sections)
+
+    def test_closing_fence_indented_four_spaces_does_not_close(self) -> None:
+        source = "```\n代码一行\n    ```\n# 仍是代码\n```\n"
+        document = parse_markdown_text(source, source_uri="repo://example/notes/a.md")
+
+        assert [section.text for section in document.sections] == [
+            "```\n代码一行\n    ```\n# 仍是代码\n```"
+        ]
+        assert document.title is None
+        assert_offsets_match(source, document.sections)
+
+    def test_fence_indented_up_to_three_spaces_still_works(self) -> None:
+        source = "  ```text\n# 代码中的行\n   ```\n\n正文。\n"
+        document = parse_markdown_text(source, source_uri="repo://example/notes/a.md")
+
+        assert [section.text for section in document.sections] == [
+            "  ```text\n# 代码中的行\n   ```",
+            "正文。",
+        ]
+        assert_offsets_match(source, document.sections)
+
+
 class TestTextAdapter:
     def test_multiple_paragraphs_with_locators(self) -> None:
         document = TextAdapter().parse_text(
