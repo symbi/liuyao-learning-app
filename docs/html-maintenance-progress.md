@@ -663,3 +663,13 @@
   - This does not constitute an end-to-end browser/Cloudflare API write test. The current branch deployment and live GitHub Markdown creation still need Preview acceptance.
 - Privacy: both JSON and Markdown live in the Public repository and are publicly readable. No new AI API key or AI service was added.
 - Current branch remains `fix/trine-anchor-auto-xunkong`; PR #1 remains open and unmerged.
+
+
+### 历史 JSON 兼容说明（2026-11-21）
+
+- 当前 Public 记录目录包含 9 条卦例（2026-11-16 至 2026-11-21）。
+- 2026-11-16 至 2026-11-19 的 6 条卦例没有 v5 analysisSnapshot；2026-11-20 有早期 v1 快照；2026-11-21 的两条课堂案例已有 v5 快照。
+- 生成 MD 时，formatter 对 v5 及以上快照直接使用保存值；旧格式记录会调用页面现有 buildRecordAnalysisSnapshot()，根据原始 JSON 里的干支、摇卦和手工爻位重新计算当前快照。
+- 历史 MD 按需补建：用户在某条旧记录上点击「复制 MD」时，生成并保存该条记录的 Markdown；不批量提交，也不回写或升级历史 JSON。
+- 日常每日复盘 Memo 只附在当日 dailyFortune 的 MD；同一天的额外问事 MD 不会自动复制这份日期级 Memo，避免无关的个人复盘内容混入其他问事。
+- 旧 daily / annual 记录可能仍在 JSON 中保留旧值「世爻」作为 mainUseGod。文字资料生成时按 category 统一输出「无固定用神（以世爻为主）」，不会把世爻误称为六亲用神。
