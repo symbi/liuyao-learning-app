@@ -3057,14 +3057,29 @@
     const pattern=state.map(item=>mapping[item.flowers].yang?'1':'0').join('');
     const originalBranches=najiaBranchesForPattern(pattern);
     if(!originalBranches) return {ready:false,entries:[],notes:['无法识别当前上下卦的纳甲结构，请检查六爻阴阳输入。']};
-    const palaceElement=currentHexagramInfo.element,entries=[],notes=[];
+    const palaceElement=currentHexagramInfo.element,entries=[],notes=[],originalKins=[];
     for(let i=0;i<6;i++){
       const branch=originalBranches[i],kin=sixKinForBranch(branch,palaceElement);
       if(!kin) return {ready:false,entries:[],notes:['无法根据本卦卦宫五行计算第'+(i+1)+'爻六亲。']};
+      originalKins.push(kin);
       entries.push(
         {kind:'line',lineId:i,zone:'branch',label:AUTO_LINE_POSITIONS[i]+'纳甲地支',expected:branch},
         {kind:'line',lineId:i,zone:'relation',label:AUTO_LINE_POSITIONS[i]+'六亲',expected:kin}
       );
+    }
+    // 伏神规则：只有问事分类明确指定六亲用神，且该六亲没有出现在本卦六爻时，
+    // 才从当前卦所属卦宫的本宫纯卦定位该六亲，并伏在对应爻位的飞神之下。
+    // “世爻”类运势卦不是六亲用神，不自动生成伏神。
+    const mainUseGod=String(QUESTION_CATEGORY_BY_VALUE.get(questionCategoryEl.value)?.useGod||'').trim();
+    if(relations.includes(mainUseGod)&&!originalKins.includes(mainUseGod)){
+      const palaceRoot=Object.entries(hexagramData).find(([,info])=>info.palace===currentHexagramInfo.palace&&info.stage==='本宫');
+      const palaceBranches=palaceRoot?najiaBranchesForPattern(palaceRoot[0]):null;
+      const hiddenLineIds=(palaceBranches||[]).map((branch,index)=>sixKinForBranch(branch,palaceElement)===mainUseGod?index:-1).filter(index=>index>=0);
+      if(hiddenLineIds.length!==1){
+        return {ready:false,entries:[],notes:['无法在'+currentHexagramInfo.palace+'宫本宫卦中唯一定位'+mainUseGod+'伏神，请人工核对。']};
+      }
+      const hiddenLineId=hiddenLineIds[0];
+      entries.push({kind:'line',lineId:hiddenLineId,zone:'hiddenRelation',label:AUTO_LINE_POSITIONS[hiddenLineId]+'伏神',expected:mainUseGod});
     }
     const dayPillar=String(currentPillars?.day||''),dayStem=dayPillar.charAt(0);
     const firstGod=dayStemFirstGod[dayStem]||null;
@@ -3072,18 +3087,12 @@
       const firstIndex=sixGods.indexOf(firstGod);
       for(let i=0;i<6;i++) entries.push({kind:'line',lineId:i,zone:'shen',label:AUTO_LINE_POSITIONS[i]+'六神',expected:sixGods[(firstIndex+i)%sixGods.length]});
       entries.push({kind:'calendar',key:'dayGod',label:'日干六神起神',expected:firstGod});
-    }else{
-      notes.push('六神暂不能计算：当前没有有效日柱日干；本卦纳甲和六亲仍可装配。');
     }
     for(const key of ['year','month','day']){
       const pillar=String(currentPillars?.[key]||''),branch=pillar.charAt(1);
       if(GANZHI_STEMS.includes(pillar.charAt(0))&&GANZHI_BRANCHES.includes(branch)){
         const kin=sixKinForBranch(branch,palaceElement);
         if(kin) entries.push({kind:'calendar',key:key+'Relation',label:(key==='year'?'年':key==='month'?'月':'日')+'柱六亲',expected:kin});
-      }else if(key!=='year'){
-        notes.push((key==='month'?'月':'日')+'柱尚未提供有效干支，该柱六亲和依赖日干的六神不作猜测。');
-      }else{
-        notes.push('年柱未知或未填写：年柱六亲跳过，不影响其他项目。');
       }
     }
     const transformedPattern=state.map(item=>{
@@ -3092,7 +3101,6 @@
     }).join('');
     const transformedBranches=najiaBranchesForPattern(transformedPattern);
     if(!transformedBranches) return {ready:false,entries:[],notes:['变卦上下卦无法识别，停止装配以免写入错误纳甲。']};
-    let darkMovingCount=0;
     for(let i=0;i<6;i++){
       if(mapping[state[i].flowers].moving){
         const branch=transformedBranches[i],kin=sixKinForBranch(branch,palaceElement);
@@ -3100,10 +3108,8 @@
           {kind:'line',lineId:i,zone:'changeBranch',label:AUTO_LINE_POSITIONS[i]+'变卦纳甲地支',expected:branch},
           {kind:'line',lineId:i,zone:'changeRelation',label:AUTO_LINE_POSITIONS[i]+'变卦六亲',expected:kin}
         );
-      }else if(currentDayBranch&&sixClashes[currentDayBranch]===originalBranches[i]) darkMovingCount++;
+      }
     }
-    if(darkMovingCount) notes.push('发现'+darkMovingCount+'条暗动爻。第十一课资料尚未确认暗动是否在所有情形下都按明动生成变爻纳甲，因此本次不自动填写暗动变卦。');
-    notes.push('伏藏六亲是手动学习标记，自动装卦和检查均不会改动或判断它。');
     return {ready:true,entries,notes,pattern,transformedPattern};
   }
   function readAutoEntry(entry){
@@ -3121,12 +3127,10 @@
   function renderAutoAssemblyReport(mode,summary,issues,notes){
     clearAutoReviewReport();
     if(!autoReviewReportEl) return;
-    const title=document.createElement('strong');
-    title.textContent=mode==='fill'?'自动装卦结果':'卦盘检查结果';
-    const detail=document.createElement('div');detail.className='auto-review-summary';detail.textContent=summary;
-    autoReviewReportEl.append(title,detail);
+    const messages=[...issues,...(notes||[]).map(message=>({kind:'note',message}))];
+    if(!messages.length) return;
     const list=document.createElement('ul');list.className='auto-review-list';
-    issues.forEach(issue=>{
+    messages.forEach(issue=>{
       const item=document.createElement('li');
       item.className=issue.kind==='error'?'error':issue.kind==='missing'?'missing':'note';
       item.textContent=issue.message;list.appendChild(item);
@@ -3134,22 +3138,23 @@
       if(slot&&issue.kind==='error') slot.classList.add('auto-check-error');
       if(slot&&issue.kind==='missing') slot.classList.add('auto-check-missing');
     });
-    notes.forEach(note=>{const item=document.createElement('li');item.className='note';item.textContent=note;list.appendChild(item);});
-    if(list.childElementCount) autoReviewReportEl.appendChild(list);
+    autoReviewReportEl.appendChild(list);
     autoReviewReportEl.hidden=false;
   }
   function runAutoAssembly(mode){
     const plan=buildAutoAssemblyPlan();
-    if(!plan.ready){renderAutoAssemblyReport(mode,'暂时无法执行。',[],plan.notes);return;}
+    if(!plan.ready){
+      renderAutoAssemblyReport(mode,'',[],plan.notes.slice(0,1));
+      showToast('请先完成摇卦或核对卦盘条件');
+      return;
+    }
     // Preserve the original values so automatically inserted values are not
     // presented as if the user had already entered and passed them.
     const originalValues=new Map(plan.entries.map(entry=>[entry,readAutoEntry(entry)]));
-    let filledCount=0;
     if(mode==='fill'){
       plan.entries.forEach(entry=>{
         if(!originalValues.get(entry)){
           writeAutoEntry(entry,entry.expected);
-          filledCount++;
         }
       });
       for(let i=0;i<6;i++) renderRow(i);
@@ -3164,19 +3169,9 @@
       else if(current!==entry.expected) errors.push({kind:'error',entry,message:entry.label+'：你填写的是「'+current+'」，正确应为「'+entry.expected+'」。已保留原值。'});
     }
     const issues=[...errors,...missing];
-    let summary='';
-    if(mode==='fill'){
-      summary=filledCount?'已自动填写 '+filledCount+' 个原本空白的项目。':'没有需要自动填写的空白项目。';
-      if(errors.length) summary+='另外发现 '+errors.length+' 个原有手工填写与计算结果不一致，已保留原值。';
-      if(missing.length) summary+='仍有 '+missing.length+' 个项目未填写。';
-    }else{
-      summary=errors.length||missing.length
-        ?'检查完成：发现 '+errors.length+' 个填写错误、'+missing.length+' 个空缺项目。'
-        :'检查完成：未发现填写错误。';
-    }
-    renderAutoAssemblyReport(mode,summary,issues,plan.notes);
-    if(errors.length||missing.length) showToast(mode==='fill'?'自动装卦完成：有项目需要你核对':'检查完成：发现需要核对的项目');
-    else showToast(mode==='fill'?'自动装卦完成':'检查完成：未发现填写错误');
+    renderAutoAssemblyReport(mode,'',issues,[]);
+    if(mode==='fill') showToast(errors.length?'有项目需要核对':'装卦完成');
+    else showToast(issues.length?'发现需要核对的项目':'未发现错误');
   }
   const autoFillHexagramButton=document.getElementById('auto-fill-hexagram');
   const checkHexagramButton=document.getElementById('check-hexagram');
