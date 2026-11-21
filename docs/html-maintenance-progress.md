@@ -496,3 +496,4 @@
   - 未合并 PR，未修改 `main` 或 Production。
 - Status: Updated on existing HTML maintenance PR #1 branch; Preview deployment and browser acceptance pending.
 - Next step: 用户在 Branch Preview 检查 v96 伏神显示及老师结论输入框，并核对保存/重开和 AI 复制。
+- v96 follow-up check: switching the question category now refreshes the displayed hidden spirit immediately; automatic lookup now waits until all six line-relative values can be determined, preventing an incomplete row from being mistaken for a missing use god.
