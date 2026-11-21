@@ -7,7 +7,7 @@
     {
       "schemaVersion": 16,
       "id": "7e0a6b19-92f2-4f8c-b7b0-8771955ad45b",
-      "savedAt": "2026-11-21T13:48:29.795Z",
+      "savedAt": "2026-11-21T14:02:14.896Z",
       "date": "2026-11-21",
       "timezone": "Asia/Tokyo",
       "question": {
@@ -19,7 +19,7 @@
       },
       "isCase": true,
       "caseSource": "classroom",
-      "caseMemo": "应爻克世爻\n日克（用神克日建）月破（月建和用神相冲）老天不帮，天时失去\n两重财爻但是不动，都是处于月破\n官鬼持世，官鬼休囚\n应爻是他人，应爻克世，世爻休囚，没法中标",
+      "caseMemo": "应爻克世爻\n日克（日建克用神）月破（月建和用神相冲）老天不帮，天时失去\n两重财爻但是不动，都是处于月破\n官鬼持世，官鬼休囚\n应爻是他人，应爻克世，世爻休囚，没法中标",
       "caseConclusion": "钱不好赚，没法中标",
       "pillars": {
         "year": "",
@@ -116,7 +116,7 @@
       "twentyEight": null,
       "analysisSnapshot": {
         "schemaVersion": 5,
-        "calculatedAt": "2026-11-21T13:48:29.793Z",
+        "calculatedAt": "2026-11-21T14:02:14.896Z",
         "calculationSource": "saved-pillars-and-line-inputs",
         "calendar": {
           "yearPillar": null,
@@ -323,7 +323,7 @@
         }
       },
       "createdAt": "2026-11-21T13:48:29.795Z",
-      "updatedAt": "2026-11-21T13:48:29.795Z",
+      "updatedAt": "2026-11-21T14:02:14.896Z",
       "recordType": "additionalQuestion"
     },
     {
@@ -696,5 +696,5 @@
   ],
   "dailyMemo": "",
   "createdAt": "2026-11-21T10:42:04.552Z",
-  "updatedAt": "2026-11-21T13:48:29.795Z"
+  "updatedAt": "2026-11-21T14:02:14.896Z"
 }
