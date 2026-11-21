@@ -497,3 +497,30 @@
 - Status: Updated on existing HTML maintenance PR #1 branch; Preview deployment and browser acceptance pending.
 - Next step: 用户在 Branch Preview 检查 v96 伏神显示及老师结论输入框，并核对保存/重开和 AI 复制。
 - v96 follow-up check: switching the question category now refreshes the displayed hidden spirit immediately; automatic lookup now waits until all six line-relative values can be determined, preventing an incomplete row from being mistaken for a missing use god.
+
+## 2026-11-21 — 将自动伏神长说明改为逐爻手动伏藏标记（v97）
+
+- Task: 用户认为 v96 自动显示的伏神/飞神细节文字太多，也不希望页面擅自判断伏神落点；改为每爻保留紧凑、可拖拽的伏藏六亲标记位。
+- User acceptance criteria:
+  - 删除自动产生的「伏」「官鬼亥水」「伏克飞」「飞神兄弟午火」「明动」等长说明。
+  - 每一爻本卦纳甲地支左侧放一个小型可选框；可从下方既有六亲调色板拖入父母、兄弟、子孙、妻财或官鬼。
+  - 填入后仅显示所选六亲名称，例如「官鬼」；空白表示没有人工录入伏藏标记。
+  - 不新增第七爻，不要求程序自行判断伏神位置。
+  - 保留 v96 的「老师结论」框及其保存、重开和 AI 导出。
+- Implementation summary:
+  - 移除 v96 自动推导伏神的八宫纳甲表、自动推导/显示逻辑及详细飞伏文字。
+  - 每爻纳甲地支左侧新增 21px 紧凑六亲标记槽；直接复用现有六亲项目的拖拽和点击后放入机制。
+  - 标记写入每条 line 的 `hiddenRelation`，支持清除、保存到 GitHub、重新打开、JSON 导入导出和 AI 复制。
+  - AI 输出增加「伏藏六亲（人工标注）」；若六爻六亲已全部填写、主要用神却未出现且没有伏藏标记，提示需要人工核对，不会擅自断定用神已上卦。
+  - 记录 schema 升级为 v16，analysisSnapshot 升级为 v5；保留旧记录与老师结论字段兼容。
+- Tests / exact checks:
+  - HTML 内嵌 JavaScript 通过 V8 语法编译。
+  - 静态检查确认每爻迷你标记槽位、拖拽监听、render/save/restore、AI 人工标注输出、schema v16 / snapshot v5 已写入。
+  - 人工标记数据 fixture 验证「官鬼」可保存并恢复。
+  - 尚未进行真实浏览器视觉、拖拽、保存重开和 AI 复制验收。
+- Security and data-preservation checks:
+  - 仅修改 HTML 与维护日志，不触碰任何既有课堂案例 JSON 或每日记录。
+  - v96 新增的老师结论字段继续保留；旧 `caseMemo` 不变。
+  - 未合并 PR，未修改 `main` 或 Production。
+- Status: Updated on existing HTML maintenance PR #1 branch; Cloudflare Preview and user browser acceptance pending.
+- Next step: 在 Preview 检查小格位置与宽度、拖入/清除六亲、保存重开和 AI 复制。
