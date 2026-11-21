@@ -221,5 +221,6 @@
   },
   "appConclusionAsSaved": "工作调动不能成功，有竞争者，竞争不过",
   "conclusionWordingReview": "保存字段的“不能成功”比 ASR 中老师反复表达的“成功率很小”更绝对。复盘稿采用更贴近 ASR 的“成功机会很小”；是否同步修改 HTML 原记录，待用户确认。",
-  "status": "verified_chart_to_classroom_case; raw_audio_not_archived"
+  "status": "verified_chart_to_classroom_case; raw_audio_not_archived",
+  "schemaVersion": 1
 }
