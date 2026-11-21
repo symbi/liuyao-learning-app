@@ -7,9 +7,11 @@ network access, model calls, Neo4j writes, or incremental synchronization.
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Mapping, Sequence
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
-from typing import Annotated, Any, Literal
+from types import MappingProxyType
+from typing import Annotated, Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -90,7 +92,18 @@ class JsonLocator(BaseModel):
 
     kind: Literal["json"] = "json"
     record_id: str | None = None
-    json_pointer: str = "/"
+    json_pointer: str = ""
+
+    @field_validator("json_pointer")
+    @classmethod
+    def _validate_pointer(cls, value: str) -> str:
+        if value == "":
+            return value
+        if not value.startswith("/"):
+            raise ValueError("JSON Pointer must be empty or start with '/'")
+        for token in value[1:].split("/"):
+            unescape_json_pointer_token(token)
+        return value
 
 
 Locator = Annotated[
@@ -122,7 +135,12 @@ class ParsedDocument(BaseModel):
     parser_version: str = Field(min_length=1)
     title: str | None = None
     sections: tuple[ParsedSection, ...] = ()
-    metadata: dict[str, Any] = Field(default_factory=dict)
+    metadata: Mapping[str, Any] = Field(default_factory=dict)
+
+    @field_validator("metadata", mode="after")
+    @classmethod
+    def _freeze_metadata(cls, value: Mapping[str, Any]) -> Mapping[str, Any]:
+        return cast(Mapping[str, Any], _deep_freeze(value))
 
     @field_validator("content_hash")
     @classmethod
@@ -159,13 +177,18 @@ def canonical_source_uri(
     path = Path(source).expanduser()
     if source_root is not None:
         root = Path(source_root).expanduser().resolve()
+        resolved = path.resolve() if path.is_absolute() else (root / path).resolve()
         try:
-            relative = path.resolve().relative_to(root)
+            relative = resolved.relative_to(root)
         except ValueError:
-            return path.resolve().as_posix()
+            raise ValueError(
+                "Source path is outside source_root; use an explicit reviewed source URI"
+            ) from None
         return PurePosixPath(relative.as_posix()).as_posix()
     if path.is_absolute():
-        return path.as_posix()
+        raise ValueError(
+            "Absolute source paths are not portable; pass source_root or an explicit source URI"
+        )
     return PurePosixPath(path.as_posix()).as_posix()
 
 
@@ -192,3 +215,71 @@ def source_identity_from_path(
 
     uri = canonical_source_uri(path, source_root=source_root)
     return build_source_identity(source_type, uri)
+
+
+def _deep_freeze(value: Any) -> Any:
+    """Recursively copy values into immutable dict/tuple representations."""
+    if isinstance(value, Mapping):
+        return MappingProxyType({str(key): _deep_freeze(item) for key, item in value.items()})
+    if isinstance(value, (list, tuple)):
+        return tuple(_deep_freeze(item) for item in value)
+    if isinstance(value, (set, frozenset)):
+        return tuple(_deep_freeze(item) for item in value)
+    return value
+
+
+def escape_json_pointer_token(token: str) -> str:
+    """Escape one RFC 6901 JSON Pointer token."""
+    return token.replace("~", "~0").replace("/", "~1")
+
+
+def unescape_json_pointer_token(token: str) -> str:
+    """Unescape one RFC 6901 JSON Pointer token."""
+    result: list[str] = []
+    index = 0
+    while index < len(token):
+        if token[index] == "~":
+            if index + 1 >= len(token) or token[index + 1] not in "01":
+                raise ValueError("Invalid RFC 6901 escape in JSON Pointer")
+            result.append("~" if token[index + 1] == "0" else "/")
+            index += 2
+        else:
+            result.append(token[index])
+            index += 1
+    return "".join(result)
+
+
+def json_pointer(parts: Sequence[str]) -> str:
+    """Build an RFC 6901 pointer from decoded token names."""
+    if not parts:
+        return ""
+    return "/" + "/".join(escape_json_pointer_token(part) for part in parts)
+
+
+def resolve_json_pointer(document: Any, pointer: str) -> Any:
+    """Resolve an RFC 6901 pointer against a JSON-compatible value."""
+    if pointer == "":
+        return document
+    if not pointer.startswith("/"):
+        raise ValueError("JSON Pointer must be empty or start with '/'")
+
+    current = document
+    for encoded_token in pointer[1:].split("/"):
+        token = unescape_json_pointer_token(encoded_token)
+        if isinstance(current, Mapping):
+            if token not in current:
+                raise KeyError(token)
+            current = current[token]
+        elif isinstance(current, (list, tuple)):
+            if token == "0":
+                position = 0
+            elif token.isdigit() and not token.startswith("0"):
+                position = int(token)
+            else:
+                raise KeyError(token)
+            if position >= len(current):
+                raise KeyError(token)
+            current = current[position]
+        else:
+            raise KeyError(token)
+    return current

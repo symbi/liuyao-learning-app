@@ -17,6 +17,9 @@ from liuyao_kb.sources.models import (
     TextLocator,
     build_source_identity,
     canonical_source_uri,
+    escape_json_pointer_token,
+    json_pointer,
+    resolve_json_pointer,
     sha256_bytes,
     sha256_text,
     source_identity_from_path,
@@ -137,3 +140,81 @@ class TestParsedDocument:
         )
         with pytest.raises(ValidationError):
             document.title = "changed"  # type: ignore[misc]
+
+    def test_absolute_source_without_repository_root_is_rejected(self, tmp_path: Path) -> None:
+        absolute = tmp_path / "private" / "lesson.txt"
+        with pytest.raises(ValueError, match="not portable"):
+            canonical_source_uri(absolute)
+
+    def test_source_outside_repository_root_is_rejected(self, tmp_path: Path) -> None:
+        root = tmp_path / "learning"
+        outside = tmp_path / "private" / "lesson.txt"
+        with pytest.raises(ValueError, match="outside source_root"):
+            canonical_source_uri(outside, source_root=root)
+
+    def test_relative_source_identity_stays_relative(self) -> None:
+        identity = source_identity_from_path(SourceType.TEXT, "fixtures/lesson.txt")
+        assert identity == "text:fixtures/lesson.txt"
+
+    def test_metadata_is_deeply_immutable(self) -> None:
+        nested = {"value": "original"}
+        items = ["first", "second"]
+        source_metadata = {"top": "original", "nested": nested, "items": items}
+        document = ParsedDocument(
+            source_type=SourceType.TEXT,
+            source_identity="text:fixture.txt",
+            source_uri="fixture.txt",
+            content_hash=sha256_text("text"),
+            parser_version="text-1",
+            metadata=source_metadata,
+        )
+
+        with pytest.raises(TypeError):
+            document.metadata["top"] = "changed"  # type: ignore[index]
+        with pytest.raises(TypeError):
+            document.metadata["nested"]["value"] = "changed"  # type: ignore[index]
+        with pytest.raises(TypeError):
+            document.metadata["items"][0] = "changed"  # type: ignore[index]
+
+        nested["value"] = "mutated-input"
+        items[0] = "mutated-input"
+        assert document.metadata["nested"]["value"] == "original"  # type: ignore[index]
+        assert document.metadata["items"][0] == "first"  # type: ignore[index]
+
+
+class TestJsonLocators:
+    def test_json_pointer_defaults_to_root_not_slash(self) -> None:
+        assert JsonLocator().json_pointer == ""
+
+    def test_rfc6901_resolves_root_and_regular_fields(self) -> None:
+        document = {"casting": {"name": "巽为风"}}
+        assert resolve_json_pointer(document, "") == document
+        assert resolve_json_pointer(document, "/casting/name") == "巽为风"
+
+    def test_rfc6901_resolves_array_index(self) -> None:
+        document = {"lines": [{"relation": "妻财"}, {"relation": "父母"}]}
+        assert resolve_json_pointer(document, "/lines/1/relation") == "父母"
+
+    def test_rfc6901_escapes_special_characters(self) -> None:
+        assert escape_json_pointer_token("a/b~c") == "a~1b~0c"
+        assert json_pointer(["casting", "a/b~c", "0"]) == "/casting/a~1b~0c/0"
+        document = {"casting": {"a/b~c": "preserved"}}
+        assert resolve_json_pointer(document, "/casting/a~1b~0c") == "preserved"
+
+    def test_invalid_rfc6901_pointer_is_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            JsonLocator(json_pointer="casting/name")
+        with pytest.raises(ValidationError):
+            JsonLocator(json_pointer="/casting/~2name")
+
+    def test_invalid_text_offsets_are_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            TextLocator(paragraph=1, start_offset=5, end_offset=4)
+
+    def test_pdf_page_number_is_positive(self) -> None:
+        with pytest.raises(ValidationError):
+            PdfLocator(page_number=0, start_offset=0, end_offset=1)
+
+    def test_invalid_markdown_offsets_are_rejected(self) -> None:
+        with pytest.raises(ValidationError):
+            MarkdownLocator(start_offset=7, end_offset=6)

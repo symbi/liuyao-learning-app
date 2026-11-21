@@ -15,9 +15,13 @@ from liuyao_kb.sources.models import (
     TextLocator,
     build_source_identity,
     canonical_source_uri,
+    escape_json_pointer_token,
+    json_pointer,
+    resolve_json_pointer,
     sha256_bytes,
     sha256_text,
     source_identity_from_path,
+    unescape_json_pointer_token,
 )
 
 __all__ = [
@@ -31,9 +35,13 @@ __all__ = [
     "TextLocator",
     "build_source_identity",
     "canonical_source_uri",
+    "escape_json_pointer_token",
     "find_sources_config",
+    "json_pointer",
     "load_sources_config",
+    "resolve_json_pointer",
     "sha256_bytes",
     "sha256_text",
     "source_identity_from_path",
+    "unescape_json_pointer_token",
 ]
