@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v93</title>
+<title>六爻排卦与每日记录 v94</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -850,6 +850,7 @@
     box-shadow:0 2px 8px rgba(61,48,28,.045);
   }
   .worksheet-memo-header{display:flex;align-items:center;flex:0 0 auto;}
+  .worksheet-memo-header[hidden]{display:none !important;}
   .worksheet-memo-header strong{font-size:12px;font-weight:800;color:#34372f;}
   .case-meta{flex:0 0 auto;}
   .worksheet-memo textarea{
@@ -983,7 +984,7 @@
       <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-element-badge" id="hexagram-element-badge" aria-label="卦宫五行"></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
     </div>
     <div class="rows" id="rows"></div>
-    <aside class="worksheet-memo" aria-label="每日记录或案例 Memo">
+    <aside class="worksheet-memo" aria-label="记录内容">
       <div class="worksheet-memo-header"><strong id="memo-title">每日记录 Memo</strong></div>
       <div class="case-meta" id="case-meta" hidden>
         <label class="case-field" for="case-source">案例类型
@@ -1116,6 +1117,7 @@
   const caseReviewStatusSelect=document.getElementById('case-review-status');
   const caseMemoTitle=document.getElementById('memo-title');
   const caseMemoHint=document.getElementById('case-memo-hint');
+  const memoHeader=document.querySelector('.worksheet-memo-header');
   const memoTextarea=document.getElementById('daily-memo');
   const manualPillarValidation=document.getElementById('manual-pillar-validation');
   const dailyModeButton=document.getElementById('mode-daily');
@@ -1124,23 +1126,22 @@
   let isCaseRecord=false;
   let manualPillarOverride={enabled:false,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
   function updateCaseEditor(){
-    const source=caseSourceSelect.value==='practice'?'practice':'classroom';
-    const isClassroom=isCaseRecord&&source==='classroom';
     caseToggleButton.textContent=isCaseRecord?'已标记为案例':'标记为案例';
     caseToggleButton.classList.toggle('primary',isCaseRecord);
     caseToggleButton.setAttribute('aria-pressed',String(isCaseRecord));
-    caseMetaEl.hidden=!isCaseRecord;
-    caseReviewField.hidden=!isClassroom;
+    // Classroom case notes are intentionally a plain text area; legacy metadata
+    // remains hidden for backwards-compatible loading, but is no longer shown.
+    caseMetaEl.hidden=true;
+    caseReviewField.hidden=true;
+    memoHeader.hidden=isCaseRecord;
     document.querySelectorAll('.calendar-value').forEach(node=>{node.hidden=isCaseRecord;});
     document.querySelectorAll('.case-inline-pillar').forEach(node=>{node.hidden=!isCaseRecord;});
     const stemSource=document.getElementById('case-stem-source');
     if(stemSource) stemSource.hidden=!isCaseRecord;
-    caseMemoTitle.textContent=!isCaseRecord?'每日记录 Memo':(isClassroom?'课堂案例 Memo':'个人练习 Memo');
-    memoTextarea.setAttribute('aria-label',!isCaseRecord?'每日记录 Memo':(isClassroom?'课堂案例 Memo':'个人练习 Memo'));
-    memoTextarea.placeholder=!isCaseRecord?'记录当天的观察和复盘…':(isClassroom?'记录老师的分析重点、判断依据和课堂结论…':'记录自己的分析过程与复盘…');
-    caseMemoHint.textContent=isClassroom
-      ?'课堂案例单独保存老师的分析笔记。请确认年月日干支来自老师原始案例，而不是你录入案例时的日期。'
-      :'个人练习会单独保存，不会与老师课堂案例混在一起。';
+    caseMemoTitle.textContent=isCaseRecord?'':'每日记录 Memo';
+    memoTextarea.setAttribute('aria-label',isCaseRecord?'老师的分析':'每日记录 Memo');
+    memoTextarea.placeholder=isCaseRecord?'':'记录当天的观察和复盘…';
+    caseMemoHint.textContent='';
     if(dailyModeButton){
       dailyModeButton.classList.toggle('active',!isCaseRecord);
       dailyModeButton.setAttribute('aria-pressed',String(!isCaseRecord));
@@ -3178,7 +3179,7 @@
       id:editingRecordId||(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(16).slice(2)),
       savedAt:new Date().toISOString(),date:document.getElementById('record-date').value||selectedDateKey,timezone:JAPAN_TZ,
       question:getQuestionSnapshot(),isCase:isCaseRecord,
-      ...(isCaseRecord?{caseSource:caseSourceSelect.value,caseReviewStatus:caseSourceSelect.value==='classroom'?caseReviewStatusSelect.value:null,caseMemo:memoTextarea.value.trim()}:{}),
+      ...(isCaseRecord?{caseSource:caseSourceSelect.value,caseMemo:memoTextarea.value.trim()}:{}),
       dailyMemo:isCaseRecord?'':memoTextarea.value.trim(),
       pillars:{year:currentPillars.year||'',month:currentPillars.month||'',day:currentPillars.day||''},
       pillarSource:isCaseRecord&&manualPillarOverride.enabled?'manual-case':'calendar-date',
