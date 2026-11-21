@@ -5,9 +5,9 @@
   "dailyFortune": null,
   "additionalQuestions": [
     {
-      "schemaVersion": 15,
+      "schemaVersion": 16,
       "id": "9f89c47a-ba51-44d1-81b5-ffba16a30ca2",
-      "savedAt": "2026-11-21T11:17:39.806Z",
+      "savedAt": "2026-11-21T11:47:03.786Z",
       "date": "2026-11-21",
       "timezone": "Asia/Tokyo",
       "question": {
@@ -47,6 +47,7 @@
           "flowers": 2,
           "branch": "寅",
           "relation": "父母",
+          "hiddenRelation": null,
           "shen": "青龙",
           "changeBranch": null,
           "changeRelation": null,
@@ -56,6 +57,7 @@
           "flowers": 1,
           "branch": "辰",
           "relation": "子孙",
+          "hiddenRelation": null,
           "shen": "朱雀",
           "changeBranch": null,
           "changeRelation": null,
@@ -65,6 +67,7 @@
           "flowers": 3,
           "branch": "午",
           "relation": "兄弟",
+          "hiddenRelation": "官鬼",
           "shen": "勾陈",
           "changeBranch": "酉",
           "changeRelation": "妻财",
@@ -74,6 +77,7 @@
           "flowers": 1,
           "branch": "午",
           "relation": "兄弟",
+          "hiddenRelation": null,
           "shen": "螣蛇",
           "changeBranch": null,
           "changeRelation": null,
@@ -83,6 +87,7 @@
           "flowers": 1,
           "branch": "申",
           "relation": "妻财",
+          "hiddenRelation": null,
           "shen": "白虎",
           "changeBranch": null,
           "changeRelation": null,
@@ -92,6 +97,7 @@
           "flowers": 1,
           "branch": "戌",
           "relation": "子孙",
+          "hiddenRelation": null,
           "shen": "玄武",
           "changeBranch": null,
           "changeRelation": null,
@@ -109,8 +115,8 @@
       "jianchu": null,
       "twentyEight": null,
       "analysisSnapshot": {
-        "schemaVersion": 4,
-        "calculatedAt": "2026-11-21T11:17:39.805Z",
+        "schemaVersion": 5,
+        "calculatedAt": "2026-11-21T11:47:03.786Z",
         "calculationSource": "saved-pillars-and-line-inputs",
         "calendar": {
           "yearPillar": null,
@@ -157,6 +163,7 @@
             "role": "应爻",
             "flowers": 2,
             "relation": "父母",
+            "hiddenRelation": null,
             "sixGod": "青龙",
             "movement": null,
             "original": {
@@ -179,6 +186,7 @@
             "role": null,
             "flowers": 1,
             "relation": "子孙",
+            "hiddenRelation": null,
             "sixGod": "朱雀",
             "movement": null,
             "original": {
@@ -201,6 +209,7 @@
             "role": null,
             "flowers": 3,
             "relation": "兄弟",
+            "hiddenRelation": "官鬼",
             "sixGod": "勾陈",
             "movement": "明动",
             "original": {
@@ -232,6 +241,7 @@
             "role": "世爻",
             "flowers": 1,
             "relation": "兄弟",
+            "hiddenRelation": null,
             "sixGod": "螣蛇",
             "movement": null,
             "original": {
@@ -254,6 +264,7 @@
             "role": null,
             "flowers": 1,
             "relation": "妻财",
+            "hiddenRelation": null,
             "sixGod": "白虎",
             "movement": null,
             "original": {
@@ -276,6 +287,7 @@
             "role": null,
             "flowers": 1,
             "relation": "子孙",
+            "hiddenRelation": null,
             "sixGod": "玄武",
             "movement": null,
             "original": {
@@ -293,55 +305,6 @@
             "effect": ""
           }
         ],
-        "hiddenSpirits": {
-          "status": "hidden",
-          "useGod": "官鬼",
-          "palace": "离",
-          "palaceBaseHexagram": "离为火",
-          "method": "八宫本宫首卦同爻位取伏神",
-          "candidates": [
-            {
-              "lineNumber": 3,
-              "position": "三爻",
-              "relation": "官鬼",
-              "branch": "亥",
-              "element": "water",
-              "elementName": "水",
-              "source": "palace-pure-hexagram",
-              "sourceHexagram": "离为火",
-              "flying": {
-                "lineNumber": 3,
-                "branch": "午",
-                "relation": "兄弟",
-                "element": "fire",
-                "elementName": "火",
-                "movement": "明动",
-                "relationToHidden": "伏克飞",
-                "branchState": {
-                  "branch": "午",
-                  "element": "fire",
-                  "elementName": "火",
-                  "monthStatus": "相",
-                  "monthStatusGroup": "wangxiang",
-                  "monthRule": "木旺、火相",
-                  "monthBreak": false,
-                  "xunkong": false
-                }
-              },
-              "branchState": {
-                "branch": "亥",
-                "element": "water",
-                "elementName": "水",
-                "monthStatus": "休",
-                "monthStatusGroup": "xiuqiu",
-                "monthRule": "木旺、火相",
-                "monthBreak": false,
-                "xunkong": false
-              }
-            }
-          ],
-          "reason": "主要用神未在本卦出现"
-        },
         "shiYing": {
           "kind": "应生世",
           "shiLineNumber": 4,
@@ -405,11 +368,11 @@
         }
       },
       "createdAt": "2026-11-21T10:42:04.552Z",
-      "updatedAt": "2026-11-21T11:17:39.806Z",
+      "updatedAt": "2026-11-21T11:47:03.786Z",
       "recordType": "additionalQuestion"
     }
   ],
   "dailyMemo": "",
   "createdAt": "2026-11-21T10:42:04.552Z",
-  "updatedAt": "2026-11-21T11:17:39.806Z"
+  "updatedAt": "2026-11-21T11:47:03.786Z"
 }
