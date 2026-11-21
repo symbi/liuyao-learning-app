@@ -50,6 +50,7 @@
 - [历法引擎方案与验证计划](docs/calendar-engine-plan.md)
 - [开源项目与古籍参考资料调查计划](docs/reference-research-plan.md)
 - [六爻外部参考资料来源目录与双仓库采集/导入方案](docs/reference-source-catalog.md)
+- [Source Collector 独立项目章程与 Muse 启动说明](docs/source-collector-project-charter.md)
 - [开源项目分类目录、二十八宿与择日研究备忘录](docs/references/github-project-catalog-and-28-mansions.md)
 - [课程笔记总览](docs/lessons/README.md)
 - [规则状态与待核实项](docs/rules-status.md)
