@@ -593,3 +593,14 @@
   - Only `index.html` and this maintenance log are changed on PR #1 branch. The saved factory case JSON and original Memo/conclusion were not modified.
   - `main`, Production, Pages Functions, OAuth, credentials and original course records remain untouched.
 - Status: Updated on existing PR #1 branch; Preview deployment and user's browser acceptance pending.
+
+
+### v98 follow-up fixture verification — 2026-11-21
+
+- Executed the actual AI formatter function against saved factory-case JSON `7e0a6b19-92f2-4f8c-b7b0-8771955ad45b` in an isolated JavaScript harness. The generated readable text explicitly contains: 火风鼎、离宫火、上离下巽、二世、二爻世/五爻应、应克世、乙卯月戊午日、旬空子丑、六神起勾陈、all six line coin/yin-yang states, six branches/elements/kins/gods, per-line monthly status, per-line day/month five-element relations, month-break, void status, moving/static state, manual hidden-spirit state, case memo and conclusion.
+- Assertions passed: palace and upper/lower trigram present; two 妻财 lines present; both 酉金 lines show 月破 and 日支午火克爻支酉金; 旬空子丑 present; all six static lines explicitly described; 世应 relation and teacher conclusion present.
+- Executed the actual `runAutoAssembly` function with mocked UI callbacks for three cases:
+  - All blank → fills the 3 blanks and reports only「已自动填写 3 个原本空白的项目。」; no「正确」count.
+  - Two wrong + one blank → fills only the blank, reports the two pre-existing manual errors, and preserves both wrong values untouched.
+  - Check-only with one correct, one wrong, one blank → reports one error and one missing item, lists neither correct item, and writes nothing.
+- These are isolated function tests, not full browser interaction tests. Preview click-through and record save/reopen remain for user acceptance.
