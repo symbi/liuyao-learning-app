@@ -7,13 +7,15 @@
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
 - Status: in_progress
-- Current milestone: M2 — Source Adapters（M2-A 已完成；M2-B 已实现并通过复审；M2-C 课堂案例 JSON 为下一项；PDF Adapter/OCR 已暂缓）
+- Current milestone: M2 — Source Adapters（M2-A 已通过审查；M2-B 已完成，等待 ChatGPT 审查）
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: M1 approved_merged; M2-A completed（随 PR #3 提交）; M2-B implemented, ChatGPT 复审通过（PR #3，Draft，未合并）
-- Active implementation branch: `phase1/m2-source-adapters`（PR #3）；规划分支 `phase1/reference-source-catalog`（PR #4，仅文档）
-- Active PR: [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3)（M2-A/M2-B 代码，Draft，等待用户 Mac 本机验收与合并决定）；[PR #4](https://github.com/symbi/liuyao-learning-app/pull/4)（双仓库架构与来源目录规划文档，Draft）
-- Last completed milestone: M1（已合并）；M2-A/M2-B 已完成实现与复审，尚未合并
-- Next action: 用户在 Mac 本机复跑 PR #3 的 144 项测试验收后决定是否合并；合并后启动 M2-C 课堂案例 JSON Adapter。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
+- Implementation code status: M1 approved_merged; M2-A 代码审查通过; M2-B 实现完成待审查; M2 整体 in_progress
+- Active implementation branch: phase1/m2-source-adapters
+- Active PR: Draft PR #3（M2-A + M2-B）
+- Last completed milestone: M1
+- Next action: 等待 ChatGPT 复审 Draft PR #3（M2-B 围栏修复已推送）；不合并、不开始 PDF/JSON 等 M2 后续阶段
+- Latest M2 implementation commit: 38b4e09
+- Active M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3
 - Last updated: 2026-11-21
 
 ## 已冻结的架构决定
@@ -24,13 +26,12 @@
 4. Phase 2 才把 Query / Evidence Pack / Rule Engine / LLM Orchestrator 整合为 Cloud Run FastAPI 服务；继续使用同一个 AuraDB，不重新导入。
 5. Source A Raw：Private raw 中的录音和低准确率 ASR 默认只登记来源/版本，不进入主要 Chunk、Embedding 或规则抽取。
 6. Source B Curated：Learning 中经过 ChatGPT 整理的课堂笔记，是主要课程 Chunk 来源。
-7. 外部 GitHub README/docs 等外部参考资料进入外部参考轨道；保留 URL、版本、License，不与课程来源混淆。源码按文件/类/函数边界处理，属于后续子阶段。外部资料统一经独立仓库 Source Collector 采集并输出 Reference Package 后再导入（见决定 13）。PDF 已暂缓：当前没有明确准备导入的 PDF 文件，不为 PDF 增加开发依赖；将来选定具体 PDF 后再单独评估（2026-11-21 决定，取代早期“用户明确选择的 PDF 可进入参考轨道”的表述）。
+7. 用户明确选择的 PDF、外部 GitHub README/docs 可以进入外部参考轨道；保留 URL、版本、License，不与课程来源混淆。源码按文件/类/函数边界处理，属于后续子阶段。
 8. Chunk 之后并行执行 Embedding 和 Generative LLM 候选知识抽取。Generative LLM 是大语言模型；抽取结果永远是 candidate，不自动成为老师确认规则。
 9. Neo4j 保存 Document、Revision、Chunk、Case、Concept、RuleCandidate、关系和向量。同步 Manifest 放在 Neo4j，不另建 SQLite 数据库。
 10. HTML 的每日 JSON 继续由现有 Cloudflare Pages Functions 保存到 GitHub；Phase 1 Importer 另行增量同步，不做浏览器实时双写。
 11. Phase 1 Query Tool 从 AuraDB 检索并输出带出处的 Evidence Pack；最终报告由 ChatGPT Web 完成，用户手动交接。
 12. 用户不需要逐条审核节点；系统自动保留来源、课程、页码/段落、版本、模型和不确定性。
-13. 系统拆分为两个独立 Repository（2026-11-21 决定）：`symbi/liuyao-source-collector`（独立新仓库，由单独窗口负责；远端尚未创建）负责外部古籍网站/GitHub 资料的合规采集并输出标准化 Reference Package；本仓库 `symbi/liuyao-learning-app` 负责课程 Markdown/TXT、课堂案例 JSON、Reference Package 的接收与验证、解析、Chunk、Embedding、Neo4j 与 Evidence Pack。两边只通过 Reference Package 文件交接；本仓库不实现爬虫或网站采集器。来源登记见 [reference-source-catalog.md](reference-source-catalog.md)。
 
 ## 里程碑状态
 
@@ -38,11 +39,11 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3)（Draft，未合并） | M2-A 模型已完成；M2-B Markdown/TXT 已实现并通过 ChatGPT 复审，等待用户 Mac 本机验收与合并；下一项 M2-C 为课堂案例 JSON Adapter，须在 PR #3 合并后启动 |
+| M2 | Markdown/TXT/PDF/JSON Source Adapters | in_progress | [Draft PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) | M2-A 已通过 ChatGPT 代码审查（`3b89bbc` / `d4d55fb`）；M2-B 已实现（`dc222bd`），首轮审查发现的 fenced code block 关闭围栏问题已修复（`38b4e09`），等待 ChatGPT 复审；PDF/JSON 未开始；未合并；daily JSON excluded from classroom-case ingestion |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
-| M6 | 经 Source Catalog 批准、由 Source Collector 输出 Reference Package 的外部文档与代码参考 | not_started | — | 用户先确认来源与 License；本仓库不直接爬取网站；PDF 不在当前范围 |
+| M6 | Allowlist 外部 PDF/GitHub 文档和后续代码参考 | not_started | — | 用户先确认来源与 License |
 | M7 | Query Tool、向量/图关系检索、Evidence Pack | not_started | — | 不生成最终占卜报告 |
 | M8 | 端到端验收 | not_started | — | 真实课程、真实案例、获准参考材料 |
 
@@ -102,7 +103,7 @@
 - Types: `.venv/bin/python -m mypy` — passed with no issues in 8 source files.
 - Manual/security checks: `git diff --check` passed; no secret-like env file is tracked; only `.env.example` is tracked; no actual credentials or private `.env` values were copied into the repository or progress file.
 - Known limitations: M1 remains a scaffold; ingestion, embeddings, LLM extraction, GraphRAG, and evidence retrieval remain for later milestones.
-- Next step: resolve review comments only, update PR #2, and request another ChatGPT review. Do not merge or start M2.
+- Next step: resolve review comments only, update PR #2, and request another ChatGPT review.
 
 ## 2026-11-20 — M1 第三轮小修与最终审核准备
 
@@ -142,12 +143,27 @@
 - Status: not_started
 - Suggested branch: `phase1/m2-source-adapters`
 - Base: latest `origin/main`; do not assume a stale local checkout is current.
-- Scope: implement source parsing/adapters for curated Markdown lesson notes, TXT text, selected PDF files, and structured classroom-case JSON。（注：其中 PDF 部分已被 2026-11-21 决定暂缓，见本文件末尾的架构决策更新记录；当前 M2 范围为 Markdown/TXT/JSON。） The adapters should produce a consistent, source-aware parsed-document representation with provenance such as source type, repository-relative path/source URI, stable source identity where available, heading/paragraph or page location, and the original structured case fields required by the schema.
+- Scope: implement source parsing/adapters for curated Markdown lesson notes, TXT text, selected PDF files, and structured classroom-case JSON. The adapters should produce a consistent, source-aware parsed-document representation with provenance such as source type, repository-relative path/source URI, stable source identity where available, heading/paragraph or page location, and the original structured case fields required by the schema.
 - Before implementation, inspect actual existing lesson Markdown, relevant TXT examples, PDF handling requirements, and current HTML/classroom-case JSON schema in the repositories. Use small synthetic fixtures for tests; do not expose private raw ASR or personal records in fixtures.
 - M2 does not include Neo4j schema/writes, Embedding, Gemini calls, generative LLM extraction, incremental synchronization, Evidence Pack, Cloud Run, or changes to the deployed HTML app. Those belong to later milestones or separate workstreams.
-- PDF real-world sample acceptance can be deferred until the adapter and fixture tests exist; do not block initial implementation waiting for a real PDF。（注：2026-11-21 起 PDF Adapter 本身已暂缓，不只是真实样本验收。）
+- PDF real-world sample acceptance can be deferred until the adapter and fixture tests exist; do not block initial implementation waiting for a real PDF.
 - Expected result: adapters preserve source provenance and content faithfully; tests cover parser behavior, page/heading locations, malformed/unsupported inputs, and structured JSON field preservation. Do not silently discard unparseable content.
 - At completion: run tests/lint/type checks, inspect diff and secret scan, update this progress file with exact commands/results, push the M2 branch, and open a Draft PR. Stop for ChatGPT review; do not merge or begin M3.
+
+### M2-A checkpoint (2026-11-21)
+
+> **Superseded / 历史 checkpoint：** 本节是 M2-A 的早期快照，已被本文件后面的
+> 《M2-A final pre-review fix (2026-11-21)》和《M2-A 审查通过与 M2-B 启动
+> (2026-11-21)》取代。本节中的 Status 与 “Next: commit/push M2-A, then begin
+> M2-B” 是当时的状态与计划，不是当前事实；当前事实以本文件顶部「当前状态」
+> 和最新交接记录为准，请勿按本节判断进度。
+
+- Status: implementation_complete_pending_checkpoint（历史值，见上方说明）
+- Branch: `phase1/m2-source-adapters`
+- Implemented: common ParsedDocument/ParsedSection models, type-specific locators, source identity/URI helpers, SHA-256 helpers, revision_ref and parser_version.
+- Privacy: no Neo4j, Gemini, Raw ASR, dailyMemo, or HTML behavior.
+- Tests: source models plus source config passed (24 tests); focused Ruff check and format check passed.
+- Next: commit/push M2-A, then begin M2-B Markdown/TXT adapters.
 
 ### Cross-model execution protocol
 
@@ -161,21 +177,102 @@
 
 Secrets, credentials, private audio/transcripts, and personal records must never be copied into this progress file.
 
-## 2026-11-21 — 架构决策更新：双仓库拆分、PDF 暂缓与 PR #4（规划记录）
+### M2-A final pre-review fix (2026-11-21)
 
-- Milestone: M2 规划修正（仅文档，无代码变更）
-- Status: in_progress（规划 PR #4 为 Draft，等待 ChatGPT 审查与用户决定）
-- Branch: `phase1/reference-source-catalog`
-- Draft PR: https://github.com/symbi/liuyao-learning-app/pull/4
-- Base main SHA: `eefa2b23786db88c5535612695b3f08d361b0b18`
-- 决策内容:
-  1. 系统拆分为两个独立 Repository：`symbi/liuyao-source-collector`（新仓库，独立窗口负责，远端尚未创建）负责外部资料合规采集与 Reference Package 输出；本仓库负责课程/案例资料、Package 接收验证、解析、Chunk、Embedding、Neo4j 与 Evidence Pack。本仓库不创建 Source Collector 仓库、不实现爬虫。
-  2. M2-A 已完成；M2-B 已实现并通过 ChatGPT 复审（PR #3，head `e09ae71`，144 项本机测试为执行 Agent 报告，尚待用户 Mac 复跑验收）；PR #3 仍为 Draft、未合并，本记录不改变其状态。
-  3. M2 后续重点是 M2-C 课堂案例 JSON Adapter，须在 PR #3 合并后启动。
-  4. PDF Adapter 与 PDF OCR 暂缓（deferred）：当前没有明确准备导入的 PDF 文件，不为 PDF 增加当前开发依赖；将来选定具体 PDF 后再单独评估。PDF 不是当前 Phase 1 的必要功能。
-  5. 外部参考来源登记在 [reference-source-catalog.md](reference-source-catalog.md)：登记、采集、导入、检索四阶段分开管理；候选来源不等于已下载、已验证或已批准。
-  6. Reference Package 输入契约以来源目录第 5 节为准，并固化为 [reference-package-v1.schema.json](reference-package-v1.schema.json)；原始内容必须保留，Chunk 不能替代原始文档。
-- 与 PR #3 的文件重叠说明: PR #3 与 PR #4 都修改了本文件（`docs/phase1-progress.md`）。PR #3 的版本包含 M2-A/M2-B 的完整 checkpoint 记录；本分支的修改基于 main 的旧版本同步状态与上述决策。建议合并顺序为先 PR #3、后 PR #4；合并 PR #4 时若本文件冲突，应保留 PR #3 的 M2-A/M2-B checkpoint 记录，并并入本节决策内容，不要用任一分支的旧版本整文件覆盖。
-- Tests run: 仅文档变更，未运行 Python 测试；已执行文档一致性与链接检查、`git diff --check` 等效的空白检查（结果见 PR #4 描述）。
-- Secrets: 未写入任何密钥、凭据或私人内容。
-- Next step: 等待 ChatGPT 审查 PR #4 与用户决定；不合并、不启动 M2-C、不创建 Source Collector 仓库。
+- Status: in_progress / awaiting ChatGPT review
+- Branch: `phase1/m2-source-adapters`
+- Implementation checkpoint: `3b89bbc`
+- Earlier M2-A review fixes: `1372db6` and `9d12245`.
+- Metadata fix: `Field(default_factory=dict, validate_default=True)` validates and deep-freezes default empty metadata.
+- Default metadata test: omission, immutable assignment, `model_dump()`, `model_dump(mode="json")`, and `model_dump_json()` pass.
+- M2-A model: source identity/URI, SHA-256, revision/ref locator, parser version, JSON-compatible deep metadata, and RFC 6901 JSON Pointer support.
+- Actual verification:
+  - `.venv/bin/python -m pytest tests/test_source_models.py -q` — 31 passed.
+  - `.venv/bin/python -m pytest -q` — 106 passed.
+  - `.venv/bin/python -m pytest` — 106 passed in 0.68s.
+  - `.venv/bin/python -m ruff check .` — passed.
+  - `.venv/bin/python -m ruff format --check .` — passed; 15 files already formatted.
+  - `.venv/bin/python -m mypy` — passed; no issues in 9 source files.
+  - `git diff --check` — passed.
+- No Draft PR exists. M2-B has not started.
+- M2-B identity requirement: source identity must include repository/source namespace so `docs/lesson-05.md` in two repositories remains distinct. M2-A does not need large restructuring now; this requirement will be implemented and tested in M2-B.
+
+### M2-A 审查通过与 M2-B 启动 (2026-11-21)
+
+- Status: in_progress
+- Branch: `phase1/m2-source-adapters`
+- M2-A: 已通过 ChatGPT 代码审查。最近提交：`3b89bbc`（默认 metadata 验证和深度冻结修复）、`d4d55fb`（进度文档更新）。
+- 整体 M2: in_progress，未合并，没有 Draft PR。
+- 历史状态处理：较早的《M2-A checkpoint (2026-11-21)》已明确标记为 superseded / 历史 checkpoint；其“准备开始 M2-B”是当时的计划记录，不再与最新状态冲突。
+- M2-B: 准备开始。本阶段只做 Markdown/TXT Adapters，使用 M2-A 的 ParsedDocument、ParsedSection 和 Locator 模型；source_uri 必须包含稳定 source namespace（例如 `repo://symbi/liuyao-learning-app/docs/lessons/lesson-05.md`），不同 repository 的相同相对路径必须得到不同 source_identity；revision_ref 与 source identity 分离。
+- M2-B 完成后：更新本文件、创建 Draft PR（目标 main），等待 ChatGPT 审核；不合并、不开始 M2 后续阶段（PDF/JSON）。
+
+### M2-B checkpoint (2026-11-21) — Markdown/TXT Adapters
+
+- Milestone: M2-B — Markdown/TXT Source Adapters（M2 整体仍为 in_progress）
+- Status: awaiting_chatgpt_review
+- Branch: `phase1/m2-source-adapters`
+- Draft PR URL: https://github.com/symbi/liuyao-learning-app/pull/3
+- Base main SHA: `eefa2b23786db88c5535612695b3f08d361b0b18`（本分支起点；main 未被修改）
+- Implementation commits: `db20421`（docs: 标记旧 M2-A checkpoint 为 superseded 并同步当前状态）、`dc222bd`（feat: Markdown/TXT adapters）
+- Files changed:
+  - `tools/liuyao-kb/src/liuyao_kb/sources/adapters.py`（新增：MarkdownAdapter、TextAdapter、EmptySourceError、InvalidSourceEncodingError）
+  - `tools/liuyao-kb/src/liuyao_kb/sources/models.py`（仅新增：`repository_source_uri`、`source_identity_from_repository` 及校验；M2-A 模型未重构）
+  - `tools/liuyao-kb/src/liuyao_kb/sources/__init__.py`（导出）
+  - `tools/liuyao-kb/tests/test_source_adapters.py`（新增 31 个测试，全部使用 synthetic fixtures）
+  - `docs/phase1-progress.md`（本文件）
+- 实现要点:
+  - 统一 URI 约定 `repo://<owner>/<repo>/<relative-path>`；source_identity 为 `<source_type>:<source_uri>`，因此两个 repository 中相同相对路径的 identity 不同（有测试证明，包括从两个不同本地 checkout 目录用 `parse_file` 读取的情形）。机器绝对路径和临时目录名不写入 source_uri / source_identity；绝对路径 URI 被显式拒绝。`revision_ref` 只记录 Git commit / 来源版本，与 identity 分离（有测试证明）。
+  - 原始文本逐字保留；content_hash 为原始 UTF-8 bytes 的 SHA-256；每个 section 满足 `text[start_offset:end_offset] == section.text`（测试逐 section 验证）。
+  - Markdown：ATX heading 保留层级与文本；正文段落记录所属（最近）heading、全局 1-based paragraph 序号和 offset；文档 title 取第一个 H1；fenced code block 逐字保留，内部不识别 heading、空行不分段。
+  - TXT：段落保留全局 1-based paragraph 序号和 offset。
+  - 空文件 / 只有空白字符显式抛 `EmptySourceError`；无效 UTF-8 显式抛 `InvalidSourceEncodingError`（含 byte offset）；错误输入类型抛 `TypeError`；不静默丢失空白段落之外的有效内容。
+  - 不调用 Neo4j、Gemini 或任何外部服务；未做 PDF/JSON。
+- Tests run (exact commands, in `tools/liuyao-kb`):
+  - `.venv/bin/python -m pytest` — 137 passed in 0.70s（M2-B 前为 106，新增 31）
+  - `.venv/bin/python -m pytest tests/test_source_adapters.py` — 31 passed
+  - `.venv/bin/python -m ruff check .` — passed (All checks passed)
+  - `.venv/bin/python -m ruff format --check .` — passed (17 files already formatted)
+  - `.venv/bin/python -m mypy` — passed (no issues in 10 source files)
+  - `git diff --check` — passed
+- Manual checks performed: 每次推送前后核对远端分支 head 与本地记录一致；确认未触碰 HTML、Cloudflare Functions、daily-records 等其他工作流文件；Draft PR #3 已核对为 draft、head 为本分支、base 为 main。
+- Known limitations / blockers:
+  - Markdown 只支持 ATX heading；Setext heading 按普通段落文本保留。
+  - paragraph 所属 heading 只记录最近的一个 heading（Locator 模型只有一个 heading 字段）。
+  - 空 / 纯空白来源是显式错误，而不是零 section 的文档；后续 Importer 不得将其报告为导入成功。
+  - 执行环境说明：本 checkpoint 由 Cooper 在其自有计算机上的该分支克隆中实现并运行全部测试，再通过 GitHub 推送到同一分支；用户 Mac 上的本地 checkout 未被改动，Mac 上复跑测试仍建议作为验收的一部分。
+- Secrets: confirm no secrets committed — 未提交任何 .env、凭据、Raw ASR、私人 Memo 或真实课程内容；fixtures 均为小型合成字符串。
+- Next recommended milestone: 无（等待审查）。ChatGPT 审查 Draft PR #3 通过后，由用户决定是否合并；不得自行开始 PDF/JSON 或其他 M2 后续阶段。
+- Handoff summary for next model: M2-A 已审查通过；M2-B 已完成并进入 Draft PR #3 等待 ChatGPT 审查。接手者先读 AGENTS.md、本文件和 PR #3，不要创建第二个 M2 分支，不要合并，不要开始 PDF/JSON。
+
+### M2-B 围栏修复 (2026-11-21) — 回应 PR #3 ChatGPT 审查
+
+- Status: awaiting_chatgpt_review（复审）
+- Branch: `phase1/m2-source-adapters`
+- Draft PR URL: https://github.com/symbi/liuyao-learning-app/pull/3
+- Review source: PR #3 评论 https://github.com/symbi/liuyao-learning-app/pull/3#issuecomment-7058611732（ChatGPT 首轮审查：整体通过，仅 fenced code block 关闭围栏识别一项必须修复，未批准合并）
+- Fix commit: `38b4e09`（fix(m2): validate Markdown closing fences by char, length and trailing text）
+- 问题：旧逻辑只保存围栏字符、不保存长度，且对关闭行不检查尾随文字；四反引号代码块内的三反引号行或 ` ```python ` 行会被误判为关闭围栏，其后的 `# ...` 代码行被误识别为 Markdown 标题，污染标题归属和段落定位。
+- 修复（只改 `tools/liuyao-kb/src/liuyao_kb/sources/adapters.py` 的围栏识别，未引入完整 CommonMark 解析器，未改动其他逻辑）:
+  1. 开启围栏同时记录字符和长度（`fence_char` + `fence_length`）。
+  2. 关闭围栏必须与开启字符相同，且长度不小于开启长度。
+  3. 关闭围栏后只能有空格或 Tab；带 `python` 等 info text 的围栏形行只是代码内容。
+  4. 开启和关闭围栏都遵守最多三个前导空格：围栏行按原始行匹配 `^ {0,3}`，四个前导空格的行不是围栏（开启侧按普通段落处理，关闭侧按代码内容处理）。
+  5. 补充 CommonMark 一致性细节：反引号围栏的 info string 若含反引号则不构成开启围栏。
+- 回归测试（`tools/liuyao-kb/tests/test_source_adapters.py` 新增 `TestMarkdownFences`，7 个测试）:
+  - 较短围栏：审查复现原文（四反引号块内含 ` ```python ` 和 `# 这行仍是代码`）不再提前关闭、不再误判标题。
+  - 带 info text 的非关闭行：等长 ` ```python ` 不关闭代码块。
+  - 不同围栏字符：反引号块内的 `~~~` 行、波浪线块内的 ` ``` ` 行都不关闭。
+  - 合法关闭围栏：更长的关闭围栏加尾随空格/Tab 可以关闭，其后的 `# 真标题` 恢复为真实标题。
+  - 缩进规则：四空格缩进的围栏形行既不开启也不关闭；不超过三空格的围栏仍正常工作。
+  - 所有新测试都逐 section 验证 locator offset 切片与原文一致，代码块内标题、空行和文本不丢失。
+- Tests run (exact commands, in `tools/liuyao-kb`):
+  - `.venv/bin/python -m pytest` — 144 passed in 1.44s（此前 137，新增 7）
+  - `.venv/bin/python -m pytest tests/test_source_adapters.py` — 38 passed
+  - `.venv/bin/python -m ruff check .` — passed (All checks passed)
+  - `.venv/bin/python -m ruff format --check .` — passed (17 files already formatted)
+  - `.venv/bin/python -m mypy` — passed (no issues in 10 source files)
+  - `git diff --check` — passed
+- Files changed: `tools/liuyao-kb/src/liuyao_kb/sources/adapters.py`、`tools/liuyao-kb/tests/test_source_adapters.py`、`docs/phase1-progress.md`（本节）。未改动 PDF/JSON，未重构无关代码，未触碰其他工作流文件。
+- Secrets: confirm no secrets committed — 无新增凭据或私人内容；测试仍全部使用 synthetic fixtures。
+- Next step: 保持 Draft PR #3 为 Draft，等待 ChatGPT 复审；不合并，不开始 PDF/JSON。
