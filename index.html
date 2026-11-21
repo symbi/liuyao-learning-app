@@ -3530,9 +3530,25 @@
     try{
       await saveDayToGitHub(date,doc);
       editingRecordId=record.id;forceNewRecord=false;
-      replaceDayCache(date,doc);markEntryClean();
+      replaceDayCache(date,doc);
+      let markdownError=null;
+      const markdownRecord={
+        ...record,
+        date,
+        recordType:shouldSaveAsDaily?'dailyFortune':'additionalQuestion',
+        ...(shouldSaveAsDaily?{dailyMemo:doc.dailyMemo||''}:{})
+      };
+      try{await saveRecordMarkdown(markdownRecord);}
+      catch(error){markdownError=error;}
+      markEntryClean();
       const savedLabel=record.isCase?(record.caseSource==='practice'?'个人练习案例已保存：':'课堂案例已保存：'):(shouldSaveAsDaily?'每日卦已保存：':(category==='daily'?'新卦例已另存：':'额外问题已保存：'));
-      showToast(savedLabel+recordHexagramName(record));
+      if(markdownError){
+        setGitHubStatus('JSON 已保存；MD 未同步：'+markdownError.message);
+        showToast(savedLabel+recordHexagramName(record)+'；MD 保存失败');
+      }else{
+        setGitHubStatus('JSON 与 MD 已保存：'+date);
+        showToast(savedLabel+recordHexagramName(record)+'；MD 已保存');
+      }
       return true;
     }catch(error){setGitHubStatus('未同步：'+error.message);showToast('GitHub 保存失败，尚未同步：'+error.message);return false;}
   }
@@ -3632,7 +3648,8 @@
       const actions=document.createElement('div');actions.className='record-actions';
       const open=document.createElement('button');open.type='button';open.className='small-action primary';open.textContent='打开';open.addEventListener('click',()=>openRecord(record));
       const exportOne=document.createElement('button');exportOne.type='button';exportOne.className='small-action';exportOne.textContent='导出';exportOne.title='只导出这一条卦例';exportOne.addEventListener('click',()=>exportRecords([record],'single'));
-      const copy=document.createElement('button');copy.type='button';copy.className='small-action';copy.textContent='复制';copy.title='复制卦例内容，供 AI 分析';copy.addEventListener('click',()=>copyRecordForAI(record));
+      const copy=document.createElement('button');copy.type='button';copy.className='small-action';copy.textContent='复制';copy.title='复制完整卦盘文字资料（含原始 JSON）';copy.addEventListener('click',()=>copyRecordForAI(record));
+      const copyMd=document.createElement('button');copyMd.type='button';copyMd.className='small-action';copyMd.textContent='复制 MD';copyMd.title='生成并保存独立 Markdown 文件，再复制 MD 内容';copyMd.addEventListener('click',()=>copyRecordMarkdown(record));
       const remove=document.createElement('button');remove.type='button';remove.className='small-action';remove.textContent='删除';remove.addEventListener('click',async()=>{
         if(!window.confirm('确定从 GitHub 删除这条卦例吗？')) return;
         const date=record.date;const doc=activeDayDocument&&activeDayDocument.recordDate===date?JSON.parse(JSON.stringify(activeDayDocument)):await loadDayFromGitHub(date);
@@ -3642,14 +3659,19 @@
         doc.updatedAt=new Date().toISOString();
         try{
           await saveDayToGitHub(date,doc);
+          let markdownDeleteError=null;
+          try{await deleteRecordMarkdown(record);}catch(error){markdownDeleteError=error;}
           if(editingRecordId===record.id)editingRecordId=null;
           replaceDayCache(date,doc);
           selectedRecordKeys.delete(key);
           renderRecords();
-          showToast('已从 GitHub 删除');
+          if(markdownDeleteError){
+            setGitHubStatus('JSON 已删除；MD 清理失败：'+markdownDeleteError.message);
+            showToast('卦例已删除，但 MD 文件清理失败');
+          }else showToast('卦例及 MD 文件已删除');
         }catch(error){showToast('删除失败：'+error.message);}
       });
-      actions.append(open,exportOne,copy,remove);
+      actions.append(open,exportOne,copy,copyMd,remove);
       item.append(selectLabel,main,actions);
       recordsList.appendChild(item);
     });
@@ -3807,8 +3829,14 @@
     const hasManualHiddenRelation=recordLines.some(line=>line.hiddenRelation===question.mainUseGod);
     const hiddenCheckText=allSixRelationsKnown&&relations.includes(question.mainUseGod)&&!visibleUseGod&&!hasManualHiddenRelation
       ?'提示：六爻已记录的六亲中未见主要用神'+question.mainUseGod+'，且尚未手动标记伏藏位置，请人工核对。':'';
+    const isClassroomCase=!!record.isCase&&record.caseSource!=='practice';
+    const memoSection=record.isCase
+      ?(record.caseMemo?'【'+(isClassroomCase?'老师分析 Memo':'个人案例 Memo')+'】\n'+record.caseMemo:'')
+      :(record.recordType==='dailyFortune'&&record.dailyMemo?'【个人复盘 Memo】\n'+record.dailyMemo:'');
+    const conclusionSection=record.isCase&&record.caseConclusion
+      ?'【'+(isClassroomCase?'老师结论':'个人结论')+'】\n'+record.caseConclusion:'';
     const result=[
-      '【六爻卦例｜供 AI 分析】','日期：'+(record.date||'未注明'),'卦名：'+recordHexagramName(record),
+      '【六爻卦盘资料｜供其他 AI 阅读】','日期：'+(record.date||'未注明'),'卦名：'+recordHexagramName(record),
       record.pillarSource==='manual-case'
         ?'年月日柱（老师案例手动指定）：年柱'+(record.pillars?.year||'未知')+'；月柱'+(record.pillars?.month||'未填写')+'；日柱'+(record.pillars?.day||'未填写')+'；记录日期'+(record.date||'未注明')+'仅用于归档'
         :(record.pillars?'起卦年月日柱：'+[record.pillars.year,record.pillars.month,record.pillars.day].filter(Boolean).join('、'):''),
@@ -3821,25 +3849,99 @@
       '【年月日及旬空标注】\n'+calendarText.join('\n'),hiddenCheckText,'',
       '【三合识别结果】',...(trineTexts.length?trineTexts:['当前保存资料中未识别到符合页面规则的三合局']),
       '','【六合与合中带克】',liuHeRuleText,...(liuHeTexts.length?liuHeTexts:['当前保存的本卦与变爻地支中未识别到六合配对']),
-      record.isCase&&record.caseMemo?'【老师分析过程】\n'+record.caseMemo:(!record.isCase&&record.dailyMemo?'【每日记录 Memo】\n'+record.dailyMemo:''),
-      record.isCase&&record.caseConclusion?'【老师结论】\n'+record.caseConclusion:'',
+      memoSection,
+      conclusionSection,
       record.jianchu?.name?'建除：'+record.jianchu.name:'',record.twentyEight?.name?'二十八宿：'+record.twentyEight.name:'',
       '保存时间：'+(record.savedAt||'未记录'),'','【原始记录 JSON｜schemaVersion 16，含 analysisSnapshot v5（含人工伏藏标记）】',JSON.stringify(portableRecord,null,2)
     ].filter(value=>value!==''||value===0);
     return result.join('\n');
   }
+  function recordMarkdownApiPath(record){
+    const date=String(record?.date||'');
+    const id=String(record?.id||'');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^[A-Za-z0-9_-]{1,100}$/.test(id)){
+      throw new Error('这条卦例缺少合法日期或记录 ID，无法生成独立 MD 文件');
+    }
+    return '/record-markdown/'+date+'/'+encodeURIComponent(id);
+  }
+  function recordMarkdownFilePath(record){
+    const date=String(record.date),id=String(record.id);
+    return 'daily-records/'+date.slice(0,4)+'/'+date.slice(5,7)+'/markdown/'+date+'--'+id+'.md';
+  }
+  function formatRecordAsMarkdown(record){
+    const text=formatRecordForAI(record);
+    const marker='【原始记录 JSON｜schemaVersion 16，含 analysisSnapshot v5（含人工伏藏标记）】';
+    const markerIndex=text.lastIndexOf(marker);
+    if(markerIndex<0) throw new Error('卦盘文字中缺少原始 JSON，无法生成完整 MD 文件');
+    const narrative=text.slice(0,markerIndex).trim()
+      .replace(/^【六爻卦盘资料｜供其他 AI 阅读】$/m,'# 六爻卦盘资料')
+      .replace(/^【([^】]+)】/gm,'## $1');
+    const rawJson=text.slice(markerIndex+marker.length).trim();
+    const recordPath='daily-records/'+String(record.date).slice(0,4)+'/'+String(record.date).slice(5,7)+'/'+String(record.date)+'.json';
+    const fence='\u0060\u0060\u0060';
+    return [
+      narrative,
+      '',
+      '> 本文件由六爻排卦页面中的 JavaScript 根据保存的 JSON 和确定性排盘规则生成；未调用 AI 模型，不包含 AI 解卦意见。',
+      '> 对应原始数据：'+recordPath,
+      '> 本文件路径：'+recordMarkdownFilePath(record),
+      '',
+      '## 原始记录 JSON',
+      '',
+      fence+'json',
+      rawJson,
+      fence,
+      ''
+    ].join('\n');
+  }
+  async function saveRecordMarkdown(record){
+    if(!githubAuthenticated&&!await refreshGitHubAuth()) throw new Error('请先连接 GitHub');
+    const path=recordMarkdownApiPath(record);
+    const markdown=formatRecordAsMarkdown(record);
+    const existing=await githubRequest(path,{method:'GET'});
+    return githubRequest(path,{method:'PUT',body:JSON.stringify({markdown,sha:existing.sha||null})});
+  }
+  async function deleteRecordMarkdown(record){
+    const path=recordMarkdownApiPath(record);
+    const existing=await githubRequest(path,{method:'GET'});
+    if(!existing.sha) return {deleted:true,missing:true};
+    return githubRequest(path,{method:'DELETE',body:JSON.stringify({sha:existing.sha})});
+  }
+  async function copyRecordMarkdown(record){
+    const markdown=formatRecordAsMarkdown(record);
+    let saved=false,saveError=null;
+    if(githubAuthenticated||await refreshGitHubAuth()){
+      try{await saveRecordMarkdown(record);saved=true;}
+      catch(error){saveError=error;}
+    }
+    let copied=false;
+    try{
+      await navigator.clipboard.writeText(markdown);
+      copied=true;
+    }catch(error){
+      const field=document.createElement('textarea');
+      field.value=markdown;field.setAttribute('readonly','');
+      field.style.position='fixed';field.style.opacity='0';field.style.pointerEvents='none';
+      document.body.appendChild(field);field.select();
+      copied=document.execCommand('copy');field.remove();
+    }
+    if(!copied){showToast('复制 MD 失败，请检查浏览器剪贴板权限');return;}
+    if(saved) showToast('MD 文件已保存并复制');
+    else if(saveError){setGitHubStatus('MD 未同步：'+saveError.message);showToast('MD 已复制，但保存失败：'+saveError.message);}
+    else showToast('MD 已复制；连接 GitHub 后才能保存文件');
+  }
   async function copyRecordForAI(record){
     const text=formatRecordForAI(record);
     try{
       await navigator.clipboard.writeText(text);
-      showToast('卦例内容已复制，可以粘贴给 AI 分析');
+      showToast('卦盘文字资料已复制，可以交给其他 AI 阅读');
     }catch(error){
       const field=document.createElement('textarea');
       field.value=text;field.setAttribute('readonly','');
       field.style.position='fixed';field.style.opacity='0';field.style.pointerEvents='none';
       document.body.appendChild(field);field.select();
       const copied=document.execCommand('copy');field.remove();
-      showToast(copied?'卦例内容已复制，可以粘贴给 AI 分析':'复制失败，请检查浏览器剪贴板权限');
+      showToast(copied?'卦盘文字资料已复制，可以交给其他 AI 阅读':'复制失败，请检查浏览器剪贴板权限');
     }
   }
   function updateImportSelectionUI(){
