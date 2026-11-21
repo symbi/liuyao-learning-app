@@ -5,9 +5,9 @@
   "dailyFortune": null,
   "additionalQuestions": [
     {
-      "schemaVersion": 14,
+      "schemaVersion": 15,
       "id": "9f89c47a-ba51-44d1-81b5-ffba16a30ca2",
-      "savedAt": "2026-11-21T10:42:04.552Z",
+      "savedAt": "2026-11-21T11:17:39.806Z",
       "date": "2026-11-21",
       "timezone": "Asia/Tokyo",
       "question": {
@@ -20,6 +20,7 @@
       "isCase": true,
       "caseSource": "classroom",
       "caseMemo": "体制内，用神官鬼\n兄弟爻持世，有竞争者，旗鼓相当\n日月均为父母爻，日月相帮，世爻旺\n寅木的父母爻在月上，说明副职领导在帮\n两重兄弟爻，竞争对手有两个\n兄弟爻动，竞争者有力量，动化了财爻，兄弟爻克财爻，兄弟爻没有受伤。世爻虽然也旺，但是没有动，所以对方强\n用神不上挂，伏藏在另一个兄弟爻（动爻）的下面，所以对方可能更有力",
+      "caseConclusion": "工作调动不能成功，有竞争者，竞争不过",
       "pillars": {
         "year": "",
         "month": "甲寅",
@@ -108,8 +109,8 @@
       "jianchu": null,
       "twentyEight": null,
       "analysisSnapshot": {
-        "schemaVersion": 3,
-        "calculatedAt": "2026-11-21T10:42:04.551Z",
+        "schemaVersion": 4,
+        "calculatedAt": "2026-11-21T11:17:39.805Z",
         "calculationSource": "saved-pillars-and-line-inputs",
         "calendar": {
           "yearPillar": null,
@@ -292,6 +293,55 @@
             "effect": ""
           }
         ],
+        "hiddenSpirits": {
+          "status": "hidden",
+          "useGod": "官鬼",
+          "palace": "离",
+          "palaceBaseHexagram": "离为火",
+          "method": "八宫本宫首卦同爻位取伏神",
+          "candidates": [
+            {
+              "lineNumber": 3,
+              "position": "三爻",
+              "relation": "官鬼",
+              "branch": "亥",
+              "element": "water",
+              "elementName": "水",
+              "source": "palace-pure-hexagram",
+              "sourceHexagram": "离为火",
+              "flying": {
+                "lineNumber": 3,
+                "branch": "午",
+                "relation": "兄弟",
+                "element": "fire",
+                "elementName": "火",
+                "movement": "明动",
+                "relationToHidden": "伏克飞",
+                "branchState": {
+                  "branch": "午",
+                  "element": "fire",
+                  "elementName": "火",
+                  "monthStatus": "相",
+                  "monthStatusGroup": "wangxiang",
+                  "monthRule": "木旺、火相",
+                  "monthBreak": false,
+                  "xunkong": false
+                }
+              },
+              "branchState": {
+                "branch": "亥",
+                "element": "water",
+                "elementName": "水",
+                "monthStatus": "休",
+                "monthStatusGroup": "xiuqiu",
+                "monthRule": "木旺、火相",
+                "monthBreak": false,
+                "xunkong": false
+              }
+            }
+          ],
+          "reason": "主要用神未在本卦出现"
+        },
         "shiYing": {
           "kind": "应生世",
           "shiLineNumber": 4,
@@ -355,11 +405,11 @@
         }
       },
       "createdAt": "2026-11-21T10:42:04.552Z",
-      "updatedAt": "2026-11-21T10:42:04.552Z",
+      "updatedAt": "2026-11-21T11:17:39.806Z",
       "recordType": "additionalQuestion"
     }
   ],
   "dailyMemo": "",
   "createdAt": "2026-11-21T10:42:04.552Z",
-  "updatedAt": "2026-11-21T10:42:04.552Z"
+  "updatedAt": "2026-11-21T11:17:39.806Z"
 }
