@@ -6,7 +6,7 @@ Phase 1 是验证每日排卦、记录、保存和 AI 分析流程是否好用�
 
 - **Public `symbi/liuyao-learning-app`**：保存 HTML 应用、Cloudflare Pages Functions、课程整理笔记、规则、课堂案例，以及 Phase 1 每日卦例 JSON。
 - **Private `symbi/liuyao-learning-raw`**：继续保存课堂原始录音、ASR 转录、原始 PDF 和未整理来源资料。每日卦例不再写入这里。
-- **当前 HTML 记录存储**：继续使用 GitHub Contents API 保存每日 JSON。
+- **当前 HTML 记录存储**：继续使用 GitHub Contents API 保存每日 JSON；每一条卦例另有一份由 JavaScript 生成的 Markdown 文字资料作为配套副本。JSON 是权威原始数据，Markdown 是可独立交给其他 AI 阅读的衍生文件，不是 AI 模型分析结果。
 - **知识图谱数据库**：Phase 1 另行建立 Neo4j AuraDB，Importer 将整理后的课程资料、案例和选定参考项目增量同步进去。Neo4j 是图数据库，可以保存 Case、Lesson、Chunk、Concept、Rule 节点和关系；不需要为知识库再部署 Supabase/PostgreSQL。
 - **Supabase 不是必选项**：只有将来需要多用户身份、严格用户隔离或典型关系型业务数据时才重新评估。实际职责见 `docs/phase1-operating-model.md`。
 
@@ -106,3 +106,34 @@ HTML 保存的课堂案例需要与老师实际讲过的原始卦例建立可追
 ## 8. 后续在线化原则
 
 当前 HTML 的每日记录仍由 Pages Function 写入 GitHub JSON；Phase 1 Importer 再把这些记录同步为 Neo4j 中的 Case 节点与知识关系。若后续希望 HTML 直接读写 Neo4j，并在页面内运行知识检索和 AI 分析，可在 Phase 2 增加 Python FastAPI 服务（初期一个 Cloud Run Container），由它统一处理 Case API、GraphRAG 检索、规则引擎和生成模型调用。Supabase 仍为可选项，不是默认必须迁移的目标。
+## 9. 每条卦例的 Markdown 文字资料
+
+JSON 继续作为唯一权威原始记录；每一条具体卦例另外保存一份独立 Markdown（.md）文件，便于用户复制、下载或交给其他 AI 阅读。Markdown 是从 JSON 和页面现有确定性排盘规则生成的衍生资料，不调用 AI 模型、不需要 API Key，也不包含 AI 对卦象的解释或结论。
+
+### 路径
+
+每日 JSON 仍是一日一个文件：
+
+    daily-records/YYYY/MM/YYYY-MM-DD.json
+
+每条卦例的 Markdown 按日期和记录 ID 单独保存，避免同一天多条卦例互相覆盖：
+
+    daily-records/YYYY/MM/markdown/YYYY-MM-DD--<record-id>.md
+
+### 生成与同步规则
+
+- 新卦例保存时，先保存当天 JSON；JSON 保存成功后，再由 HTML 页面中的 JavaScript 生成对应 Markdown 并通过 Pages Function 保存到 GitHub。
+- 修改已有卦例时，更新对应 Markdown；删除卦例时，同时清理对应 Markdown。
+- 对历史旧卦例，打开记录列表后点击「复制 MD」会按当前 JSON 即时重建并补存该卦例的 Markdown，再将内容复制到剪贴板。因此旧记录按需迁移，不会在打开列表时批量产生大量提交。
+- 「复制」保留原有完整卦盘文字资料（含原始 JSON）；「复制 MD」复制带 Markdown 标题和 JSON 代码块的独立文件内容。
+- JSON 已保存但 Markdown 写入失败时，页面必须明确显示「JSON 已保存；MD 未同步」，不得把 JSON 保存失败或 MD 保存成功混为一谈；用户可重试「复制 MD」。
+- 从记录列表删除卦例时，若 JSON 删除成功但 Markdown 清理失败，页面明确显示部分成功，不能假报两者均已删除。
+
+### Memo 的来源和标题
+
+- 课堂案例（isCase=true 且 caseSource=classroom）：caseMemo 标为「老师分析 Memo」，caseConclusion 标为「老师结论」。
+- 个人练习案例（caseSource=practice）：个人备注标为「个人案例 Memo」，个人结论标为「个人结论」，不冒充老师意见。
+- 普通每日卦（非案例的 dailyFortune）：日期级 dailyMemo 标为「个人复盘 Memo」，用于保存当天晚上回看上午卦象与实际经历的反思。
+- 没有相应 Memo 或结论时，Markdown 不生成虚构段落。
+
+Markdown 文件与 JSON 一样保存在 Public 仓库，内容对外可见；不要在 Memo 中写入不希望公开的隐私或机密。
