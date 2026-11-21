@@ -12,7 +12,7 @@
 | 工作流 | 负责内容 | 当前状态 | 当前分支 / PR | 权威进度文件 |
 |---|---|---|---|---|
 | HTML 窗口 | 修复现有 HTML 页面及用户明确指定的前端问题 | 独立工作流；按具体任务启动 | 具体任务分支 / Draft PR | [html-maintenance-progress.md](html-maintenance-progress.md) |
-| Phase 1 / Knowledge Base | AuraDB、Python Importer、课程/案例解析、Chunk、Embedding、检索和 Evidence Pack | M1 已合并；M2-B 代码复审通过，PR #3 Draft、未合并，等待用户 Mac 本机验收与合并决定 | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3)，phase1/m2-source-adapters | [phase1-progress.md](phase1-progress.md)、[phase1-implementation-plan.md](phase1-implementation-plan.md) |
+| Phase 1 / Knowledge Base | AuraDB、Python Importer、课程/案例解析、Chunk、Embedding、检索和 Evidence Pack | M1 已合并；M2-A/M2-B 已合并（PR #3，merge commit `9505ce7`）；当前唯一活跃 Draft PR 为 PR #4（规划文档）；M2-C 尚未启动 | [PR #4](https://github.com/symbi/liuyao-learning-app/pull/4)，phase1/reference-source-catalog（Draft） | [phase1-progress.md](phase1-progress.md)、[phase1-implementation-plan.md](phase1-implementation-plan.md) |
 | Source Collector（新项目） | 外部古籍网站/网页/GitHub 文档的合规采集与 Reference Package 输出；不做 Chunk/Embedding/Neo4j | 架构与启动章程已写入规划 PR #4；远端 symbi/liuyao-source-collector 尚未创建 | [规划 PR #4](https://github.com/symbi/liuyao-learning-app/pull/4)；建仓后使用独立 repository | [reference-source-catalog.md](reference-source-catalog.md)、[source-collector-project-charter.md](source-collector-project-charter.md) |
 
 ## 工作流边界
@@ -30,8 +30,9 @@
 
 - 按 AGENTS.md、CLAUDE.md、docs/phase1-progress.md 和 Phase 1 实施计划执行。
 - M0 已完成实际 AuraDB Free 验证；M1 已合并到 main。
-- M2-B（Markdown/TXT）代码复审通过；PR #3 仍为 Draft、未合并。Muse 报告的本机测试是 144 passed、38 adapter tests，尚待用户 Mac checkout 同步后复跑验收。
-- PR #3 合并前不得启动 M2-C JSON Adapter；不开发 PDF Adapter/OCR。
+- M2-A（来源模型）与 M2-B（Markdown/TXT）已通过复审并合并：PR #3 以 Merge Commit 合并，merge commit 为 `9505ce70e38b729bfb4d7dd36924a25229389194`。验收依据为执行 Agent 在与 PR head `e09ae71` 逐字一致的代码上复跑的 144 passed、38 adapter tests 及 Ruff/Mypy 全通过；用户已豁免手动 Mac 复跑并确认接受该验收依据（详见 phase1-progress.md 的合并记录）。
+- 当前唯一活跃的 Draft PR 是 PR #4（双仓库架构、Reference Catalog 与 Reference Package 契约等规划文档），等待 ChatGPT 最终复审与用户合并决定。
+- M2-C 课堂案例 JSON Adapter 尚未启动；须等 PR #4 完成合并、且用户明确授权后才启动。不开发 PDF Adapter/OCR。
 - Knowledge Base 只读取显式批准的本地资料或 Reference Package，不负责爬网站。
 - 维护 docs/phase1-progress.md；不修改 HTML 页面或 Cloudflare Functions。
 
@@ -65,9 +66,10 @@
 
 ## 新 Claude Code / Knowledge Base 窗口继续执行提示
 
-> 请先读取 AGENTS.md、CLAUDE.md、docs/workspace-handoff.md、docs/phase1-progress.md 和 Phase 1 实施计划。M0 已完成，M1 已合并。当前 M2-B 在 PR #3，代码复审通过但仍等待用户本机验收与合并。合并前不要开始 M2-C JSON Adapter；PDF Adapter/OCR 暂缓。知识库只负责批准来源的解析/Chunk/Embedding/Neo4j，不承担外部网页采集。
+> 请先读取 AGENTS.md、CLAUDE.md、docs/workspace-handoff.md、docs/phase1-progress.md 和 Phase 1 实施计划。M0 已完成，M1 已合并，M2-A/M2-B 已通过 PR #3 合并（merge commit 9505ce7）。当前活跃的是规划 PR #4（Draft，等待最终复审与用户决定）。不要开始 M2-C JSON Adapter，须等 PR #4 合并且用户明确授权；PDF Adapter/OCR 暂缓。知识库只负责批准来源的解析/Chunk/Embedding/Neo4j，不承担外部网页采集；Source Collector 是独立 repository 和独立窗口的工作，不属于本仓库实现任务。
 
 ## 更新日志
 
 - 2026-11-19：建立 HTML 与知识库双工作流协作机制。
 - 2026-11-21：补充 Source Collector 独立 repository 规划；明确两个项目通过 Reference Package 交接。PR #4 尚未合并。
+- 2026-11-21：PR #3 以 Merge Commit 合并（`9505ce7`），M2-A/M2-B 完成；PR #4 同步到新 main 并成为当前唯一活跃 Draft PR；M2-C 等待 PR #4 合并与用户授权后再启动。

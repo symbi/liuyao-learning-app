@@ -2,7 +2,7 @@
 
 > 版本：1.1  
 > 规划日期：2026-11-21  
-> 状态：按用户确认调整来源边界；M2-B 已通过代码复审、等待用户本机验收与合并；后续 M2-C 仅做 JSON Adapter  
+> 状态：按用户确认调整来源边界；M2-A/M2-B 已通过审查并经 PR #3 合并（merge commit `9505ce7`）；当前规划 PR #4（双仓库架构与来源目录）等待最终审查和用户决定；下一项 M2-C 仅做课堂案例 JSON Adapter，须等 PR #4 合并且用户明确授权后启动  
 > 如果本文与早期概念文档有差异，以本文的实施范围和验收标准为准。概念解释见 [Phase 1 实际运行架构](phase1-operating-model.md)。
 
 ## 1. 目标与最终交付
@@ -341,9 +341,9 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 |---|---|---|
 | M0：Aura 准备 | AuraDB Free 实例、凭据放本机 .env | Aura Console 显示实例运行；本机 doctor 能连通；秘密不提交 |
 | M1：项目骨架 | Python CLI、配置、日志、单元测试 | doctor、sources list、ingest --dry-run 正常 |
-| M2-A：来源模型 | 统一 ParsedDocument/Section、Locator、source identity | 代码复审通过；随 PR #3 提交，仍待用户本机验收与合并 |
-| M2-B：Markdown/TXT | Markdown 与 TXT Adapter | 代码复审通过；PR #3 Draft，等待用户 Mac 本机 144 tests 验收与合并 |
-| M2-C：课堂案例 JSON | HTML JSON Case Mapper | 只做结构化映射、原字段保留、稳定 record ID；须在 PR #3 合并后启动 |
+| M2-A：来源模型 | 统一 ParsedDocument/Section、Locator、source identity | `approved_merged`；PR #3，merge commit `9505ce7` |
+| M2-B：Markdown/TXT | Markdown 与 TXT Adapter | `approved_merged`；PR #3，merge commit `9505ce7`（验收：144 tests / 38 adapter tests 通过，用户接受等价复跑作为验收依据） |
+| M2-C：课堂案例 JSON | HTML JSON Case Mapper | 只做结构化映射、原字段保留、稳定 record ID；PR #3 已合并，须等 PR #4 合并且用户明确授权后启动 |
 | M2-D：PDF | PDF 文本解析 / 页码 Locator | **deferred**；没有当前 PDF 输入，不纳入本轮 M2 |
 | 外部参考包接收 | Reference Package Validator / Adapter | 首批采集验证后实施；知识库不负责爬网站 |
 | M3：Neo4j Schema | 唯一约束、关系、Vector Index、测试节点 | 可创建/查询节点；向量索引 smoke test 成功 |
