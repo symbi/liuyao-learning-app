@@ -100,8 +100,9 @@
 - Security and data-preservation checks:
   - 仅改 `index.html` 与维护日志；未改 GitHub OAuth、Cloudflare Functions、API 保存路由、每日记录 JSON、`main` 或 Production。
   - 未合并 PR，未写入真实卦例。
-- Status: Code committed to the existing PR branch; Preview build / real browser acceptance pending.
-- Next step: 等待当前 Preview 构建成功后，在原模板上检查模式切换与拖拽操作。
+- Preview: Cloudflare Pages 部署成功，commit `0ce3532`；独立 Preview `https://bd382961.liuyao-learning-app.pages.dev`，Branch Preview `https://fix-trine-anchor-auto-xunkon.liuyao-learning-app.pages.dev`。
+- Status: Code committed to the existing PR branch; Preview build succeeded; actual browser interaction / visual acceptance still awaits user confirmation.
+- Next step: 用户打开 v87 Preview，确认顶部模式按钮、年月日干支拖拽目标和底部天干/地支 palette；再按反馈微调原模板。
   
 
 ## 2026-11-21 — 修复日历与手动干支控件初始化中断（v86）
