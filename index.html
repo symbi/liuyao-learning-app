@@ -152,6 +152,8 @@
   .line-row:hover{border-color:#c9d6c9}
   .branch-cell-group{display:flex;align-items:center;gap:2px;width:100%;min-width:0;}
   .branch-cell-group>.hidden-relation-cell{flex:0 0 21px;width:21px;min-width:21px;height:31px;min-height:31px;padding:0;font-size:9px;}
+  .hidden-relation-cell .drop-token{font-size:9px;}
+  .hidden-relation-cell .clear-slot{right:-3px;top:-4px;width:10px;height:10px;font-size:8px;}
   .branch-cell-group>.branch-cell{flex:1 1 0;width:auto;min-width:0;}
   .cell-label{display:none;font-size:10px;color:var(--muted);margin-bottom:3px}
   .flower-options{display:flex;gap:3px;flex-wrap:nowrap;justify-content:flex-start}
@@ -3553,8 +3555,8 @@
       })};
     const allSixRelationsKnown=recordLines.length===6&&recordLines.every(line=>relations.includes(line.relation));
     const visibleUseGod=question.mainUseGod&&recordLines.some(line=>line.relation===question.mainUseGod);
-    const hasManualHiddenRelation=recordLines.some(line=>relations.includes(line.hiddenRelation));
-    const hiddenCheckText=allSixRelationsKnown&&question.mainUseGod&&!visibleUseGod&&!hasManualHiddenRelation
+    const hasManualHiddenRelation=recordLines.some(line=>line.hiddenRelation===question.mainUseGod);
+    const hiddenCheckText=allSixRelationsKnown&&relations.includes(question.mainUseGod)&&!visibleUseGod&&!hasManualHiddenRelation
       ?'提示：六爻已记录的六亲中未见主要用神'+question.mainUseGod+'，且尚未手动标记伏藏位置，请人工核对。':'';
     const result=[
       '【六爻卦例｜供 AI 分析】','日期：'+(record.date||'未注明'),'卦名：'+recordHexagramName(record),
