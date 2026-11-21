@@ -368,3 +368,29 @@
   - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API、记录 schema 或真实记录。
   - 未合并 PR，未修改 `main` 或 Production。
 - Status: Updated on the existing PR branch; Preview deployment pending.
+
+
+## 2026-11-21 — 放大顶部干支来源并加强悬停/选中反馈（v92）
+
+- Task: 按用户反馈，顶部天干、地支项目应与原底部地支来源大小接近，并清楚显示当前选中状态。
+- User acceptance criteria:
+  - 顶部十天干恢复标准拖拽 tile 尺寸（28×30），不再比原调色板小。
+  - 顶部六合地支使用与原底部六合地支相同的配对格和 tile 尺寸（桌面 29×29；窄屏沿用原有 27×28 / 25×27 响应式尺寸）。
+  - 鼠标悬停时 tile 轻微上浮/放大；点选后保持更明显的轻微放大、高亮和阴影，确认选中项更直观。
+  - 拖动时仍显示 grabbing 手势，原有拖拽和点击回退行为不变。
+- Branch: `fix/trine-anchor-auto-xunkong`
+- Draft PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
+- Files changed: `index.html`, `docs/html-maintenance-progress.md`
+- Implementation summary:
+  - 移除顶部地支专用的缩小覆盖样式，改为继承底部六合配对的原始尺寸和窄屏规则。
+  - 顶部天干恢复标准 28×30 tile。
+  - 全部 tile 悬停轻微上浮放大；选中状态使用更明显的 1.08 倍放大、金色外框和柔和阴影；六合配对中的地支也明确保留相同选中动画。
+  - 维持 cursor:grab / grabbing 的拖拽手势反馈；转换仅影响视觉，不改变拖拽状态或数据。
+- Tests / exact checks:
+  - 内嵌 JavaScript 通过 V8 语法编译。
+  - 静态检查确认顶部十天干为标准尺寸，顶部地支不再有小尺寸覆盖且沿用与底部相同的响应式规则；悬停/选中/拖动光标反馈均存在。
+  - 待用户在 Preview 中确认实际大小手感和选中动画。
+- Security and data-preservation checks:
+  - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API、记录 schema 或真实记录。
+  - 未合并 PR，未修改 `main` 或 Production。
+- Status: Updated on the existing PR branch; Preview deployment pending.
