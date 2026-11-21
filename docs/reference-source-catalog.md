@@ -71,6 +71,8 @@ GitHub 集成当前不提供直接创建新 repository 的操作。因此 `symbi
 
 来源主页登记与具体章节/文件登记应分开。一本书可以只有少数章节获准采集，不意味着全书已获准。
 
+注意：本节是 Source Catalog 的登记字段（本仓库内部的来源台账），与第 5 节 Reference Package 的交付字段是两套不同用途的字段，不构成第二套 Package 格式。Package 的字段名称与层级以第 5 节和 [reference-package-v1.schema.json](reference-package-v1.schema.json) 为唯一准据。
+
 ## 4. 采集和导入的双项目边界
 
 ### Project A — `symbi/liuyao-source-collector`（独立新仓库，远端创建待完成）
@@ -153,7 +155,7 @@ reference-package/
 | `media_type` | 是 | 如 `text/markdown`、`text/plain` |
 | `locator` | 否 | 页码、章节、段落或代码符号等定位信息 |
 
-文档正文使用 UTF-8 Markdown 或保留原格式的文件；**原始内容必须随包交付并在本仓库保留，Chunk 不能替代原始文档；不能只交付 Chunk，必须能回到原始章节/网页/文件。**
+文档正文使用 UTF-8 Markdown 或保留原格式的文件。**原始内容必须随 Reference Package 一并交付，并保留在用户指定、访问受控的本地或私有存储中；不得因此将第三方书籍全文、网页快照或未经授权内容提交到 Public 的 `symbi/liuyao-learning-app` Git 仓库。Knowledge Base 必须能够从每个 Chunk 回溯到原始文档和精确出处（原始章节/网页/文件及 locator）。Chunk 不能取代原始文档，不能只交付 Chunk。**
 
 知识库接收前执行 Package Validator：路径安全、schema 版本、必需字段、哈希、重复 document ID、缺失文件、许可状态。未获准云端处理的内容不得发送给 Gemini。
 

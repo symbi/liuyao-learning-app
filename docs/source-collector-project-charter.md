@@ -102,7 +102,13 @@ reference-package/
     documents/<stable-document-id>.md
 ```
 
-Package 必须有 schema_version、package_id、collector_name/version、created_at。来源记录至少有 source_id、title、creator、source_kind、canonical_url、item_url、edition/version/commit_sha、retrieved_at、rights/license status、allow_cloud_processing、allow_redistribution。文档记录至少有 stable document ID、order（来源内顺序）、chapter_title、title、content_path、content_hash、media_type、原文 URL、章节/页码/文件/符号 locator 和采集状态。字段级契约以 Learning App 的 [reference-package-v1.schema.json](reference-package-v1.schema.json) 为准；本节与 schema 不一致时以 schema 和 [来源目录第 5 节](reference-source-catalog.md) 为准。
+字段名称与层级以 Learning App 的 [reference-package-v1.schema.json](reference-package-v1.schema.json) 为唯一准据，不另设第二套格式：
+
+- 包级（`package-manifest.json`）：`schema_version`、`package_id`、`collector_name`、`collector_version`、`created_at`、`sources`。
+- 来源级（`source.json`）：`source_id`、`title`、`creator`、`source_kind`、`canonical_url`、`edition`、`revision`、`collected_at`、`license_status`、`rights_basis`、`allow_fetch`、`allow_local_copy`、`allow_cloud_processing`、`allow_redistribution`、`provenance`、`documents`。
+- 文档级（document record）：`document_id`、`order`（来源内顺序）、`chapter_title`、`item_url`、`content_path`、`content_hash`、`media_type`、`locator`。
+
+注意：采集时间统一为 `collected_at`（不使用 `retrieved_at`）；文档标题统一为 `chapter_title`（文档记录没有单独的 `title` 字段，`title` 只属于来源级）；`item_url` 属于文档级，不属于来源级。本节与 schema 不一致时以 schema 和 [来源目录第 5 节](reference-source-catalog.md) 为准。
 
 只交付原文/规范化文档和来源元数据，不交付 Chunk 或 Embedding。资料包不得包含凭据、cookies、session tokens 或用户个人 memo。
 

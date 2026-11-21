@@ -32,7 +32,7 @@ Phase 1 分为现有 App 记录系统与新建知识库两部分，彼此保持�
 ### 3.2 Neo4j 知识库与检索（新增 Phase 1 工作）
 
 - **主知识库：Neo4j AuraDB Free 云端图数据库**；不另建 Supabase/PostgreSQL，不需要 Docker 或 VPS。
-- **Mac 本地 Python Importer**：按 allowlist 读取 Learning 整理课程笔记、明确选择的案例 JSON、PDF 和外部 GitHub 项目资料。
+- **Mac 本地 Python Importer**：按 allowlist 读取 Learning 整理课程笔记（Markdown/TXT）和明确选择的课堂案例 JSON；外部资料只通过独立 Source Collector 输出、经批准的 Reference Package 进入知识库，Importer 不直接爬取或下载外部网站/GitHub 资料。PDF Adapter 与 OCR 当前 deferred，不是 Phase 1 必须功能；将来用户明确选定具体 PDF 并确认使用权后，再单独评估（与 [Phase 1 实施计划](phase1-implementation-plan.md) 一致）。
 - Source A Raw ASR 默认只保留来源和版本，不进入主要 Chunk / Embedding / Rule Candidate 流程；Source B Curated Lesson Notes 是主要课程知识来源。
 - Chunk 之后并行运行 Embedding 和 Generative LLM 候选知识抽取；案例 JSON 由 Case Mapper 结构化写入。
 - Importer 使用 content hash、revision ID、chunk ID 和 Neo4j MERGE 实现增量、幂等更新；不变资料不重复请求模型。
