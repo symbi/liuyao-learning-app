@@ -341,7 +341,7 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 |---|---|---|
 | M0：Aura 准备 | AuraDB Free 实例、凭据放本机 .env | Aura Console 显示实例运行；本机 doctor 能连通；秘密不提交 |
 | M1：项目骨架 | Python CLI、配置、日志、单元测试 | doctor、sources list、ingest --dry-run 正常 |
-| M2-A：来源模型 | 统一 ParsedDocument/Section、Locator、source identity | 已完成；PR #3 的 M2-B 继续独立审核 |
+| M2-A：来源模型 | 统一 ParsedDocument/Section、Locator、source identity | 代码复审通过；随 PR #3 提交，仍待用户本机验收与合并 |
 | M2-B：Markdown/TXT | Markdown 与 TXT Adapter | 代码复审通过；PR #3 Draft，等待用户 Mac 本机 144 tests 验收与合并 |
 | M2-C：课堂案例 JSON | HTML JSON Case Mapper | 只做结构化映射、原字段保留、稳定 record ID；须在 PR #3 合并后启动 |
 | M2-D：PDF | PDF 文本解析 / 页码 Locator | **deferred**；没有当前 PDF 输入，不纳入本轮 M2 |
@@ -352,7 +352,7 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 | M6：外部参考资料 | 从 Source Catalog 选择并导入获准 Reference Package 中的古籍章节、网页文本、README/docs 或源码文件 | 来源/版本/版权/commit 完整；不混入老师课程来源；不在本仓库内爬取 |
 | PDF 扩展 | 仅在将来用户明确指定 PDF 后单独立项 | 不属于当前 Phase 1 必需交付 |
 | M7：Evidence Pack | 本地 Query Tool、向量检索 + 图关系扩展 | 输入已知问题时找到相关课堂段落/案例；输出可读、可追溯的 Markdown |
-| M8：端到端验收 | 真实课程 + 真实案例 + 允许的 PDF/外部参考 | 你能把 Evidence Pack 交给 ChatGPT，且引用来源正确、分类明确 |
+| M8：端到端验收 | 真实课程 + 真实课堂案例 + 至少一份获准的外部 Reference Package（若已完成采集） | 你能把 Evidence Pack 交给 ChatGPT，且引用来源正确、分类明确；PDF 不是验收前提 |
 
 ### 最低验收测试矩阵
 
@@ -389,7 +389,7 @@ Phase 2 不是把 Phase 1 数据库搬上云。AuraDB 从 Phase 1 开始就是�
 
 - **Claude Code（Mac 本机主执行者）**：在本地 checkout 中实现当前 milestone、运行测试、建立 virtualenv、连接用户在本机配置的 AuraDB/Gemini API、提交分支并创建 Draft PR。
 - **ChatGPT（架构审查与验收者）**：维护实施计划、检查 GitHub PR diff、审查数据模型/安全/来源追溯/增量逻辑、解释错误、给出修改要求；审核通过后由用户决定合并，或明确授权 ChatGPT 合并。
-- **用户**：创建 AuraDB Free、在本机安全保存凭据、选择愿意导入的 PDF/外部项目、逐个验收里程碑。不要把数据库密码或 API Key 发给 ChatGPT。
+- **用户**：创建 AuraDB Free、在本机安全保存凭据、选择获准导入的外部来源/章节或文件、逐个验收里程碑。PDF 只有未来明确选定后才考虑。不要把数据库密码或 API Key 发给 ChatGPT。
 
 ### 强制 GitHub checkpoint 流程
 
