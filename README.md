@@ -12,7 +12,7 @@
 ## 仓库与数据边界
 
 - **本仓库（Public，Learning）**：放应用代码、项目文档、整理好的课程摘要、术语表、规则索引、老师课堂案例，以及 Phase 1 每日卦例。
-- **现有 raw 仓库（Private）**：继续存放原始课程录音、未经整理的转录稿、原始 PDF 和未整理来源资料。
+- **现有 raw 仓库（Private）**：继续存放原始课程录音、未经整理的转录稿和未整理来源资料；如将来有获准的原始 PDF，再单独登记和决定存放位置。
 - **每日卦例**：Phase 1 暂存在本 Public 仓库的 `daily-records/YYYY/MM/YYYY-MM-DD.json`。卦例和 Memo 公开可见，可能被复制或 Fork；不要写入敏感信息。
 - **Phase 1 知识库（待实施）**：计划用 Mac 本地 Python Importer 增量同步到 Neo4j AuraDB；工程步骤、里程碑和验收标准见 [Phase 1 实施计划](docs/phase1-implementation-plan.md)。
 - **Phase 2**：未来若要在 HTML 内直接检索知识并生成 AI 报告，再部署一个 Python Backend API；Supabase 仅在需要多用户身份或关系型用户数据时才考虑，不是必选数据库。
@@ -49,6 +49,8 @@
 
 - [历法引擎方案与验证计划](docs/calendar-engine-plan.md)
 - [开源项目与古籍参考资料调查计划](docs/reference-research-plan.md)
+- [六爻外部参考资料来源目录与双仓库采集/导入方案](docs/reference-source-catalog.md)
+- [Source Collector 独立项目章程与 Muse 启动说明](docs/source-collector-project-charter.md)
 - [开源项目分类目录、二十八宿与择日研究备忘录](docs/references/github-project-catalog-and-28-mansions.md)
 - [课程笔记总览](docs/lessons/README.md)
 - [规则状态与待核实项](docs/rules-status.md)
