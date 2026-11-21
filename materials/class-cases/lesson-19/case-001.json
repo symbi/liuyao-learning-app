@@ -8,7 +8,8 @@
   "verificationBasis": [
     "第十九课 ASR 开头直接提及同一位学员前一晚的工作调动卦，并明确问体制内工作调动是否成功。",
     "老师讲到两重兄弟爻、一爻兄弟发动化财、官鬼伏在该动爻之下；与用户保存的六爻记录结构相吻合。",
-    "完整爻位、纳甲地支和世应以用户于 2026-11-21 保存的 HTML 每日记录为准；ASR 本身不能独立重建完整卦盘。"
+    "完整爻位、纳甲地支和世应以用户于 2026-11-21 保存的 HTML 每日记录为准；ASR 本身不能独立重建完整卦盘。",
+    "来源权重遵循：老师课堂 ASR 中可辨认的讲解优先于用户课堂 memo；用户补充的完整卦盘作为盘面结构来源，AI 计算单独标注。"
   ],
   "dailyRecord": {
     "repository": "symbi/liuyao-learning-app",
@@ -28,12 +29,12 @@
       "path": "lessons/lesson-19/transcript-asr-raw.txt",
       "location": "第 1 段，约 0 分钟起，工作调动案例开头",
       "url": "https://github.com/symbi/liuyao-learning-raw/blob/main/lessons/lesson-19/transcript-asr-raw.txt",
-      "limitation": "当前 Private raw 目录中归档的是 ASR 文本和 README；未见原始 WAV/M4A 音频文件或配套课件。"
+      "limitation": "当前 Private raw 第十九课目录仅归档 README 与未经校对的 ASR 文本，没有 WAV/M4A 原始音频。因此 ASR 是目前老师讲解的首要可用来源，但转录中有误识风险；后续补入原音再回听校正。"
     },
     "methodLesson": {
       "repository": "symbi/liuyao-learning-app",
       "path": "docs/lessons/lesson-06-notes-v0.1.md",
-      "supplementedBy": "用户于 2026-11-21 口述核对的八宫纳甲与伏神定位方法"
+      "supplementedBy": "用户于 2026-11-21 口述核对的八宫纳甲与伏神定位方法；具体推算必须与老师讲解分开标注。"
     }
   },
   "casting": {
@@ -46,19 +47,13 @@
       "丑"
     ],
     "originalHexagram": {
-      "name": "天水讼",
+      "displayName": "天水讼",
+      "nameRole": "仅作卦象识别标签，不作为六爻吉凶判断依据",
       "upperTrigram": "乾",
       "lowerTrigram": "坎",
       "palace": "离",
       "palaceElement": "火",
-      "palaceStage": "游魂"
-    },
-    "transformedHexagram": {
-      "name": "天风姤",
-      "changeLineNumbers": [
-        3
-      ],
-      "derivation": "天水讼第三爻变；下卦由坎变巽，上卦乾不变。原每日记录保存了动爻变支，但未单独保存完整变卦名称；本案例档案将其明确记出。"
+      "stage": "游魂"
     },
     "shiLineNumber": 4,
     "yingLineNumber": 1,
@@ -162,7 +157,43 @@
     "recordedBranchRelations": [
       "应爻寅木生世爻午火。",
       "二爻辰土与三爻变爻酉金构成辰酉六合；保存的分析快照同时记录辰土生酉金。"
-    ]
+    ],
+    "transformedStructure": {
+      "upperTrigram": "乾",
+      "lowerTrigram": "巽",
+      "changedLineNumbers": [
+        3
+      ],
+      "lineChange": {
+        "lineNumber": 3,
+        "from": "阴",
+        "to": "阳"
+      },
+      "najiaBranchesBottomToTop": [
+        "丑",
+        "亥",
+        "酉",
+        "午",
+        "申",
+        "戌"
+      ],
+      "sixKinBottomToTop": [
+        "子孙",
+        "官鬼",
+        "妻财",
+        "兄弟",
+        "妻财",
+        "子孙"
+      ],
+      "changedLineNajia": {
+        "lineNumber": 3,
+        "branch": "酉",
+        "element": "金",
+        "relation": "妻财"
+      },
+      "displayName": "天风姤",
+      "nameRole": "仅作卦象识别标签；变卦结构和纳甲才是六爻计算所需信息"
+    }
   },
   "hiddenSpirit": {
     "targetUseGod": "官鬼",
@@ -201,7 +232,7 @@
     "htmlStorageBoundary": "HTML 当前人工标注字段保存 hiddenRelation=官鬼；亥水是本案例分析按本宫纯卦纳甲推算出来的结果，不应误写成原始 HTML 已保存字段。"
   },
   "teacherAnalysis": {
-    "sourceType": "第十九课原始 ASR 的归纳整理，不是逐字稿",
+    "sourceType": "第十九课老师讲解的现有依据：原始 ASR 转录（未经音频校正）；本段为归纳整理，不是逐字稿。",
     "points": [
       "老师确认问事是体制内工作调动，目标岗位较明确。",
       "老师指出卦中有两重兄弟爻，并将其放在竞争关系中比较：世爻兄弟代表求测者一方，另一兄弟爻代表竞争者。",
@@ -220,7 +251,29 @@
     "caution": "“用神不上卦通常较难成”是课堂总结中的经验提醒，不转换成固定概率或自动判断规则。此例的结论以老师对具体竞争结构的综合判断为主。"
   },
   "appConclusionAsSaved": "工作调动不能成功，有竞争者，竞争不过",
-  "conclusionWordingReview": "保存字段的“不能成功”比 ASR 中老师反复表达的“成功率很小”更绝对。复盘稿采用更贴近 ASR 的“成功机会很小”；是否同步修改 HTML 原记录，待用户确认。",
-  "status": "verified_chart_to_classroom_case; raw_audio_not_archived",
-  "schemaVersion": 1
+  "conclusionWordingReview": "老师结论以第十九课 ASR 为准：成功机会很小、竞争者有优势、不宜投入太多精力。HTML caseConclusion 原样保留为当时的用户 memo/理解，不覆盖老师 ASR。若未来有原始音频，回听后再确认措辞。",
+  "status": "teacher_asr_primary_chart_reconstructed_by_user_asr_not_audio_verified",
+  "schemaVersion": 1,
+  "sourceAuthority": {
+    "teacherExplanation": {
+      "priority": 1,
+      "currentSource": "symbi/liuyao-learning-raw/lessons/lesson-19/transcript-asr-raw.txt",
+      "sourceType": "未经校对的 ASR 转录",
+      "audioAvailable": false,
+      "rule": "优先依据 ASR 中可辨认的老师讲解；没有原始音频时不得声称逐字准确"
+    },
+    "userProvidedChart": {
+      "role": "提供老师当时分析的卦盘结构、爻位、纳甲、六亲、世应、动变；不是老师讲解内容的替代来源"
+    },
+    "userClassMemo": {
+      "role": "用于识别案例、补充背景和定位课堂段落",
+      "precedence": "若与老师 ASR 中可辨认的讲解冲突，不用 memo 覆盖老师说法"
+    },
+    "assistantCalculation": {
+      "role": "独立推算并标记计算来源，例如由离宫纯卦纳甲推得官鬼亥水",
+      "restriction": "不能写成老师原话"
+    },
+    "conflictHandling": "保留不同来源、各自标注；待原音或可靠资料补充后再校正，不静默合并。"
+  },
+  "appConclusionAsSavedRole": "HTML 原记录中的用户课堂 memo/理解；不是当前复盘所采用的老师结论来源。"
 }
