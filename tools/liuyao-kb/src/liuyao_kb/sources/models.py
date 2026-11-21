@@ -7,13 +7,14 @@ network access, model calls, Neo4j writes, or incremental synchronization.
 from __future__ import annotations
 
 import hashlib
+import math
 from collections.abc import Mapping, Sequence
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
 from types import MappingProxyType
 from typing import Annotated, Any, Literal, cast
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 
 class SourceType(StrEnum):
@@ -142,6 +143,10 @@ class ParsedDocument(BaseModel):
     def _freeze_metadata(cls, value: Mapping[str, Any]) -> Mapping[str, Any]:
         return cast(Mapping[str, Any], _deep_freeze(value))
 
+    @field_serializer("metadata")
+    def _serialize_metadata(self, value: Mapping[str, Any]) -> dict[str, Any]:
+        return _metadata_to_json(value)
+
     @field_validator("content_hash")
     @classmethod
     def _validate_sha256(cls, value: str) -> str:
@@ -218,14 +223,36 @@ def source_identity_from_path(
 
 
 def _deep_freeze(value: Any) -> Any:
-    """Recursively copy values into immutable dict/tuple representations."""
+    """Validate JSON-compatible metadata and copy it into immutable containers."""
     if isinstance(value, Mapping):
-        return MappingProxyType({str(key): _deep_freeze(item) for key, item in value.items()})
-    if isinstance(value, (list, tuple)):
+        frozen: dict[str, Any] = {}
+        for key, item in value.items():
+            if not isinstance(key, str):
+                raise ValueError("metadata keys must be strings")
+            frozen[key] = _deep_freeze(item)
+        return MappingProxyType(frozen)
+    if isinstance(value, list):
         return tuple(_deep_freeze(item) for item in value)
-    if isinstance(value, (set, frozenset)):
-        return tuple(_deep_freeze(item) for item in value)
-    return value
+    if value is None or isinstance(value, (str, bool, int)):
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise ValueError("metadata floats must be finite JSON numbers")
+        return value
+    raise ValueError("metadata contains a value that is not JSON-compatible")
+
+
+def _metadata_to_json(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Convert frozen metadata into ordinary JSON-compatible dict/list values."""
+
+    def convert(item: Any) -> Any:
+        if isinstance(item, Mapping):
+            return {key: convert(nested) for key, nested in item.items()}
+        if isinstance(item, (list, tuple)):
+            return [convert(nested) for nested in item]
+        return item
+
+    return cast(dict[str, Any], convert(value))
 
 
 def escape_json_pointer_token(token: str) -> str:

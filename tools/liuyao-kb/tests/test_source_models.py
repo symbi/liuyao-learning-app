@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -180,6 +181,79 @@ class TestParsedDocument:
         items[0] = "mutated-input"
         assert document.metadata["nested"]["value"] == "original"  # type: ignore[index]
         assert document.metadata["items"][0] == "first"  # type: ignore[index]
+
+    def test_nested_metadata_serializes_in_all_pydantic_modes(self) -> None:
+        metadata = {
+            "nested": {"name": "巽为风", "flags": [True, False], "count": 2},
+            "items": [1, 2.5, None],
+        }
+        document = ParsedDocument(
+            source_type=SourceType.CLASSROOM_CASE,
+            source_identity="classroom_case:fixtures/case-001.json",
+            source_uri="fixtures/case-001.json",
+            content_hash=sha256_text('{"recordType":"class-case"}'),
+            parser_version="case-json-1",
+            metadata=metadata,
+        )
+
+        python_dump = document.model_dump()
+        json_mode_dump = document.model_dump(mode="json")
+        json_string = document.model_dump_json()
+
+        assert python_dump["metadata"] == metadata
+        assert json_mode_dump["metadata"] == metadata
+        assert json.loads(json_string)["metadata"] == metadata
+
+    def test_metadata_rejects_non_string_keys(self) -> None:
+        with pytest.raises(ValidationError, match="valid string"):
+            ParsedDocument(
+                source_type=SourceType.TEXT,
+                source_identity="text:fixture.txt",
+                source_uri="fixture.txt",
+                content_hash=sha256_text("text"),
+                parser_version="text-1",
+                metadata={1: "not-allowed"},
+            )
+        with pytest.raises(ValidationError, match="metadata keys must be strings"):
+            ParsedDocument(
+                source_type=SourceType.TEXT,
+                source_identity="text:fixture.txt",
+                source_uri="fixture.txt",
+                content_hash=sha256_text("text"),
+                parser_version="text-1",
+                metadata={"nested": {1: "not-allowed"}},
+            )
+
+    def test_metadata_rejects_unsupported_types(self) -> None:
+        unsupported_values = (
+            {"set": {"one", "two"}},
+            {"tuple": ("one", "two")},
+            {"bytes": b"not-json"},
+            {"object": object()},
+            {"nonfinite": float("nan")},
+        )
+        for metadata in unsupported_values:
+            with pytest.raises(ValidationError):
+                ParsedDocument(
+                    source_type=SourceType.TEXT,
+                    source_identity="text:fixture.txt",
+                    source_uri="fixture.txt",
+                    content_hash=sha256_text("text"),
+                    parser_version="text-1",
+                    metadata=metadata,
+                )
+
+    def test_metadata_string_keys_are_preserved_exactly(self) -> None:
+        metadata = {"a/b~c": {"normal-key": "preserved"}}
+        document = ParsedDocument(
+            source_type=SourceType.TEXT,
+            source_identity="text:fixture.txt",
+            source_uri="fixture.txt",
+            content_hash=sha256_text("text"),
+            parser_version="text-1",
+            metadata=metadata,
+        )
+        assert document.model_dump()["metadata"] == metadata
 
 
 class TestJsonLocators:
