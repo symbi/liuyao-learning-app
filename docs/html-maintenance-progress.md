@@ -289,3 +289,29 @@
   - 未写入或改动任何真实每日记录；未合并 PR，未修改 `main`。
 - Status: Code committed to existing Draft PR; Cloudflare Preview deployment succeeded; actual browser interaction / visual acceptance remains pending.
 - Next step: 用户打开 Branch Preview，检查每日自动干支与课堂案例完整选择器；确认后再处理可能的视觉微调。
+
+
+## 2026-11-21 — 课堂案例干支拖放布局微调（v89）
+
+- Task: 按用户检查 v88 后的反馈，恢复案例干支目标框的正常尺寸，并调整十天干来源区的位置。
+- User acceptance criteria:
+  - 年、月、日每柱的两个目标框均恢复为与每日干支单字相同的 36×36 尺寸。
+  - 目标框内不再重复显示“天干 / 地支”小标签；用两个上下排列的空框表示一柱的天干、地支。
+  - 十天干拖拽来源移动到顶部年月日时间区域右侧；底部选择区只保留原有六合地支配对，不再重复增加天干。
+  - 每日模式不显示课堂案例十天干来源；课堂案例模式才显示。
+- Branch: `fix/trine-anchor-auto-xunkong`
+- Draft PR: [#1](https://github.com/symbi/liuyao-learning-app/pull/1)
+- Files changed: `index.html`, `docs/html-maintenance-progress.md`
+- Implementation summary:
+  - 三组案例干支目标框改为上下排列，每格 36×36；移除目标框旁边的“天干 / 地支”文字。
+  - 十天干项目仍由原来的 `#stem-tiles` 容器和原拖拽逻辑生成，但容器移至顶部日历年月日区域右侧，标题简化为“放入天干”。
+  - 底部调色板只保留原有地支六合配对与六亲、六神项目。
+  - 案例模式显示顶部天干拖拽区；每日模式隐藏它。六十甲子校验、`pillarOverride` 保存/恢复和计算逻辑未改。
+- Tests / exact checks:
+  - 内嵌 JavaScript 全部通过 V8 语法编译。
+  - 静态检查确认六个目标框仍在年、月、日柱内；每个目标框 36×36；目标框无重复小标签；底部只有地支入口；顶部仅有一个十天干来源容器。
+  - 待用户在 Preview 中实际确认拖拽位置、视觉尺寸，以及保存/重开。
+- Security and data-preservation checks:
+  - 仅修改 HTML 和本维护日志；未更改 OAuth、Cloudflare Functions、API、记录 schema 或真实记录。
+  - 未合并 PR，未修改 `main` 或 Production。
+- Status: Updated on the existing PR branch; Preview deployment pending.
