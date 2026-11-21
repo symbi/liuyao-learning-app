@@ -4,6 +4,7 @@
 > Initial visibility: **Private**（首批网站适配与版权边界未核实前先保持私有；稳定后再由用户决定是否公开）  
 > Status: 设计已确认，远端 repository 尚未创建。  
 > Last updated: 2026-11-21
+> 执行归属：建仓与实现由独立的 Source Collector 窗口负责（见第 8 节）。本文件保存在 Learning App 仓库仅作为交接契约与决策记录；Learning App 侧的 Agent 不执行第 8 节指令、不在本仓库实现采集器。
 
 ## 1. 项目使命
 
@@ -101,7 +102,7 @@ reference-package/
     documents/<stable-document-id>.md
 ```
 
-Package 必须有 schema_version、package_id、collector_name/version、created_at。来源记录至少有 source_id、title、creator、source_kind、canonical_url、item_url、edition/version/commit_sha、retrieved_at、rights/license status、allow_cloud_processing、allow_redistribution。文档记录至少有 stable document ID、title、content_path、content_hash、media_type、原文 URL、章节/页码/文件/符号 locator 和采集状态。
+Package 必须有 schema_version、package_id、collector_name/version、created_at。来源记录至少有 source_id、title、creator、source_kind、canonical_url、item_url、edition/version/commit_sha、retrieved_at、rights/license status、allow_cloud_processing、allow_redistribution。文档记录至少有 stable document ID、order（来源内顺序）、chapter_title、title、content_path、content_hash、media_type、原文 URL、章节/页码/文件/符号 locator 和采集状态。字段级契约以 Learning App 的 [reference-package-v1.schema.json](reference-package-v1.schema.json) 为准；本节与 schema 不一致时以 schema 和 [来源目录第 5 节](reference-source-catalog.md) 为准。
 
 只交付原文/规范化文档和来源元数据，不交付 Chunk 或 Embedding。资料包不得包含凭据、cookies、session tokens 或用户个人 memo。
 

@@ -7,10 +7,12 @@
 
 本项目长期积累三类知识证据：老师课程与案例、古籍/现代文献、开源项目与技术资料。它们可以在同一个 Neo4j 中检索，但必须保留不同的 source type、trust level 和 provenance，不能把外部规则说成老师课堂口径。
 
-外部资料处理采用三层流程：
-1. **Source Catalog**：登记书目、网站、GitHub 项目、具体章节/文件、作者、版本、许可证/版权状态、用途、审核状态。
-2. **Acquisition & Snapshot**：独立仓库 `symbi/liuyao-source-collector` 负责网站/平台适配、合法下载、分页/章节采集和校验。原始文件落到用户本机或获准的私有存储；不把第三方全文放进公共代码仓库。
-3. **Knowledge Ingestion**：本仓库只接收经筛选且许可状态明确的标准资料包，执行 Parser、Chunk、Embedding、结构化抽取和 Neo4j 入库。
+外部资料处理严格区分四个阶段，任何来源在某一阶段的状态都不能自动推定为下一阶段已完成：
+
+1. **来源登记（Registration）**：在本目录登记书目、网站、GitHub 项目、具体章节/文件、作者、版本、许可证/版权状态、用途、审核状态。登记只表示“知道它存在”，对应状态 `discovered` / `candidate` / `rights_pending`。
+2. **资料采集（Acquisition）**：独立仓库 `symbi/liuyao-source-collector` 负责网站/平台适配、合法下载、分页/章节采集和校验，输出 Reference Package。原始文件落到用户本机或获准的私有存储；不把第三方全文放进公共代码仓库。采集完成对应状态 `captured`，不等于获准导入。
+3. **资料导入（Ingestion）**：本仓库只接收经审核批准（`approved`）且许可状态明确的标准资料包，校验后执行 Parser、Chunk、Embedding、结构化抽取和 Neo4j 入库，对应状态 `import_ready` / `imported`。
+4. **知识检索（Retrieval）**：只有已导入并完成 Chunk/Embedding 的内容才参与 Evidence Pack 检索；仅登记或仅采集的内容不参与检索，也不得在回答中被引用为知识库证据。
 
 GitHub 集成当前不提供直接创建新 repository 的操作。因此 `symbi/liuyao-source-collector` 是已确定的仓库名称与架构决策，但远端仓库仍需通过 GitHub UI 或 `gh repo create` 建立；不要把它描述成已经创建。
 
@@ -111,11 +113,47 @@ reference-package/
         2-03-najia.md
 ```
 
-`package-manifest.json` 至少包含 `schema_version`、`package_id`、`collector_name`、`collector_version`、`created_at` 和来源清单。
+本节是 **Learning App 的输入契约**：它只规定本仓库接收什么，不规定 Collector 如何采集。机器可校验的形式化定义见 [reference-package-v1.schema.json](reference-package-v1.schema.json)（JSON Schema，与本节字段一一对应）。
 
-每个来源记录至少包含 `source_id`、标题/作者、`source_kind`、canonical URL、具体章节/文件 URL、版本/commit、采集时间、版权状态、云端处理/再分发权限、内容哈希，以及 documents 的路径、标题、章节/页码/代码符号 locator。
+`package-manifest.json`（包级元数据）字段：
 
-文档正文使用 UTF-8 Markdown 或保留原格式的文件；**不能只交付 Chunk，必须能回到原始章节/网页/文件。**
+| 字段 | 必填 | 含义 |
+|---|---|---|
+| `schema_version` | 是 | 契约版本，本版为 `1.0` |
+| `package_id` | 是 | 本包的稳定唯一 ID |
+| `collector_name` / `collector_version` | 是 | 产出本包的 Collector 名称与版本（provenance） |
+| `created_at` | 是 | 打包时间（ISO 8601） |
+| `sources` | 是 | 来源清单：每项含 `source_id` 与该来源的 `source.json` 路径 |
+
+每个来源的 `source.json`（来源记录）字段：
+
+| 字段 | 必填 | 含义 |
+|---|---|---|
+| `source_id` | 是 | 与本目录登记一致的稳定来源 ID |
+| `title` / `creator` | 是 | 书名/资源名与作者、编者或维护机构 |
+| `source_kind` | 是 | `classical_text`、`modern_book`、`web_text`、`github_project`、`github_doc`、`source_code` 等 |
+| `canonical_url` | 是 | 来源主页/书目页的原始 URL |
+| `edition` / `revision` | 否 | 版次、整理版说明或固定 commit SHA；不明确时标记待核查，不得编造 |
+| `collected_at` | 是 | 采集日期时间（ISO 8601） |
+| `license_status` / `rights_basis` | 是 | 许可证/版权状态与依据；不明确填 `unknown` 并说明待核查 |
+| `allow_fetch` / `allow_local_copy` / `allow_cloud_processing` / `allow_redistribution` | 是 | 四种权限分别记录，不得合并为一个开关 |
+| `provenance` | 是 | 采集来源站点、采集工具与版本、原始入口 URL 等出处信息 |
+| `documents` | 是 | 文档记录清单（见下），顺序即来源内顺序 |
+
+每个文档记录字段：
+
+| 字段 | 必填 | 含义 |
+|---|---|---|
+| `document_id` | 是 | 包内稳定的文档 ID |
+| `order` | 是 | 该文档在来源内的顺序序号（章节/文件顺序，从 1 开始）；导入时据此保留 section order |
+| `chapter_title` | 否 | 章节标题（如“日辰章第十七”）或文件标题 |
+| `item_url` | 否 | 该章节/文件的具体原始 URL（GitHub 文件为固定 commit 的 URL） |
+| `content_path` | 是 | 文档正文在包内的相对路径 |
+| `content_hash` | 是 | 正文原始字节的 SHA-256 |
+| `media_type` | 是 | 如 `text/markdown`、`text/plain` |
+| `locator` | 否 | 页码、章节、段落或代码符号等定位信息 |
+
+文档正文使用 UTF-8 Markdown 或保留原格式的文件；**原始内容必须随包交付并在本仓库保留，Chunk 不能替代原始文档；不能只交付 Chunk，必须能回到原始章节/网页/文件。**
 
 知识库接收前执行 Package Validator：路径安全、schema 版本、必需字段、哈希、重复 document ID、缺失文件、许可状态。未获准云端处理的内容不得发送给 Gemini。
 
@@ -151,7 +189,7 @@ Chunk 适用于需要语义检索的文本，不是每种数据的强制格式�
 - [ ] 创建 `symbi/liuyao-source-collector` 独立 GitHub repository（建议先 Private；当前连接不支持直接创建 repository，需 GitHub UI 或 `gh repo create`）。
 - [ ] 在采集器中先验证用户提供的问真阅读器：目录、章节 URL、正文获取方式、分页顺序、站点条款和版权；未经确认不进行批量采集。
 - [ ] 对现有古籍和 GitHub 候选进行来源核验，选择少量章节/文档作为首批批准条目。
-- [ ] 固化 Reference Package v1 JSON Schema，并为知识库增加只读校验/导入入口。
+- [x] 固化 Reference Package v1 JSON Schema：见 [reference-package-v1.schema.json](reference-package-v1.schema.json)（本目录第 5 节为其字段说明）。知识库侧的只读校验/导入入口（Validator/Adapter）仍待后续里程碑实现，本次只定契约、不写导入代码。
 - [ ] 首批采集包通过人工抽样检查后，再进入 Chunk/Embedding/Neo4j。
 
 ## 9. 相关资料
