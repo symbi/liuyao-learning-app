@@ -126,7 +126,7 @@ flowchart TB
 5. 外部古籍/网页/GitHub 资料先由独立 Source Collector 采集并输出标准 Reference Package；知识库只读取经批准的包，不直接访问网站。
 6. PDF 目前不是已确认输入：当前两个仓库最近扫描均未发现 PDF；当前也没有指定要导入的 PDF 版本。因此 PDF Adapter 与 OCR 均 deferred。
 
-### 当前资料状态（最近核对：2026-11-21）
+### 当前资料状态（最近核对：2026-11-22，已含第十九课 case-002）
 
 - liuyao-learning-app 有第 5～20 课整理笔记、外部参考文档和案例目录说明；正式课程笔记以 Markdown 为主。
 - liuyao-learning-raw 有部分课程原始 ASR TXT；Raw ASR 默认不进入主要索引。
@@ -138,6 +138,7 @@ flowchart TB
   4. **自动生成的记录 MD**：`daily-records/2026/11/markdown/2026-11-21--7e0a6b19-92f2-4f8c-b7b0-8771955ad45b.md` 是 HTML 按每日记录 JSON 与确定性排盘规则生成的可读呈现，对应子记录 `7e0a6b19-...`（与 case-001 关联的 `9f89...` 是两条不同记录，不得混淆）；其 `## 原始记录 JSON` 一节内嵌完整 JSON。它是该记录的另一种表示，不是第二个独立案例，不得重复创建 Case 节点或重复计数。
 - **课堂案例身份原则（核心）**：Learning App 中的课堂案例是老师在实际课程中讲解过的教学案例（`classroom_case`），不是用户新创建的个人练习数据，不得归类为 `personal_practice`；个人练习是独立类别。每个课堂案例应尽可能连接五类来源：（1）老师原始课堂录音 / ASR 转录中的案例讲解位置；（2）对应课程整理笔记中的案例内容；（3）用户补充并核对的完整卦盘结构；（4）HTML 保存的 JSON 记录及其生成 MD 表达；（5）与案例 JSON 配对的课堂案例 MD 表示。课程笔记或 ASR 提到同一案例时，建立引用/提及关系并保留课程、文件、段落或时间定位；同一案例在笔记、ASR、案例 JSON、案例 MD 中重复出现，不产生多个案例。案例 JSON 与课堂案例 MD 都只是该案例的表示形式：在图模型中以 `ClassCase -[:HAS_REPRESENTATION]-> SourceDocument` 表达（关系上标明 format=json/markdown），不为 MD 另建案例身份。老师 ASR 的来源定位不依赖 Chunk：Raw ASR 默认不 Chunk，ClassCase 可以直接关联 ASR 的 SourceDocument / DocumentRevision，并在关系上保留 Locator（原始仓库与文件路径、课程 ID、转录段落序号、有可靠时间戳时的时间范围）与置信度/校正状态；未经音频校正的 ASR 只能标为当前可用的老师讲解线索，不得称为经音频验证的逐字原话。案例身份规则：保留稳定案例 ID；课程归属用 `lessonId` 与来源定位表达；HTML 原始记录 ID 只通过明确的 `dailyRecord.recordId` 关联；JSON 与课堂案例 MD 通过同一个稳定 `case_id` 配对；必要时辅以内容一致性校验；`matchStatus` / `verificationBasis` 说明与课堂原始教学资料的匹配程度；ASR 未经音频校正时保留低置信度说明；用户补充的卦盘结构、老师原话、AI 推算必须分开标记，不得混为一谈。此原则同时适用于 M2-C 的 Mapper、M3 的 Neo4j 数据模型与 M7 的 Evidence Pack 检索逻辑。
 - **案例核对生命周期样本（2026-11-22，真实数据）**：`daily-records/2026/11/2026-11-22.json` 的子记录 `13e9c29a-cdbc-41e0-912d-5e02fa7c54d3` 最初只有 `isCase=true`、`caseSource=classroom` 标记，其生成 MD 标注“案例核对状态：待核对”，记录本身没有 case_id 或 matchStatus——按上列身份原则，它当时只是待核对的 CastRecord 候选：不创建已验证的 ClassCase、不建 BASED_ON_RECORD、不计入课堂案例数量。其后它被显式核对并配对为第十九课案例：`materials/class-cases/lesson-19/case-002.json`（稳定 case_id `L19-C02-shop-operation-transfer`，`matchStatus=matched`，附 `verificationBasis`）通过 `dailyRecord.recordId` 显式关联该子记录，ClassCase 身份自此才成立。注意：关联信息保存在案例 JSON 一侧，每日记录本身没有被回填 case_id；从待核对到成立案例，走的是显式核对与显式关联，不是分类标记的自动升级。
+- **matchStatus 规范语义（2026-11-22 回读全部真实案例 JSON 后确定）**：规范状态为 `verified`——案例身份已与课堂来源（课程笔记 / ASR 定位）显式核对一致，且来源位置与 `verificationBasis` 已记录。case-002 使用的 `matched` 是同一状态的历史写法：其 verificationBasis 与 case-001（`verified`）同为“ASR 内容核对 + 用户提供卦盘 + 明确限定”，证据结构与严格程度相同，不构成更低一级的状态。M2-C Mapper 读取时须把 `matched` 归一化为 `verified` 并保留原始值；新案例统一写 `verified`；`needs_review` / `not_found` / `disputed` 及任何未知值不得静默丢弃或误判，未知值保留原始值并标记待核对。注意 `verified` 只证明案例身份已核对，不代表老师讲解已通过音频逐字验证——ASR 校正状态、卦盘来源等限定以 `verificationBasis` / `matchConfidence` 等字段为准，Evidence Pack 须一并呈现。
 - 每日记录仍默认不全量导入：只有显式允许的记录 ID 才进入知识库。
 - M2-C 实施准备要求（本计划只记录要求，不在本 PR 实现）：（1）实施前先检查真实的 `case-001.json` 与每日记录 JSON，了解实际字段结构；（2）检查 HTML 导出 JSON 与课堂案例 JSON 的字段关系；（3）自动化测试使用合成 fixtures 独立进行，不把真实案例、私人 ASR 全文或个人每日记录复制进 fixtures；（4）映射时保留原始字段、来源链和案例身份，不随意丢弃数据；（5）不要因为已有一个案例就假定所有历史案例都符合相同结构，字段差异必须显式处理。
 - daily-records/ 是否有真实记录以同步时重新扫描为准，默认仍不导入个人每日 Memo。
@@ -364,7 +365,7 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 | M1：项目骨架 | Python CLI、配置、日志、单元测试 | doctor、sources list、ingest --dry-run 正常 |
 | M2-A：来源模型 | 统一 ParsedDocument/Section、Locator、source identity | `approved_merged`；PR #3，merge commit `9505ce7` |
 | M2-B：Markdown/TXT | Markdown 与 TXT Adapter | `approved_merged`；PR #3，merge commit `9505ce7`（验收：144 tests / 38 adapter tests 通过，用户接受等价复跑作为验收依据） |
-| M2-C1：案例 JSON Mapping | class-case JSON 与每日记录容器中的独立子记录 Mapper | 支持 `recordType=class-case` 的课程案例 JSON，以及 HTML 每日记录容器中显式允许的子记录；保留原始字段、稳定 ID 与来源链；不把每日记录容器整体当成 Case；实现须用户明确授权后启动 |
+| M2-C1：案例 JSON Mapping | class-case JSON 与每日记录容器中的独立子记录 Mapper | 支持 `recordType=class-case` 的课程案例 JSON，以及 HTML 每日记录容器中显式允许的子记录；保留原始字段、稳定 ID 与来源链；不把每日记录容器整体当成 Case；matchStatus 须显式处理真实历史值（`matched` 归一化为 `verified` 并保留原始值，未知值保留并标记待核对，不得静默丢弃或误判，见第 4 节）；实现须用户明确授权后启动 |
 | M2-C2：自动生成 MD 伴随文件 | Generated Markdown companion | 支持 HTML 自动生成的记录 MD：校验文件名、MD 内嵌 JSON 的 ID 与原始 daily JSON 中子记录 ID 一致；MD 以 RENDERS 关系关联到 CastRecord，不创建第二个 Case；Chunk 时排除 `## 原始记录 JSON` 代码块 |
 | M2-C3：课堂案例 MD 表示 | Classroom Case Markdown Representation | 处理与案例 JSON 配对的课堂案例 MD（如 `case-xxx-analysis.md`）：它是同一 ClassCase 的可读表示，以 HAS_REPRESENTATION（format=markdown）关联到同一 case_id，不建第二个 Case、不另立分析来源；内容中的老师讲解、用户补充、AI 计算仍分别标明来源 |
 | M2-D：PDF | PDF 文本解析 / 页码 Locator | **deferred**；没有当前 PDF 输入，不纳入本轮 M2 |

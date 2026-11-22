@@ -144,7 +144,7 @@ Phase 1 必须把课程资料的两个来源轨道分开保存，不能把原始
 1. **HTML 卦例 JSON**：从 `daily-records/` 或后续案例目录读取。用 Case Mapper 按结构化字段写入节点：课堂案例写为 ClassCase（身份 `case_id`），HTML 每日记录写为 CastRecord（身份 `record_id`），两者是不同节点、不同身份；不让 LLM 重新猜测卦盘字段（模型详见实施计划第 7 节）。
 2. **外部 Reference Package**：只导入由独立 Source Collector 输出、且 Source Catalog 明确批准的章节文本、网页正文、README/docs 或选定源码。必须保留原始 URL、版本/commit、章节/文件 locator、许可状态和内容哈希。知识库 Importer 不直接爬取网页。
 3. **PDF**：当前没有已确认要导入的 PDF，因此 PDF Adapter 与 OCR 暂缓；只有用户指定具体文件、确认版本及使用权后再单独立项。
-3. **外部 GitHub 参考项目**：可以参考，但不能把整个 Repository 当成一篇长文。先登记仓库 URL、作者、License、commit SHA，再选择 README、docs、规则文件和有价值源码。README/Markdown 按标题和段落切块；源码按文件、类、函数或符号边界切块。所有内容标记为 `external_reference`，不能混入老师课堂规则。
+4. **外部 GitHub 参考项目**：可以参考，但不能把整个 Repository 当成一篇长文。先登记仓库 URL、作者、License、commit SHA，再选择 README、docs、规则文件和有价值源码。README/Markdown 按标题和段落切块；源码按文件、类、函数或符号边界切块。所有内容标记为 `external_reference`，不能混入老师课堂规则。
 
 ### 处理
 

@@ -82,5 +82,6 @@ materials/class-cases/
 - `needs_review`：疑似匹配或关键信息不完整，等待原音/卦盘核对。
 - `not_found`：现有课程资料未找到对应案例。
 - `disputed`：不同来源之间存在需要保留的差异。
+- 关于 `matched`：case-002 使用的历史值，与 `verified` 语义相同（案例身份已与课堂来源显式核对一致并记录依据），是同一状态的另一种写法，不是更低一级的状态。新案例统一使用 `verified`；工具读取旧文件时把 `matched` 归一化为 `verified`，同时保留原始值备查。注意：`verified` / `matched` 只表示案例身份已核对，不表示老师讲解已经过音频逐字验证；ASR 未校正、卦盘由用户提供等限定，仍以 `verificationBasis` 等字段为准。
 
 案例链接关系建议保持为：HTML 案例 → 对应课程笔记 → Private raw 原始转录/录音位置 → 老师讲解摘要。课程笔记保留整堂课脉络，单个案例仍独立保存。
