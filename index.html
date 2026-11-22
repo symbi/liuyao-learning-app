@@ -2270,16 +2270,20 @@
       if(type==='branch') tile.dataset.branch=value;
       const typeName=type==='branch'?'地支':type==='stem'?'天干':type==='god'?'六神':'六亲';
       const isDatePalette=!!container.closest('.calendar-palette-area');
+      const isPillarPalette=!!container.closest('.case-stem-source');
       tile.setAttribute('aria-label',
-        isDatePalette
-          ? '拖动到年月日或日干六神对应位置，也可点选后再点目标位置'
-          : (['branch','relation','god'].includes(type)
-              ? '单击自动填入从初爻开始的第一个空位；也可以拖到指定位置'
-              : '拖动'+typeName+value+'到对应位置，或点选后再点目标位置'));
+        isPillarPalette
+          ? '单击选择后，再点击上方年柱、月柱或日柱对应的天干／地支位置；也可以直接拖到对应位置'
+          : (isDatePalette
+              ? '拖动到年月日或日干六神对应位置，也可点选后再点目标位置'
+              : (['branch','relation','god'].includes(type)
+                  ? '单击自动填入从初爻开始的第一个空位；也可以拖到指定位置'
+                  : '拖动'+typeName+value+'到对应位置，或点选后再点目标位置')));
       tile.addEventListener('click',e=>{
         if(suppressTileClick){e.preventDefault();e.stopPropagation();return;}
-        // Calendar palettes use drag/click-to-target; don't redirect their clicks into the six main yao.
-        if(!tile.closest('.calendar-palette-area') && autoFillNextYaoSlot(tile,type,value))return;
+        // Date and manual-pillar palettes must target the calendar above, never auto-fill a six-line yao.
+        const isCalendarSource=!!tile.closest('.calendar-palette-area,.case-stem-source');
+        if(!isCalendarSource && autoFillNextYaoSlot(tile,type,value))return;
         const paletteId=tile.dataset.paletteId;
         if(selected && selected.value===value && selected.type===type && selected.paletteId===paletteId){selected=null;}
         else{selected={type,value,paletteId};}
