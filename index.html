@@ -699,12 +699,12 @@
     border:2px solid transparent;
     background:#f2effa!important;
   }
-  /* 旬空只显示这一圈点状外环，不再叠加月令旺相内环。 */
+  /* 旬空只显示按地支五行着色的粗虚线外环，不再叠加月令旺相内环。 */
   .drop-token.branch-token.is-xunkong::before{
     content:'';
     position:absolute;
-    inset:-4px;
-    border:2px dotted #7567a6;
+    inset:-5px;
+    border:3px dashed var(--xunkong-color,#7567a6);
     border-radius:50%;
     pointer-events:none;
   }
@@ -1524,6 +1524,11 @@
     token.classList.toggle('is-monthly-xiuqiu',showMonthlyMarker&&status.monthly?.group==='xiuqiu');
     token.style.removeProperty('--monthly-bg');
     token.style.removeProperty('--monthly-ring');
+    token.style.removeProperty('--xunkong-color');
+    if(status.xunkong){
+      const xunkongElement=branchElements[value];
+      token.style.setProperty('--xunkong-color',elementPalette[xunkongElement]?.text||'#7567a6');
+    }
     if(showMonthlyMarker&&status.monthly?.group==='wangxiang'){
       token.style.setProperty('--monthly-bg',elementPalette[status.monthly.wang].fill);
       token.style.setProperty('--monthly-ring',elementPalette[status.monthly.xiang].text);
