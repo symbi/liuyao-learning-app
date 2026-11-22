@@ -7,11 +7,11 @@
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
 - Status: in_progress
-- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 规划 PR #6 已合并；M2-C1 已获用户授权，正在本地分支实现与补充修订，尚未推送、未建 PR；C2/C3 未启动；PDF Adapter/OCR 已暂缓）
+- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 规划 PR #6 已合并；M2-C1 已推送并开启 Draft PR #7，正在审查与修订中；C2/C3 未启动；PDF Adapter/OCR 已暂缓）
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
 - Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2 整体 in_progress（剩 M2-C）
-- Active implementation branch: `phase1/m2c1-case-json-mapper`（M2-C1，本地分支，尚未推送）
-- Active PR: none（PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`；M2-C1 尚未创建 PR）
+- Active implementation branch: `phase1/m2c1-case-json-mapper`（M2-C1，已推送，见 Draft PR #7）
+- Active PR: [Draft PR #7](https://github.com/symbi/liuyao-learning-app/pull/7)（M2-C1，head 以 GitHub 为准）；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
 - Last completed milestone: M2-A/M2-B（经 PR #3 合并）；M1 已合并
 - Next action: M2-C1 本地修订完成后停下，等用户审查并决定是否推送与创建 Draft PR；C2/C3 不得顺手启动。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
 - Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已获授权并在本地分支 `phase1/m2c1-case-json-mapper` 实现中（未推送、无 PR），C2/C3 未启动；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
+| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已推送并开启 Draft PR #7，正在审查与修订中，C2/C3 未启动；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
@@ -327,3 +327,11 @@ Secrets, credentials, private audio/transcripts, and personal records must never
   - 测试（执行环境：执行 Agent 本机 clone 的 venv，Python 3.12.3；非用户 Mac）：pytest 全套 193 passed（原 144 + C1 新增 49）；Ruff check/format 通过；Mypy strict 通过；`git diff --check` 退出码 0。测试全部使用 synthetic fixtures，无真实案例/每日记录内容。
   - 边界：未做 Neo4j 写入、Chunk、Embedding、LLM 调用；未修改真实案例 JSON、每日记录、HTML、Cloudflare Functions 或 Source Collector；C2/C3 未启动。
 - 下一步：停下等用户审查本地分支；是否推送并创建 Draft PR 由用户决定。
+
+## M2-C1 路径一致性修复检查点（2026-11-22）
+
+- 背景：M2-C1 已于 2026-11-22 推送并开启 Draft PR #7（分支 `phase1/m2c1-case-json-mapper`，首个远端快照提交 `3ceec76226f56839ea82f504fade1f88e56d8b39`，父提交为 main `dbc2c19`；远端文件已按 Git blob SHA 与本地逐一核对一致）。上方 2026-11-22 的 M2-C1 检查点中“尚未推送、尚未创建 PR”是当时的状态记录，此处更正当前状态，历史记录不改写。
+- 代码审查发现并已修复：`map_class_case_file()` 与 `map_daily_records_file()` 在 `_relative_to_root()` 完成边界检查后，仍用调用方传入的原始路径 `read_bytes()`，相对路径会按当前工作目录读取，可能与受检文件不一致。现改为共用 `_resolve_within_root()`：相对路径始终相对于 source_root 解析，绝对路径 resolve 后做仓库边界检查，检查与实际读取使用同一个解析后的绝对路径；外部路径与外部符号链接继续拒绝。
+- 新增 synthetic 回归测试 2 个（`TestRelativePathsResolveAgainstSourceRoot`）：repository root 与另一个 current working directory 放置同名但内容不同的 JSON，切换 CWD 后以相对路径调用两个 Mapper，断言只读取 repository root 内的文件（daily 版若误读 CWD 文件会因 allowlist 记录缺失而报错）。
+- 验证（实现方 Linux clone 的 venv，Python 3.12.3，非用户 Mac、非 CI）：pytest 199 passed（原 197 + 新增 2），Ruff check/format 通过，Mypy strict 通过，`git diff --check` 退出码 0。
+- 当前状态：M2-C1 正在 Draft PR #7 审查与修订中；C2/C3 未启动；PR #7 不自行合并，等待 ChatGPT 复审与用户决定。

@@ -14,6 +14,7 @@ import pytest
 from pydantic import ValidationError
 
 from liuyao_kb.sources import (
+    AllowedDailyRecord,
     AllowlistError,
     DailyRecordsSettings,
     InvalidCaseJsonError,
@@ -618,3 +619,76 @@ class TestPairedMarkdownSymlinks:
         )
         assert mapping.paired_markdown is not None
         assert mapping.paired_markdown.exists is False
+
+
+class TestRelativePathsResolveAgainstSourceRoot:
+    """Checked path and read path must be the same file.
+
+    Regression tests: the file mappers used to boundary-check a
+    root-relative resolution but then read the caller's original
+    (possibly CWD-relative) path, so a same-named file in the process
+    working directory could be read instead of the repository file.
+    """
+
+    CASE_RELATIVE = "materials/class-cases/lesson-99/case-001.json"
+    DAILY_RELATIVE = "daily-records/2026/11/2026-11-22.json"
+    RECORD_ID = "123e4567-e89b-12d3-a456-426614174000"
+
+    def _write(self, base: Path, relative: str, payload: dict[str, Any]) -> None:
+        target = base / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(_bytes(payload))
+
+    def test_class_case_reads_repo_file_not_cwd_file(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        root = tmp_path / "repo"
+        elsewhere = tmp_path / "elsewhere"
+        repo_case = _minimal_case()
+        repo_case["id"] = "L99-C01-from-repo"
+        cwd_case = _minimal_case()
+        cwd_case["id"] = "L99-C99-from-cwd"
+        self._write(root, self.CASE_RELATIVE, repo_case)
+        self._write(elsewhere, self.CASE_RELATIVE, cwd_case)
+        monkeypatch.chdir(elsewhere)
+        mapping = map_class_case_file(
+            self.CASE_RELATIVE,
+            repository="symbi/liuyao-learning-app",
+            source_root=root,
+        )
+        assert mapping.case_id == "L99-C01-from-repo"
+
+    def test_daily_records_read_repo_file_not_cwd_file(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        root = tmp_path / "repo"
+        elsewhere = tmp_path / "elsewhere"
+        repo_container = {
+            "date": "2026-11-22",
+            "additionalQuestions": [{"id": self.RECORD_ID, "question": "repo copy"}],
+        }
+        cwd_container = {
+            "date": "2026-11-22",
+            "additionalQuestions": [
+                {"id": "99999999-8888-7777-6666-555555555555", "question": "cwd copy"}
+            ],
+        }
+        self._write(root, self.DAILY_RELATIVE, repo_container)
+        self._write(elsewhere, self.DAILY_RELATIVE, cwd_container)
+        settings = DailyRecordsSettings(
+            include=True,
+            allowed_records=[
+                AllowedDailyRecord(path=self.DAILY_RELATIVE, record_id=self.RECORD_ID)
+            ],
+        )
+        monkeypatch.chdir(elsewhere)
+        result = map_daily_records_file(
+            self.DAILY_RELATIVE,
+            repository="symbi/liuyao-learning-app",
+            source_root=root,
+            settings=settings,
+        )
+        # Reading the CWD copy instead would fail: the allowlisted record
+        # id is absent there, which must raise rather than pass silently.
+        assert result.processed is True
+        assert [record.record_id for record in result.records] == [self.RECORD_ID]

@@ -12,7 +12,7 @@
 | 工作流 | 负责内容 | 当前状态 | 当前分支 / PR | 权威进度文件 |
 |---|---|---|---|---|
 | HTML 窗口 | 修复现有 HTML 页面及用户明确指定的前端问题 | 独立工作流；按具体任务启动 | 具体任务分支 / Draft PR | [html-maintenance-progress.md](html-maintenance-progress.md) |
-| Phase 1 / Knowledge Base | AuraDB、Python Importer、课程/案例解析、Chunk、Embedding、检索和 Evidence Pack | M1、M2-A/M2-B 已合并（PR #3）；双仓库架构与来源目录已合并（PR #4，merge commit `65fb501`）；M2-C 规划已合并（PR #6，merge commit `dbc2c19`）；M2-C1 已获授权并在本地分支实现中（尚未推送、未建 PR）；C2/C3 未启动 | [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6)（已合并）；M2-C1：phase1/m2c1-case-json-mapper（本地，无 PR） | [phase1-progress.md](phase1-progress.md)、[phase1-implementation-plan.md](phase1-implementation-plan.md) |
+| Phase 1 / Knowledge Base | AuraDB、Python Importer、课程/案例解析、Chunk、Embedding、检索和 Evidence Pack | M1、M2-A/M2-B 已合并（PR #3）；双仓库架构与来源目录已合并（PR #4，merge commit `65fb501`）；M2-C 规划已合并（PR #6，merge commit `dbc2c19`）；M2-C1 已推送，Draft PR #7 审查与修订中；C2/C3 未启动 | [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6)（已合并）；M2-C1：[PR #7](https://github.com/symbi/liuyao-learning-app/pull/7)（Draft） | [phase1-progress.md](phase1-progress.md)、[phase1-implementation-plan.md](phase1-implementation-plan.md) |
 | Source Collector（独立项目） | 外部古籍网站/网页/GitHub 文档的合规采集与 Reference Package 输出；不做 Chunk/Embedding/Neo4j | 仓库 `symbi/liuyao-source-collector` 已创建且为 Private，由独立窗口维护；架构与启动章程已随 PR #4 合并进入 main | [symbi/liuyao-source-collector](https://github.com/symbi/liuyao-source-collector)（Private） | [reference-source-catalog.md](reference-source-catalog.md)、[source-collector-project-charter.md](source-collector-project-charter.md) |
 
 ## 工作流边界
@@ -31,7 +31,7 @@
 - 按 AGENTS.md、CLAUDE.md、docs/phase1-progress.md 和 Phase 1 实施计划执行。
 - M0 已完成实际 AuraDB Free 验证；M1 已合并到 main。
 - M2-A（来源模型）与 M2-B（Markdown/TXT）已通过复审并合并：PR #3 以 Merge Commit 合并，merge commit 为 `9505ce70e38b729bfb4d7dd36924a25229389194`。验收依据为执行 Agent 在与 PR head `e09ae71` 逐字一致的代码上复跑的 144 passed、38 adapter tests 及 Ruff/Mypy 全通过；用户已豁免手动 Mac 复跑并确认接受该验收依据（详见 phase1-progress.md 的合并记录）。
-- PR #4（双仓库架构、Reference Catalog 与 Reference Package 契约）已合并（merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构。PR #6（M2-C 规划更新，docs-only）也已合并（merge commit `dbc2c19`）。当前进行中的工作是 M2-C1 实现（本地分支 phase1/m2c1-case-json-mapper，尚未推送、未创建 PR）。
+- PR #4（双仓库架构、Reference Catalog 与 Reference Package 契约）已合并（merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构。PR #6（M2-C 规划更新，docs-only）也已合并（merge commit `dbc2c19`）。当前进行中的工作是 M2-C1（分支 phase1/m2c1-case-json-mapper 已推送，Draft PR #7 审查与修订中；含文件 Mapper 检查/读取路径一致性修复，详见 phase1-progress.md 的 2026-11-22 路径一致性修复检查点）。
 - M2-C 已拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已获用户明确授权并在本地分支实现中，C2/C3 尚未启动、仍须用户明确授权。不开发 PDF Adapter/OCR。
 - Knowledge Base 只读取显式批准的本地资料或 Reference Package，不负责爬网站。
 - 维护 docs/phase1-progress.md；不修改 HTML 页面或 Cloudflare Functions。

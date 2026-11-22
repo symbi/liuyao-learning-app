@@ -533,7 +533,16 @@ def attach_paired_markdown(
     return mapping.model_copy(update={"paired_markdown": ref})
 
 
-def _relative_to_root(path: Path, source_root: Path) -> str:
+def _resolve_within_root(path: Path, source_root: Path) -> tuple[Path, str]:
+    """Resolve ``path`` against ``source_root`` and verify the boundary.
+
+    Relative paths are interpreted relative to ``source_root``, never the
+    process working directory; absolute paths are resolved as given.
+    ``resolve()`` follows symlinks, so a link escaping the root is
+    rejected. Returns the resolved absolute path — the path callers must
+    actually read — together with its repository-relative POSIX path, so
+    the boundary check and the read can never diverge.
+    """
     root = source_root.expanduser().resolve()
     expanded = path.expanduser()
     resolved = (root / expanded).resolve() if not expanded.is_absolute() else expanded.resolve()
@@ -541,7 +550,11 @@ def _relative_to_root(path: Path, source_root: Path) -> str:
         relative = resolved.relative_to(root)
     except ValueError:
         raise AllowlistError(f"Path is outside the allowed repository root: {path}") from None
-    return PurePosixPath(relative.as_posix()).as_posix()
+    return resolved, PurePosixPath(relative.as_posix()).as_posix()
+
+
+def _relative_to_root(path: Path, source_root: Path) -> str:
+    return _resolve_within_root(path, source_root)[1]
 
 
 def map_class_case_file(
@@ -551,12 +564,11 @@ def map_class_case_file(
     source_root: str | Path,
 ) -> ClassCaseMapping:
     """Read and map one class-case JSON file inside ``source_root``."""
-    file_path = Path(path)
-    relative = _relative_to_root(file_path, Path(source_root))
+    resolved, relative = _resolve_within_root(Path(path), Path(source_root))
     source_uri = repository_source_uri(repository, relative)
     identity = build_source_identity(SourceType.CLASSROOM_CASE, source_uri)
     mapping = parse_class_case_bytes(
-        file_path.read_bytes(), source_uri=source_uri, source_identity=identity
+        resolved.read_bytes(), source_uri=source_uri, source_identity=identity
     )
     return attach_paired_markdown(
         mapping,
@@ -581,13 +593,12 @@ def map_daily_records_file(
     """
     if not settings.include:
         return DailyRecordMappingResult(processed=False)
-    file_path = Path(path)
-    relative = _relative_to_root(file_path, Path(source_root))
+    resolved, relative = _resolve_within_root(Path(path), Path(source_root))
     allowed_ids = settings.allowed_ids_for(relative)
     source_uri = repository_source_uri(repository, relative)
     identity = build_source_identity(SourceType.DAILY_RECORD, source_uri)
     return parse_daily_container_bytes(
-        file_path.read_bytes(),
+        resolved.read_bytes(),
         source_uri=source_uri,
         allowed_record_ids=allowed_ids,
         source_identity=identity,
