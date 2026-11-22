@@ -2275,7 +2275,9 @@
       const tile=document.createElement('button');
       tile.type='button'; tile.className='tile '+(styleClass||'')+(type==='branch'&&elementClassForBranch(value)?' '+elementClassForBranch(value):'')+(type==='stem'&&elementClassForStem(value)?' '+elementClassForStem(value):'')+(type==='god'&&sixGodClasses[value]?' '+sixGodClasses[value]:''); tile.textContent=value;
       tile.draggable=false; tile.dataset.tokenType=type; tile.dataset.tokenValue=value;
-      tile.dataset.paletteId=container.id || container.closest('.branch-pair')?.getAttribute('aria-label') || type+'-palette';
+      const paletteHost=container.closest('#branch-pairs-top,#branch-pairs');
+      const pairLabel=container.closest('.branch-pair')?.getAttribute('aria-label')||type+'-palette';
+      tile.dataset.paletteId=container.id || (paletteHost?paletteHost.id+':'+pairLabel:pairLabel);
       if(type==='branch') tile.dataset.branch=value;
       const typeName=type==='branch'?'地支':type==='stem'?'天干':type==='god'?'六神':'六亲';
       const isDatePalette=!!container.closest('.calendar-palette-area');
@@ -3847,8 +3849,9 @@
   async function saveCurrentRecord(){
     const feedbackRevision=++saveFeedbackRevision;
     setSaveFeedback('正在保存…','pending');
+    // 课堂案例允许分阶段录入；未完成或暂时不合法的年月日柱作为草稿原样保存，
+    // 完整性／六十甲子合法性由检查流程提示，不阻止保存。
     const pillarProblem=manualPillarProblem();
-    if(pillarProblem){setSaveFeedback('未保存：'+pillarProblem,'error');showToast(pillarProblem);return false;}
     let record;
     try{record=makeRecordSnapshot();}
     catch(error){
@@ -3907,8 +3910,10 @@
       const savedName=recordHexagramName(record);
       // JSON is the authoritative save. Confirm it immediately; Markdown is a secondary, queued sync.
       setGitHubStatus('JSON 已保存：'+date+'；MD 正在同步…');
-      setSaveFeedback('JSON 已保存：'+savedName+' · '+savedTime,'success');
-      showToast(savedLabel+savedName+'；JSON 已保存，MD 正在同步');
+      setSaveFeedback(pillarProblem?'草稿已保存：'+pillarProblem+' · '+savedTime:'JSON 已保存：'+savedName+' · '+savedTime,pillarProblem?'partial':'success');
+      showToast(pillarProblem
+        ?savedLabel+savedName+'；草稿已保存，'+pillarProblem
+        :savedLabel+savedName+'；JSON 已保存，MD 正在同步');
       const markdownRecord={
         ...record,
         date,
@@ -3918,9 +3923,11 @@
       markdownSyncQueue=markdownSyncQueue.catch(()=>{}).then(()=>saveRecordMarkdown(markdownRecord));
       markdownSyncQueue.then(()=>{
         if(feedbackRevision!==saveFeedbackRevision)return;
-        setGitHubStatus('JSON 与 MD 已保存：'+date);
-        setSaveFeedback('已保存：'+savedName+' · '+savedTime,'success');
-        showToast(savedLabel+savedName+'；JSON 与 MD 均已保存');
+        setGitHubStatus('JSON 与 MD 已保存：'+date+(pillarProblem?'；柱信息仍为未完成草稿':''));
+        setSaveFeedback(pillarProblem?'草稿已保存：'+pillarProblem+' · '+savedTime:'已保存：'+savedName+' · '+savedTime,pillarProblem?'partial':'success');
+        showToast(pillarProblem
+          ?savedLabel+savedName+'；JSON 与 MD 已保存，'+pillarProblem
+          :savedLabel+savedName+'；JSON 与 MD 均已保存');
       }).catch(error=>{
         if(feedbackRevision!==saveFeedbackRevision)return;
         setGitHubStatus('JSON 已保存；MD 未同步：'+error.message);
