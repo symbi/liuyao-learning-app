@@ -860,3 +860,12 @@
 - 地支牌的选中身份加入所属 palette host。顶部 `branch-pairs-top` 与底部 `branch-pairs` 即使有相同六合配对标签，也使用不同 `paletteId`，因此点击顶部「子」只高亮顶部牌，点击底部「子」只高亮底部牌；两组各自的点击／拖拽目标不变。
 - 验证：所有内联 JavaScript 通过 V8 语法解析；静态检查确认保存不再被 `manualPillarProblem()` 拦截、保存状态保留草稿提醒、顶部与底部 palette ID 已区分。
 - 本次仅更新 PR #1 分支 fix/trine-anchor-auto-xunkong；不修改 main、不合并 PR、不更改既有案例 JSON/MD。
+
+
+## v113 — 牌块选中状态绑定到实际 DOM 元素（2026-11-22）
+
+- 用户反馈顶部干支来源区点击「子」时，底部 palette 中同名「子」仍同步放大。上一版虽然区分 paletteId，但视觉反馈仍未达到预期。
+- 将选中判断改为严格比较实际牌块 DOM 引用：`selected.tile === tile`。点击事件及拖拽开始时都保存对应的真实 tile 节点；不再按干支值／paletteId 批量选中同名牌块。
+- 结果：顶部与底部即使存在相同地支，也只有实际被点击／拖动的那个牌块获得 `.selected` 放大效果。目标填写、牌块数据值与原有拖拽逻辑不变。
+- 验证：所有内联 JavaScript 通过 V8 语法解析；静态断言确认点击和拖拽都保存实际 tile 引用，selected 样式只对同一 DOM 节点生效。
+- 本次仅更新 PR #1 分支 fix/trine-anchor-auto-xunkong；不修改 main、不合并 PR、不更改案例 JSON/MD。
