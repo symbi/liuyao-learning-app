@@ -2484,7 +2484,7 @@
       btn.classList.toggle('active',active);
       btn.classList.toggle('moving-option',btn.dataset.moving==='true');
     });
-    const darkInfo=getDarkMovementInfo(item);
+    const darkInfo=getDarkMovementInfo(item,currentDayBranch,id,state);
     const isDarkMoving=!!darkInfo;
     const isExplicitMoving=!!(result&&result.moving);
     const isMovingForDisplay=isExplicitMoving||isDarkMoving;
@@ -2496,7 +2496,7 @@
     const groupHasMoving=groupIds.some(lineId=>{
       const candidate=state[lineId];
       const candidateResult=candidate.flowers===null?null:mapping[candidate.flowers];
-      return !!(candidateResult&&candidateResult.moving)||!!getDarkMovementInfo(candidate);
+      return !!(candidateResult&&candidateResult.moving)||!!getDarkMovementInfo(candidate,currentDayBranch,lineId,state);
     });
     row.classList.toggle('trigram-inactive',!groupHasMoving);
     row.classList.toggle('has-active-movement',isMovingForDisplay);
@@ -2704,20 +2704,30 @@
     renderHexagramName();
     renderLineIndicators();
   }
-  function getDarkMovementInfo(item,dayBranch=currentDayBranch){
+  function getDarkMovementInfo(item,dayBranch=currentDayBranch,lineIndex=state.indexOf(item),lineSource=state){
     if(!item || item.flowers===null || !item.branch || !dayBranch) return null;
-    // 第十一课逐爻判断：本爻静止且被日辰冲，可论暗动；其他爻明动不取消本爻的暗动资格。
     const cast=mapping[item.flowers];
     if(!cast || cast.moving) return null;
+    // 第十一课：静爻被日辰冲，可逐爻识别暗动。
+    // 第十二课补充：同一上卦／下卦已经有明动时，该卦内的暗动不再叠加。
+    if(Number.isInteger(lineIndex)&&lineIndex>=0&&lineIndex<6){
+      const groupStart=lineIndex<3?0:3;
+      const hasMingDongInSameTrigram=lineSource.slice(groupStart,groupStart+3).some((candidate,offset)=>{
+        const candidateLineId=groupStart+offset;
+        if(candidateLineId===lineIndex||!candidate||candidate.flowers===null) return false;
+        return !!(mapping[candidate.flowers]&&mapping[candidate.flowers].moving);
+      });
+      if(hasMingDongInSameTrigram) return null;
+    }
     const clashBranch=sixClashes[dayBranch];
     if(clashBranch && item.branch===clashBranch) return {dayBranch,lineBranch:item.branch};
     return null;
   }
-  function getLineMovementInfo(item,dayBranch=currentDayBranch){
+  function getLineMovementInfo(item,dayBranch=currentDayBranch,lineIndex=state.indexOf(item),lineSource=state){
     if(!item || item.flowers===null) return null;
     const cast=mapping[item.flowers];
     if(cast && cast.moving) return {kind:'明动'};
-    const darkInfo=getDarkMovementInfo(item,dayBranch);
+    const darkInfo=getDarkMovementInfo(item,dayBranch,lineIndex,lineSource);
     if(darkInfo) return {kind:'暗动',...darkInfo};
     return null;
   }
@@ -2786,7 +2796,7 @@
     const dateSources=[{source:'month',branch:monthSource},{source:'day',branch:daySource}].filter(x=>!!x.branch);
     trineDefinitions.forEach(definition=>{
       const [outerA,middle,outerB]=definition.branches;
-      const activeLines=lineSource.map((item,id)=>({item,id,motion:getLineMovementInfo(item,daySource)}))
+      const activeLines=lineSource.map((item,id)=>({item,id,motion:getLineMovementInfo(item,daySource,id,lineSource)}))
         .filter(entry=>entry.motion&&entry.item.branch&&definition.branches.includes(entry.item.branch));
       const activationLines=activeLines.filter(entry=>isTrineActivationBranch(definition,entry.item.branch));
       activeLines.forEach(entry=>{
@@ -2834,7 +2844,7 @@
     const combinations=[],seen=new Set();
     const preferredDateAnchors=new Set((dateCombinations||[]).filter(item=>item.mode==='C').map(item=>item.definition.element+':'+item.anchorLineId));
     for(let movingId=0;movingId<lineSource.length;movingId++){
-      const movingItem=lineSource[movingId],movingInfo=getLineMovementInfo(movingItem,daySource);
+      const movingItem=lineSource[movingId],movingInfo=getLineMovementInfo(movingItem,daySource,movingId,lineSource);
       if(!movingInfo||!movingItem.branch||!movingItem.changeBranch||movingItem.branch===movingItem.changeBranch) continue;
       const sameTrigramIds=movingId<3?[0,1,2]:[3,4,5];
       if(!sameTrigramIds.every(id=>lineSource[id]&&lineSource[id].flowers!==null&&lineSource[id].flowers!==undefined)) continue;
@@ -2903,7 +2913,7 @@
     const hexagram=pattern?hexagramData[pattern]||null:null;
     const shiLineNumber=hexagram?.shi||null,yingLineNumber=shiLineNumber?((shiLineNumber-1+3)%6)+1:null;
     const lineSnapshots=recordLines.map((line,index)=>{
-      const movement=getLineMovementInfo(line,dayBranch);
+      const movement=getLineMovementInfo(line,dayBranch,index,recordLines);
       return {lineNumber:index+1,position:['初爻','二爻','三爻','四爻','五爻','上爻'][index]||'',
         role:index+1===shiLineNumber?'世爻':(index+1===yingLineNumber?'应爻':null),flowers:line.flowers,
         relation:line.relation||null,hiddenRelation:relations.includes(line.hiddenRelation)?line.hiddenRelation:null,sixGod:line.shen||null,movement:movement?movement.kind:null,
@@ -3062,7 +3072,7 @@
     const drawn=new Set();
     for(let movingId=0;movingId<6;movingId++){
       const movingItem=state[movingId];
-      const movingInfo=getLineMovementInfo(movingItem);
+      const movingInfo=getLineMovementInfo(movingItem,currentDayBranch,movingId,state);
       if(!movingInfo) continue;
       if(!movingItem.branch || !movingItem.changeBranch || movingItem.branch===movingItem.changeBranch) continue;
       const sameTrigramIds=movingId<3?[0,1,2]:[3,4,5];
@@ -3346,14 +3356,15 @@
         if(kin) entries.push({kind:'calendar',key:key+'Relation',label:(key==='year'?'年':key==='month'?'月':'日')+'柱六亲',expected:kin});
       }
     }
-    const transformedPattern=state.map(item=>{
+    // 明动按摇卦标记变化；暗动仅在其所在上／下卦没有明动时才参与该卦的变化。
+    const transformedPattern=state.map((item,index)=>{
       const bit=mapping[item.flowers].yang?'1':'0';
-      return mapping[item.flowers].moving?(bit==='1'?'0':'1'):bit;
+      return getLineMovementInfo(item,currentDayBranch,index,state)?(bit==='1'?'0':'1'):bit;
     }).join('');
     const transformedBranches=najiaBranchesForPattern(transformedPattern);
     if(!transformedBranches) return {ready:false,entries:[],notes:['变卦上下卦无法识别，停止装配以免写入错误纳甲。']};
     for(let i=0;i<6;i++){
-      if(mapping[state[i].flowers].moving){
+      if(getLineMovementInfo(state[i],currentDayBranch,i,state)){
         const branch=transformedBranches[i],kin=sixKinForBranch(branch,palaceElement);
         if(kin) entries.push(
           {kind:'line',lineId:i,zone:'changeBranch',label:AUTO_LINE_POSITIONS[i]+'变卦纳甲地支',expected:branch},
@@ -3454,13 +3465,13 @@
       ying.style.backgroundColor=isYing?(elementColors[yingElement]||'#aaa69b'):'#aaa69b';
       shi.title=isShi?'世爻 · '+(shiElement?'纳甲地支五行':'请先填写该爻纳甲地支'):'';
       ying.title=isYing?'应爻 · '+(yingElement?'纳甲地支五行':'请先填写该爻纳甲地支'):'';
-      const darkInfo=getDarkMovementInfo(item);
+      const darkInfo=getDarkMovementInfo(item,currentDayBranch,id,state);
       const lineResult=item.flowers===null?null:mapping[item.flowers];
       const activeNow=!!(lineResult&&lineResult.moving)||!!darkInfo;
       const effectSelect=row.querySelector('.effect-select');
       if(effectSelect) effectSelect.style.display=activeNow?'':'none';
       const groupIds=id<3?[0,1,2]:[3,4,5];
-      const groupHasMotion=groupIds.some(lineId=>getLineMovementInfo(state[lineId]));
+      const groupHasMotion=groupIds.some(lineId=>getLineMovementInfo(state[lineId],currentDayBranch,lineId,state));
       const changeMark=row.querySelector('.change-mark');
       row.classList.toggle('trigram-inactive',!groupHasMotion);
       if(groupHasMotion && lineResult){
@@ -3675,7 +3686,7 @@
       }:null,
       // Keep user input separate from calculated analysis, so records can be independently re-evaluated.
       lines:state.map(item=>{
-        const isMoving=!!getLineMovementInfo(item);
+        const isMoving=!!getLineMovementInfo(item,currentDayBranch,index,state);
         return {flowers:item.flowers,branch:item.branch,relation:item.relation,hiddenRelation:item.hiddenRelation||null,shen:item.shen,
           changeBranch:isMoving?item.changeBranch:null,changeRelation:isMoving?item.changeRelation:null,
           effect:isMoving?(item.effect||''):''};
