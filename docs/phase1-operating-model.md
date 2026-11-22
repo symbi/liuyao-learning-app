@@ -91,7 +91,7 @@ Pages Functions 是 Cloudflare 托管的执行环境，不是我们维护的 Doc
 
 ## 2.1 外部参考采集器：独立 repository
 
-外部网页采集不是知识库 Importer 的职责。拟建独立仓库：`symbi/liuyao-source-collector`（建议先 Private；远端 repository 尚待通过 GitHub UI 或 `gh repo create` 创建）。
+外部网页采集不是知识库 Importer 的职责。独立仓库 `symbi/liuyao-source-collector` 已创建且为 Private，由独立窗口维护；本仓库只记录与其交接所需的必要事实，不接管它的工作，也不在本仓库实现采集功能。
 
 **Project A — Source Collector**
 - 负责发现并读取经允许访问的古籍网站、网页文本、GitHub README/docs/选定源码及将来经批准的文件下载源。
@@ -118,7 +118,7 @@ reference-package/
 
 Package manifest 至少包含 package/schema ID、collector 名称/版本、生成时间、source_id、标题/作者、canonical URL、具体章节/文件 URL、版本/commit、采集时间、版权状态、允许云端处理/再分发标记、内容哈希和原文定位。没有许可依据或不允许云端处理的资料可以登记但不得送入 Gemini。Package v1 schema 以 [外部参考资料来源目录](reference-source-catalog.md) 为设计依据。
 
-> GitHub 集成当前不提供直接创建 repository 的操作；本次已确定仓库名称和职责，但远端创建尚未完成。不得把计划中的 Collector repository 说成已存在。
+> `symbi/liuyao-source-collector` 已创建（Private，独立窗口维护）。本仓库文档只陈述这一事实与 Reference Package 交接契约，不描述其内部进度，也不得把 Collector 的工作计入本仓库状态。
 
 ## 3. Importer 的输入、处理和输出
 
@@ -174,7 +174,7 @@ Chunk 是共同的基础文本单位。Embedding 和候选知识抽取不是二�
 - `Lesson`：课程课次。
 - `SourceDocument`：文档 ID、仓库/路径、版本、内容哈希、来源类别。
 - `Chunk`：文本片段、原文位置、所属文档、Embedding。
-- `Case`：课堂案例或个人练习，包含卦盘字段、问题、Memo、日期、案例类型和来源。
+- `Case` 相关记录必须区分课堂案例与个人练习：课堂案例是老师在课程中讲解过的教学案例（classroom_case），不是用户个人练习数据，不得归类为 personal_practice；个人练习是独立类别。课堂案例保留自己的稳定 case_id，与 HTML 记录的 record_id 分开，只有通过明确的关联字段（如 `dailyRecord.recordId`）匹配时才建立关系（详见实施计划第 7 节）。
 - `Concept`：六亲、六神、日辰、月建、暗动等概念。
 - `RuleCandidate` / `Rule`：从课程材料抽取的规则陈述、适用条件、来源和状态。
 - 节点之间的关系，例如 `HAS_CHUNK`、`MENTIONS`、`TAUGHT_IN`、`ILLUSTRATES`、`SUPPORTED_BY`。
@@ -340,7 +340,7 @@ Phase 1 不需要额外部署 PostgreSQL / Supabase。只有将来需要多用�
 7. M8：用真实课程、真实课堂案例和用户允许的参考资料完成端到端验收。
 
 Phase 2 的 Cloud Run 在线 API 不属于本阶段，不阻塞 Phase 1 的知识库辅助分析。
- 
+
 ## 官方技术参考
 
 - Neo4j Graph Database：<https://neo4j.com/docs/getting-started/graph-database/>
