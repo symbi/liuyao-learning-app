@@ -666,8 +666,17 @@
     background:var(--monthly-bg,#666666)!important;
   }
   .drop-token.branch-token.is-xunkong{
-    border:2px dotted #7567a6;
     background:var(--monthly-bg,#f2effa)!important;
+  }
+  /* Keep 旬空 as an independent outer ring so it remains visible alongside
+     monthly 旺相 rings, 休囚死 fills and the 月破 corner marker. */
+  .drop-token.branch-token.is-xunkong::before{
+    content:'';
+    position:absolute;
+    inset:-4px;
+    border:2px dotted #7567a6;
+    border-radius:50%;
+    pointer-events:none;
   }
   .drop-token.branch-token.is-month-break{
     background:var(--monthly-bg,#fff0ed)!important;
