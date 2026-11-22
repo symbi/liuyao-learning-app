@@ -7,7 +7,7 @@
     {
       "schemaVersion": 16,
       "id": "13e9c29a-cdbc-41e0-912d-5e02fa7c54d3",
-      "savedAt": "2026-11-22T08:31:01.934Z",
+      "savedAt": "2026-11-22T08:31:39.314Z",
       "date": "2026-11-22",
       "timezone": "Asia/Tokyo",
       "question": {
@@ -20,7 +20,7 @@
       "isCase": true,
       "caseSource": "classroom",
       "caseMemo": "兄弟持世，应爻生世爻，兄弟持世莫求财\n本卦不见财，卯月的财，可是财化空\n月建财爻也可以取为用神\n父母爻代表印，合同，房产，动了，父母化财回头克\n静逢值冲，动逢值合，辰和酉合，但是酉为兄弟，不可以。\n财伏藏在官鬼之下",
-      "caseConclusion": "",
+      "caseConclusion": "农历三月（辰月）看机会，能转就转，转不了认赔",
       "pillars": {
         "year": "",
         "month": "乙卯",
@@ -116,7 +116,7 @@
       "twentyEight": null,
       "analysisSnapshot": {
         "schemaVersion": 5,
-        "calculatedAt": "2026-11-22T08:31:01.934Z",
+        "calculatedAt": "2026-11-22T08:31:39.313Z",
         "calculationSource": "saved-pillars-and-line-inputs",
         "calendar": {
           "yearPillar": null,
@@ -403,11 +403,11 @@
         }
       },
       "createdAt": "2026-11-22T06:19:24.645Z",
-      "updatedAt": "2026-11-22T08:31:01.934Z",
+      "updatedAt": "2026-11-22T08:31:39.314Z",
       "recordType": "additionalQuestion"
     }
   ],
   "dailyMemo": "",
   "createdAt": "2026-11-22T06:19:24.645Z",
-  "updatedAt": "2026-11-22T08:31:01.934Z"
+  "updatedAt": "2026-11-22T08:31:39.314Z"
 }
