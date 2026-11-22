@@ -691,3 +691,9 @@
 - 火风鼎 fixture：摇卦 pattern `011101` 应识别离宫火；完整卦盘时六组摇卦按钮均应用 fire palette。其他四类元素均有对应 CSS 配色规则。
 - 验证：内联 JavaScript 通过 V8 语法解析；静态断言确认五种元素都具有未选/悬停/选中配色、完成卦盘设置卦宫颜色、不完整卦盘移除颜色，以及逐爻旬空/月破显式是/否、变爻状态使用相同 formatter。
 - 现有 JSON 原始字段和课程 Memo 不更改；MD 内容在下次保存/「复制 MD」时按新版 formatter 同步更新。没有修改 main 或 Production。
+
+### 已保存火风鼎 MD 同步记录（2026-11-22）
+
+- 除更新未来生成器外，已将已保存的火风鼎课堂案例 MD 文件同步为显式字段格式：`daily-records/2026/11/markdown/2026-11-21--7e0a6b19-92f2-4f8c-b7b0-8771955ad45b.md`。
+- 逐爻核对六行均存在「旬空：是/否」和「月破：是/否」；初爻丑土为旬空，三、四爻酉金为月破；整卦摘要为子丑旬空。MD 内嵌 JSON 也保留 `analysisSnapshot.lines[0].original.xunkong=true`。
+- 此次只更新已保存的 MD 伴随文件（提交到 main）；原始日 JSON 没有修改，复核其 blob SHA 仍为 `3d6749e974fd29eaf37b63518bced5d40a9c171a`。该数据更新不涉及 HTML 或 Pages Function。
