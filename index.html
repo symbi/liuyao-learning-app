@@ -3846,7 +3846,7 @@
   let markdownSyncQueue=Promise.resolve();
   async function saveCurrentRecord(){
     const feedbackRevision=++saveFeedbackRevision;
-    setSaveFeedback('正在保存…','pending');    setSaveFeedback('正在保存…','pending');
+    setSaveFeedback('正在保存…','pending');
     const pillarProblem=manualPillarProblem();
     if(pillarProblem){setSaveFeedback('未保存：'+pillarProblem,'error');showToast(pillarProblem);return false;}
     let record;
