@@ -32,7 +32,7 @@
 - M0 已完成实际 AuraDB Free 验证；M1 已合并到 main。
 - M2-A（来源模型）与 M2-B（Markdown/TXT）已通过复审并合并：PR #3 以 Merge Commit 合并，merge commit 为 `9505ce70e38b729bfb4d7dd36924a25229389194`。验收依据为执行 Agent 在与 PR head `e09ae71` 逐字一致的代码上复跑的 144 passed、38 adapter tests 及 Ruff/Mypy 全通过；用户已豁免手动 Mac 复跑并确认接受该验收依据（详见 phase1-progress.md 的合并记录）。
 - PR #4（双仓库架构、Reference Catalog 与 Reference Package 契约）已合并（merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构。当前活跃的 Draft PR 是 PR #6（M2-C 规划更新，docs-only）。
-- M2-C 已拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（人工分析 MD 关系）；PR #4 合并这一前置条件已满足，但三项实现均尚未启动，须用户明确授权后才开始。不开发 PDF Adapter/OCR。
+- M2-C 已拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；PR #4 合并这一前置条件已满足，但三项实现均尚未启动，须用户明确授权后才开始。不开发 PDF Adapter/OCR。
 - Knowledge Base 只读取显式批准的本地资料或 Reference Package，不负责爬网站。
 - 维护 docs/phase1-progress.md；不修改 HTML 页面或 Cloudflare Functions。
 

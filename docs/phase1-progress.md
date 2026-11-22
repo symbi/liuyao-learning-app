@@ -33,7 +33,7 @@
 11. Phase 1 Query Tool 从 AuraDB 检索并输出带出处的 Evidence Pack；最终报告由 ChatGPT Web 完成，用户手动交接。
 12. 用户不需要逐条审核节点；系统自动保留来源、课程、页码/段落、版本、模型和不确定性。
 13. 系统拆分为两个独立 Repository（2026-11-21 决定）：`symbi/liuyao-source-collector`（独立新仓库，由单独窗口负责；远端尚未创建）负责外部古籍网站/GitHub 资料的合规采集并输出标准化 Reference Package；本仓库 `symbi/liuyao-learning-app` 负责课程 Markdown/TXT、课堂案例 JSON、Reference Package 的接收与验证、解析、Chunk、Embedding、Neo4j 与 Evidence Pack。两边只通过 Reference Package 文件交接；本仓库不实现爬虫或网站采集器。来源登记见 [reference-source-catalog.md](reference-source-catalog.md)。（状态更新 2026-11-22：`symbi/liuyao-source-collector` 已创建且为 Private，由独立窗口维护；本仓库只记录这一事实，不接管其工作。）
-14. 课堂案例身份原则（2026-11-22 决定）：课堂案例是老师在实际课程中讲解过的教学案例（classroom_case），不是用户个人练习数据，不得归类为 personal_practice。每个课堂案例保留稳定案例 ID，并尽可能连接老师 ASR/录音讲解位置、课程整理笔记、用户核对的卦盘结构、HTML JSON 记录及其 MD 表达、人工分析资料；课程笔记/ASR 对同一案例的提及建立引用关系并保留定位。同一案例的 JSON 与 MD 是同一案例的两种表示，不产生重复 Case 节点或重复计数。ClassCase 与 CastRecord 保留独立身份和唯一 ID，仅当 `dailyRecord.recordId` 明确匹配时建立 BASED_ON_RECORD；自动生成 MD 以 RENDERS 关联 CastRecord；人工分析 MD 以 ANALYZES_CASE 关联 ClassCase。老师原话、用户补充、AI 推算必须分开标记；ASR 未经音频校正时保留低置信度说明。
+14. 课堂案例身份原则（2026-11-22 决定）：课堂案例是老师在实际课程中讲解过的教学案例（classroom_case），不是用户个人练习数据，不得归类为 personal_practice。每个课堂案例保留稳定案例 ID，并尽可能连接老师 ASR/录音讲解位置、课程整理笔记、用户核对的卦盘结构、HTML JSON 记录、与案例 JSON 配对的 MD 表示；课程笔记/ASR 对同一案例的提及建立引用关系并保留定位。同一案例的 JSON 与 MD 是同一案例的两种表示，不产生重复 Case 节点或重复计数。ClassCase 与 CastRecord 保留独立身份和唯一 ID，仅当 `dailyRecord.recordId` 明确匹配时建立 BASED_ON_RECORD；案例 JSON 与课堂案例 MD 以 HAS_REPRESENTATION 关联到同一个 ClassCase（MD 不是独立分析来源）；daily-records 的自动生成 MD 以 RENDERS 关联 CastRecord，与课堂案例 MD 分属两类。老师 ASR 的来源定位不依赖 Chunk：ClassCase 可直接关联 ASR 的 SourceDocument/DocumentRevision，保留 Locator（仓库/路径、课程、段落序号、可选时间范围）与置信度/校正状态；不得为建引用而把全部 Raw ASR 自动 Chunk/Embedding。老师讲解、用户补充、AI 推算必须分开标记；ASR 未经音频校正时保留低置信度说明，不得称为已验证的逐字原话。
 
 ## 里程碑状态
 
@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) | M2-A/M2-B 已合并；M2-C 按真实文件拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（人工分析 MD 关系），规划见 PR #6，实现待用户授权；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
+| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) | M2-A/M2-B 已合并；M2-C 按真实文件拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示），规划见 PR #6，实现待用户授权；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
@@ -304,8 +304,9 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 
 - PR #4 已由用户合并：merge commit `65fb501f4dad5a380b41b1c304aafa47b4b685e3`。main 现已包含 Reference Source Catalog、Reference Package v1 Schema 与双仓库架构文档。ChatGPT 对 PR #4 最终 head `5b8e05b` 的复审为 PASS（PR 评论 #issuecomment-7064313428）。
 - `symbi/liuyao-source-collector` 已创建且为 Private（独立窗口维护）；此前文档中“尚未创建”的表述已在本 PR 修正。
-- 本 PR（#5，分支 `phase1/m2c-planning`）只更新规划文档，不改任何 Python 实现代码，不改真实案例/每日记录文件。内容：
-  - 按 main 真实文件区分四种案例相关资料：课程案例 JSON（case-001，`recordType=class-case`，案例 ID `L19-C01-work-transfer`，经 `dailyRecord.recordId` 关联每日记录子记录 `9f89c47a-...`）、人工分析 MD（case-001-analysis.md）、HTML 每日记录 JSON 容器（`additionalQuestions[]` 子记录各有独立 ID；容器本身不是 Case）、自动生成记录 MD（对应子记录 `7e0a6b19-...`，是呈现形式而非第二个案例；与 `9f89...` 是不同记录）。
+- 本 PR（#6，分支 `phase1/m2c-planning`）只更新规划文档，不改任何 Python 实现代码，不改真实案例/每日记录文件。内容：
+  - 按 main 真实文件区分四种案例相关资料：课程案例 JSON（case-001，`recordType=class-case`，案例 ID `L19-C01-work-transfer`，经 `dailyRecord.recordId` 关联每日记录子记录 `9f89c47a-...`）、课堂案例 MD 表示（case-001-analysis.md，与案例 JSON 同属一个 case_id）、HTML 每日记录 JSON 容器（`additionalQuestions[]` 子记录各有独立 ID；容器本身不是 Case）、自动生成记录 MD（对应子记录 `7e0a6b19-...`，是呈现形式而非第二个案例；与 `9f89...` 是不同记录）。
   - M2-C 拆为 C1/C2/C3（见实施计划第 12 节）；`isCase`/`caseSource` 只能用于分类，不能单独作为案例匹配或验证依据（2026-11-21 每日记录中两个子记录都带这两个标记，但只有一条被 case-001 显式关联）。
-  - 确立课堂案例身份原则（冻结决定 14）：课堂案例是老师讲解过的教学案例，不是个人练习；同一案例的 JSON 与 MD 是同一案例的两种表示，不重复建节点或计数；ClassCase 与 CastRecord 独立身份、独立 ID，仅在 `dailyRecord.recordId` 明确匹配时建 BASED_ON_RECORD，自动生成 MD 用 RENDERS 关联 CastRecord，人工分析 MD 用 ANALYZES_CASE 关联 ClassCase。
+  - 确立课堂案例身份原则（冻结决定 14）：课堂案例是老师讲解过的教学案例，不是个人练习；同一案例的 JSON 与 MD 是同一案例的两种表示，不重复建节点或计数；ClassCase 与 CastRecord 独立身份、独立 ID，仅在 `dailyRecord.recordId` 明确匹配时建 BASED_ON_RECORD；案例 JSON 与课堂案例 MD 都是同一 ClassCase 的表示（HAS_REPRESENTATION），不另建案例；daily-records 的自动生成 MD 用 RENDERS 关联 CastRecord，与课堂案例 MD 不是同一类文件。老师 ASR 来源不依赖 Chunk：ClassCase 可直接关联 ASR 的 SourceDocument/DocumentRevision，关系上保留 Locator 与置信度/校正状态。
 - M2-C1/C2/C3 均未启动实现；等待 ChatGPT 审查本 PR、用户合并决定与后续明确授权。
+- 修订（2026-11-22，据 ChatGPT 审查意见）：（1）修正本节一处残留的 PR 编号（#5 → #6）；（2）课堂案例 MD 的身份关系修订——案例 JSON 与课堂案例 MD 都是同一个 ClassCase 的表示，关系由 ANALYZES_CASE 改为 HAS_REPRESENTATION，M2-C3 相应改名为“课堂案例 MD 表示”，并明确区分课堂案例 MD（A 类）与 daily-records 自动生成 MD（B 类，RENDERS 关联 CastRecord）；（3）ASR 来源定位落点明确——ClassCase 可直接关联 ASR 的 SourceDocument/DocumentRevision 并携带 Locator 与置信度，不以存在 Chunk 为前提，M7 Evidence Pack 须返回 ASR 定位与置信度。
