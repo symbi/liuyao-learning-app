@@ -7,7 +7,7 @@
     {
       "schemaVersion": 16,
       "id": "13e9c29a-cdbc-41e0-912d-5e02fa7c54d3",
-      "savedAt": "2026-11-22T06:19:24.645Z",
+      "savedAt": "2026-11-22T08:31:39.314Z",
       "date": "2026-11-22",
       "timezone": "Asia/Tokyo",
       "question": {
@@ -19,8 +19,8 @@
       },
       "isCase": true,
       "caseSource": "classroom",
-      "caseMemo": "",
-      "caseConclusion": "",
+      "caseMemo": "兄弟持世，应爻生世爻，兄弟持世莫求财\n本卦不见财，卯月的财，可是财化空\n月建财爻也可以取为用神\n父母爻代表印，合同，房产，动了，父母化财回头克\n静逢值冲，动逢值合，辰和酉合，但是酉为兄弟，不可以。\n财伏藏在官鬼之下",
+      "caseConclusion": "农历三月（辰月）看机会，能转就转，转不了认赔",
       "pillars": {
         "year": "",
         "month": "乙卯",
@@ -49,8 +49,8 @@
           "relation": "父母",
           "hiddenRelation": null,
           "shen": "玄武",
-          "changeBranch": null,
-          "changeRelation": null,
+          "changeBranch": "卯",
+          "changeRelation": "妻财",
           "effect": "克"
         },
         {
@@ -61,7 +61,7 @@
           "shen": "青龙",
           "changeBranch": null,
           "changeRelation": null,
-          "effect": "回头生"
+          "effect": ""
         },
         {
           "flowers": 1,
@@ -116,7 +116,7 @@
       "twentyEight": null,
       "analysisSnapshot": {
         "schemaVersion": 5,
-        "calculatedAt": "2026-11-22T06:19:24.644Z",
+        "calculatedAt": "2026-11-22T08:31:39.313Z",
         "calculationSource": "saved-pillars-and-line-inputs",
         "calendar": {
           "yearPillar": null,
@@ -176,8 +176,17 @@
               "monthBreak": false,
               "xunkong": false
             },
-            "transformed": null,
-            "changeRelation": null,
+            "transformed": {
+              "branch": "卯",
+              "element": "wood",
+              "elementName": "木",
+              "monthStatus": "旺",
+              "monthStatusGroup": "wangxiang",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": true
+            },
+            "changeRelation": "妻财",
             "effect": "克"
           },
           {
@@ -188,7 +197,7 @@
             "relation": "官鬼",
             "hiddenRelation": "妻财",
             "sixGod": "青龙",
-            "movement": "暗动",
+            "movement": null,
             "original": {
               "branch": "午",
               "element": "fire",
@@ -201,7 +210,7 @@
             },
             "transformed": null,
             "changeRelation": null,
-            "effect": "回头生"
+            "effect": ""
           },
           {
             "lineNumber": 3,
@@ -394,11 +403,11 @@
         }
       },
       "createdAt": "2026-11-22T06:19:24.645Z",
-      "updatedAt": "2026-11-22T06:19:24.645Z",
+      "updatedAt": "2026-11-22T08:31:39.314Z",
       "recordType": "additionalQuestion"
     }
   ],
   "dailyMemo": "",
   "createdAt": "2026-11-22T06:19:24.645Z",
-  "updatedAt": "2026-11-22T06:19:24.645Z"
+  "updatedAt": "2026-11-22T08:31:39.314Z"
 }
