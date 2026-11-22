@@ -2295,9 +2295,8 @@
         // Date and manual-pillar palettes must target the calendar above, never auto-fill a six-line yao.
         const isCalendarSource=!!tile.closest('.calendar-palette-area,.case-stem-source');
         if(!isCalendarSource && autoFillNextYaoSlot(tile,type,value))return;
-        const paletteId=tile.dataset.paletteId;
-        if(selected && selected.value===value && selected.type===type && selected.paletteId===paletteId){selected=null;}
-        else{selected={type,value,paletteId};}
+        if(selected && selected.tile===tile){selected=null;}
+        else{selected={type,value,paletteId:tile.dataset.paletteId,tile};}
         updateSelectedTiles();
         showToast(selected ? ('已选「'+value+'」，再点目标位置也可以') : '已取消选中');
       });
@@ -2305,11 +2304,10 @@
     });
   }
   function updateSelectedTiles(){
+    // Selection belongs to one physical tile, not every palette tile with the
+    // same character/value. This keeps the date-side and lower palettes isolated.
     document.querySelectorAll('.tile').forEach(tile=>{
-      tile.classList.toggle('selected',!!selected &&
-        tile.dataset.tokenType===selected.type &&
-        tile.dataset.tokenValue===selected.value &&
-        tile.dataset.paletteId===selected.paletteId);
+      tile.classList.toggle('selected',!!selected && selected.tile===tile);
     });
   }
   // Column order is intentional: upper row 子、寅、辰、午、申、戌;
@@ -2358,7 +2356,7 @@
     if(!pointerCandidate || e.pointerId!==pointerCandidate.pointerId) return;
     const p=pointerCandidate;
     if(!p.dragging && Math.hypot(e.clientX-p.x,e.clientY-p.y)>7){
-      p.dragging=true; selected={type:p.type,value:p.value,paletteId:p.tile.dataset.paletteId}; updateSelectedTiles();
+      p.dragging=true; selected={type:p.type,value:p.value,paletteId:p.tile.dataset.paletteId,tile:p.tile}; updateSelectedTiles();
       // The source tile has .selected for feedback; do not copy that class to the
       // fixed-position ghost because .tile.selected otherwise overrides positioning.
       dragGhost=p.tile.cloneNode(true);
