@@ -927,6 +927,28 @@
     .worksheet-memo textarea{min-height:170px;}
   }
 
+
+  /* v99: keep 28-mansion guidance beside the seven-mansion strip on wide screens. */
+  .mansions-panel{
+    display:grid;grid-template-columns:minmax(300px,auto) minmax(0,1fr);
+    align-items:center;column-gap:22px;row-gap:8px;
+  }
+  .mansions-list{width:auto;min-width:0;flex:initial;justify-content:flex-start;}
+  .mansions-yiji{width:auto;min-width:0;flex:initial;padding-left:0;}
+  .auto-place-ghost{
+    position:fixed;z-index:99999;pointer-events:none;margin:0;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .30s cubic-bezier(.2,.8,.25,1),opacity .30s ease;
+    will-change:transform,opacity;box-shadow:0 5px 14px rgba(40,43,37,.22);
+  }
+  @media(max-width:760px){
+    .mansions-panel{grid-template-columns:minmax(0,1fr);row-gap:6px;}
+    .mansions-yiji{width:100%;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .auto-place-ghost{display:none!important;transition:none!important;}
+  }
+
 </style>
 </head>
 <body>
@@ -1362,7 +1384,7 @@
     const category=QUESTION_CATEGORY_BY_VALUE.get(categoryValue||'');
     questionCategoryEl.value=category?category.value:'';
     questionUseGodEl.textContent=category?category.useGod:'—';
-    questionHintEl.textContent=category?category.hint:'';
+    questionHintEl.textContent=category&&category.useGod!=='无固定用神'?category.hint:'';
   }
   questionCategoryEl.addEventListener('change',()=>setQuestionCategory(questionCategoryEl.value));
   // A new entry starts as the user's daily fortune reading; saved records restore their own category.
@@ -2103,6 +2125,50 @@
     toast.textContent = message; toast.classList.add('show');
     clearTimeout(toastTimer); toastTimer = setTimeout(()=>toast.classList.remove('show'),1800);
   }
+
+  // Palette clicks fill the lowest empty main-line slot (初爻 -> 上爻).
+  // Hidden 六亲 and transformed-line fields remain available through explicit drag-and-drop.
+  const AUTO_LINE_FIELD_BY_TOKEN_TYPE={branch:'branch',relation:'relation',god:'shen'};
+  function nextEmptyLineForPaletteType(type){
+    const field=AUTO_LINE_FIELD_BY_TOKEN_TYPE[type];
+    if(!field)return null;
+    for(let lineId=0;lineId<state.length;lineId++){
+      if(state[lineId][field]===null||state[lineId][field]==='')return lineId;
+    }
+    return null;
+  }
+  function animatePaletteTokenToSlot(tile,target){
+    if(!tile||!target||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+    const fromRect=tile.getBoundingClientRect();
+    const toRect=target.getBoundingClientRect();
+    const ghost=tile.cloneNode(true);
+    ghost.classList.remove('selected');
+    ghost.classList.add('auto-place-ghost');
+    ghost.removeAttribute('aria-label');
+    ghost.style.left=fromRect.left+'px';
+    ghost.style.top=fromRect.top+'px';
+    ghost.style.width=fromRect.width+'px';
+    ghost.style.height=fromRect.height+'px';
+    document.body.appendChild(ghost);
+    const dx=toRect.left+toRect.width/2-(fromRect.left+fromRect.width/2);
+    const dy=toRect.top+toRect.height/2-(fromRect.top+fromRect.height/2);
+    const scale=Math.min(1,toRect.width/fromRect.width,toRect.height/fromRect.height)*0.88;
+    requestAnimationFrame(()=>{
+      ghost.style.transform='translate('+dx+'px,'+dy+'px) scale('+scale+')';
+      ghost.style.opacity='0.12';
+    });
+    setTimeout(()=>ghost.remove(),360);
+  }
+  function autoFillNextYaoSlot(tile,type,value){
+    const lineId=nextEmptyLineForPaletteType(type);
+    if(lineId===null)return false;
+    const zone=AUTO_LINE_FIELD_BY_TOKEN_TYPE[type];
+    const target=document.querySelector('.line-row[data-line-id="'+lineId+'"] .drop-slot[data-drop-type="'+type+'"][data-zone="'+zone+'"]');
+    animatePaletteTokenToSlot(tile,target);
+    assignToken(lineId,type,value,zone);
+    return true;
+  }
+
   function addTiles(container, values, type, styleClass){
     values.forEach(value=>{
       const tile=document.createElement('button');
@@ -2110,9 +2176,13 @@
       tile.draggable=false; tile.dataset.tokenType=type; tile.dataset.tokenValue=value;
       if(type==='branch') tile.dataset.branch=value;
       const typeName=type==='branch'?'地支':type==='stem'?'天干':type==='god'?'六神':'六亲';
-      tile.setAttribute('aria-label','拖动'+typeName+value+'到对应位置，或点选后再点目标位置');
+      tile.setAttribute('aria-label',
+        ['branch','relation','god'].includes(type)
+          ? '单击自动填入从初爻开始的第一个空位；也可以拖到指定位置'
+          : '拖动'+typeName+value+'到对应位置，或点选后再点目标位置');
       tile.addEventListener('click',e=>{
         if(suppressTileClick){e.preventDefault();e.stopPropagation();return;}
+        if(autoFillNextYaoSlot(tile,type,value))return;
         if(selected && selected.value===value && selected.type===type){selected=null;} else {selected={type,value};}
         updateSelectedTiles();
         showToast(selected ? ('已选「'+value+'」，再点目标位置也可以') : '已取消选中');
