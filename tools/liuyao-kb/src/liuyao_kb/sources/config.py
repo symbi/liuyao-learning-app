@@ -86,8 +86,9 @@ class DailyRecordsSettings(BaseModel):
 
     Fail-closed: ``include`` defaults to ``False``, and even with
     ``include`` on, only subrecords named in ``allowed_records`` are
-    eligible. ``only_cases`` is kept for backward compatibility as a
-    descriptive preference; it never widens the allowlist and is never a
+    eligible. ``only_cases`` (default ``True``) additionally requires an
+    allowlisted subrecord to be explicitly marked ``isCase: true``
+    before it is mapped; it never widens the allowlist and is never a
     substitute for explicit (path, record_id) entries.
     """
 

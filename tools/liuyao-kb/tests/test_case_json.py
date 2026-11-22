@@ -208,7 +208,7 @@ class TestDailyContainerMapping:
     def test_only_allowlisted_subrecords_are_mapped(self) -> None:
         data = _bytes(_container(_subrecord("rec-1"), _subrecord("rec-2"), _subrecord("rec-3")))
         result = parse_daily_container_bytes(
-            data, source_uri=DAILY_URI, allowed_record_ids={"rec-2"}
+            data, source_uri=DAILY_URI, allowed_record_ids={"rec-2"}, only_cases=False
         )
         assert [r.record_id for r in result.records] == ["rec-2"]
         assert result.skipped_record_ids == ("rec-1", "rec-3")
@@ -252,10 +252,44 @@ class TestDailyContainerMapping:
         with pytest.raises(AllowlistError, match="Duplicate subrecord id"):
             parse_daily_container_bytes(data, source_uri=DAILY_URI, allowed_record_ids={"rec-1"})
 
+    def test_only_cases_filters_allowlisted_non_cases(self) -> None:
+        unmarked: dict[str, Any] = {"id": "rec-3", "question": "no isCase field"}
+        data = _bytes(
+            _container(
+                _subrecord("rec-1", isCase=False),
+                _subrecord("rec-2", isCase=True, caseSource="classroom"),
+                unmarked,
+            )
+        )
+        result = parse_daily_container_bytes(
+            data,
+            source_uri=DAILY_URI,
+            allowed_record_ids={"rec-1", "rec-2", "rec-3"},
+        )
+        assert [r.record_id for r in result.records] == ["rec-2"]
+        assert result.filtered_record_ids == ("rec-1", "rec-3")
+        assert result.skipped_record_ids == ()
+
+    def test_only_cases_false_maps_allowlisted_non_cases(self) -> None:
+        data = _bytes(_container(_subrecord("rec-1", isCase=False)))
+        result = parse_daily_container_bytes(
+            data,
+            source_uri=DAILY_URI,
+            allowed_record_ids={"rec-1"},
+            only_cases=False,
+        )
+        assert [r.record_id for r in result.records] == ["rec-1"]
+        assert result.records[0].is_case is False
+        assert result.records[0].source_type.value == "daily_record"
+        assert result.filtered_record_ids == ()
+
     def test_subrecord_raw_preserved(self) -> None:
         original = _subrecord("rec-1", caseMemo="synthetic memo", extraUnknown=[True, None])
         result = parse_daily_container_bytes(
-            _bytes(_container(original)), source_uri=DAILY_URI, allowed_record_ids={"rec-1"}
+            _bytes(_container(original)),
+            source_uri=DAILY_URI,
+            allowed_record_ids={"rec-1"},
+            only_cases=False,
         )
         assert result.records[0].model_dump(mode="json")["raw"] == original
 
@@ -271,6 +305,7 @@ class TestLinking:
             _bytes(_container(_subrecord("rec-1"), _subrecord("rec-2"))),
             source_uri=DAILY_URI,
             allowed_record_ids={"rec-1", "rec-2"},
+            only_cases=False,
         )
         (linked,) = link_daily_records([case], result.records)
         assert linked.linked_record_id == "rec-2"
@@ -281,6 +316,7 @@ class TestLinking:
             _bytes(_container(_subrecord("rec-1"))),
             source_uri=DAILY_URI,
             allowed_record_ids={"rec-1"},
+            only_cases=False,
         )
         (linked,) = link_daily_records([case], result.records)
         assert linked.linked_record_id is None
@@ -377,7 +413,9 @@ class TestFileLevelMapping:
     def test_map_daily_records_file_with_allowlist(self, tmp_path: Path) -> None:
         relative = "daily-records/2099/01/2099-01-01.json"
         target = self._write(
-            tmp_path, relative, _container(_subrecord("rec-1"), _subrecord("rec-2"))
+            tmp_path,
+            relative,
+            _container(_subrecord("rec-1"), _subrecord("rec-2", isCase=True)),
         )
         settings = DailyRecordsSettings(
             include=True,
@@ -393,6 +431,42 @@ class TestFileLevelMapping:
         assert [r.record_id for r in result.records] == ["rec-2"]
         assert result.skipped_record_ids == ("rec-1",)
         assert result.source_uri == DAILY_URI
+
+    def test_only_cases_default_excludes_allowlisted_non_case(self, tmp_path: Path) -> None:
+        relative = "daily-records/2099/01/2099-01-01.json"
+        target = self._write(tmp_path, relative, _container(_subrecord("rec-1", isCase=False)))
+        settings = DailyRecordsSettings(
+            include=True,
+            allowed_records=[{"path": relative, "record_id": "rec-1"}],
+        )
+        result = map_daily_records_file(
+            target,
+            repository="symbi/liuyao-learning-app",
+            source_root=tmp_path,
+            settings=settings,
+        )
+        assert result.processed is True
+        assert result.records == ()
+        assert result.filtered_record_ids == ("rec-1",)
+
+    def test_only_cases_false_maps_allowlisted_non_case(self, tmp_path: Path) -> None:
+        relative = "daily-records/2099/01/2099-01-01.json"
+        target = self._write(tmp_path, relative, _container(_subrecord("rec-1", isCase=False)))
+        settings = DailyRecordsSettings(
+            include=True,
+            only_cases=False,
+            allowed_records=[{"path": relative, "record_id": "rec-1"}],
+        )
+        result = map_daily_records_file(
+            target,
+            repository="symbi/liuyao-learning-app",
+            source_root=tmp_path,
+            settings=settings,
+        )
+        assert result.processed is True
+        assert [r.record_id for r in result.records] == ["rec-1"]
+        assert result.records[0].is_case is False
+        assert result.filtered_record_ids == ()
 
     def test_file_outside_root_is_rejected(self, tmp_path: Path) -> None:
         outside = tmp_path.parent / "outside-case.json"
@@ -665,7 +739,9 @@ class TestRelativePathsResolveAgainstSourceRoot:
         elsewhere = tmp_path / "elsewhere"
         repo_container = {
             "date": "2026-11-22",
-            "additionalQuestions": [{"id": self.RECORD_ID, "question": "repo copy"}],
+            "additionalQuestions": [
+                {"id": self.RECORD_ID, "question": "repo copy", "isCase": True}
+            ],
         }
         cwd_container = {
             "date": "2026-11-22",

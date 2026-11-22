@@ -263,6 +263,8 @@ class DailyRecordMappingResult(BaseModel):
     records: tuple[CastRecordMapping, ...] = ()
     #: Subrecord ids present in the container but not allowlisted.
     skipped_record_ids: tuple[str, ...] = ()
+    #: Allowlisted ids excluded by the only_cases filter (isCase not true).
+    filtered_record_ids: tuple[str, ...] = ()
 
 
 def _reject_duplicate_keys(pairs: Sequence[tuple[str, Any]]) -> dict[str, Any]:
@@ -379,12 +381,20 @@ def parse_daily_container_bytes(
     source_uri: str,
     allowed_record_ids: Collection[str],
     source_identity: str | None = None,
+    only_cases: bool = True,
 ) -> DailyRecordMappingResult:
     """Map the allowlisted subrecords of one daily-records container.
 
     Only ``additionalQuestions[]`` is considered; other container content
     (for example ``dailyFortune``) is never mapped. Allowlisted ids that
     are absent, and duplicated subrecord ids, are explicit errors.
+
+    With ``only_cases`` on (the original ``DailyRecordsSettings``
+    semantics), an allowlisted subrecord is mapped only when it is
+    explicitly marked ``isCase: true``; allowlisted records filtered out
+    this way are reported in ``filtered_record_ids``, never silently
+    dropped. The flag is classification only: a mapped record is always
+    a CastRecord, never a ClassCase.
     """
     document = _decode_json_object(data, source_uri)
     identity = source_identity or build_source_identity(SourceType.DAILY_RECORD, source_uri)
@@ -396,6 +406,7 @@ def parse_daily_container_bytes(
     seen: dict[str, int] = {}
     records: list[CastRecordMapping] = []
     skipped: list[str] = []
+    filtered: list[str] = []
     for index, item in enumerate(subrecords):
         if not isinstance(item, Mapping):
             raise InvalidCaseJsonError(
@@ -417,6 +428,9 @@ def parse_daily_container_bytes(
             raise InvalidCaseJsonError(
                 f"Subrecord {record_id!r} field 'isCase' must be a boolean or null: {source_uri}"
             )
+        if only_cases and is_case is not True:
+            filtered.append(record_id)
+            continue
         records.append(
             CastRecordMapping(
                 source_identity=identity,
@@ -444,6 +458,7 @@ def parse_daily_container_bytes(
         content_hash=content_hash,
         records=tuple(records),
         skipped_record_ids=tuple(skipped),
+        filtered_record_ids=tuple(filtered),
     )
 
 
@@ -602,4 +617,5 @@ def map_daily_records_file(
         source_uri=source_uri,
         allowed_record_ids=allowed_ids,
         source_identity=identity,
+        only_cases=settings.only_cases,
     )

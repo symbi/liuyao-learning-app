@@ -335,3 +335,11 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 新增 synthetic 回归测试 2 个（`TestRelativePathsResolveAgainstSourceRoot`）：repository root 与另一个 current working directory 放置同名但内容不同的 JSON，切换 CWD 后以相对路径调用两个 Mapper，断言只读取 repository root 内的文件（daily 版若误读 CWD 文件会因 allowlist 记录缺失而报错）。
 - 验证（实现方 Linux clone 的 venv，Python 3.12.3，非用户 Mac、非 CI）：pytest 199 passed（原 197 + 新增 2），Ruff check/format 通过，Mypy strict 通过，`git diff --check` 退出码 0。
 - 当前状态：M2-C1 正在 Draft PR #7 审查与修订中；C2/C3 未启动；PR #7 不自行合并，等待 ChatGPT 复审与用户决定。
+
+## M2-C1 only_cases 语义修复检查点（2026-11-23）
+
+- 复审发现（ChatGPT 对 PR #7 head `d56c8d3` 的复审）：M2-C1 把既有配置 `DailyRecordsSettings.only_cases` 改成了描述性偏好，实际导入只看 allowlist、不看 `isCase`，与 main 上原有语义（“Only import records explicitly marked as classroom cases”）及 `SourcesConfig.summary()` 的 “cases only” 显示不一致。结论为暂不通过，须先修复此兼容性问题。
+- 修复：恢复原有语义。`parse_daily_container_bytes()` 新增 `only_cases` 参数（默认 True），`map_daily_records_file()` 透传 `settings.only_cases`。only_cases=True 时，allowlist 内记录还须 `isCase` 严格为 true 才映射，被过滤的 allowlist 记录记入结果的 `filtered_record_ids`（不静默丢弃）；only_cases=False 时 allowlist 内非案例记录也可映射。两种情况下 (path, record_id) 白名单始终是硬性前提；`isCase`/`caseSource` 仍只是分类信息，映射结果永远是 CastRecord，不会生成 ClassCase。config 类 docstring 已同步恢复为真实语义，summary 显示与行为一致。
+- 测试修正与新增：修正 `test_map_daily_records_file_with_allowlist`（默认配置下被映射的记录改为显式 `isCase=True`）及 CWD 回归测试的 repo 侧记录；allowlist 机制类测试显式传 `only_cases=False`；新增 4 个测试（解析层与文件层各 2 个：only_cases=True 排除 allowlist 内非案例含 isCase 缺失、only_cases=False 允许 allowlist 内非案例）。
+- 验证（实现方 Linux clone 的 venv，Python 3.12.3，非用户 Mac、非 CI）：pytest 203 passed（原 199 + 新增 4），Ruff check/format 通过，Mypy strict 通过，`git diff --check` 退出码 0。
+- 当前状态：修复已推送至 Draft PR #7，等待 ChatGPT 对新 head 的最终复审与用户合并决定；C2/C3 未启动。
