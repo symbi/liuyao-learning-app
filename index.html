@@ -949,6 +949,47 @@
     .auto-place-ghost{display:none!important;transition:none!important;}
   }
 
+
+  /* v100: move the six-kin and six-god drag palettes into the open right side of the date card. */
+  .calendar-workarea{
+    display:grid;grid-template-columns:minmax(330px,max-content) minmax(440px,1fr);
+    align-items:center;column-gap:clamp(16px,2vw,30px);row-gap:8px;min-width:0;
+  }
+  .calendar-workarea .calendar-pillars{min-width:0;}
+  .calendar-palette-area{
+    display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0;
+    padding-left:18px;border-left:1px solid var(--line);
+  }
+  .calendar-palette-row{
+    display:grid;grid-template-columns:36px minmax(0,1fr);
+    align-items:center;column-gap:9px;min-width:0;
+  }
+  .calendar-palette-label{
+    font-size:11px;font-weight:850;color:var(--muted);white-space:nowrap;
+  }
+  .calendar-palette-area .kin-tiles,
+  .calendar-palette-area .god-tiles{
+    display:flex;align-items:center;flex-wrap:nowrap;gap:4px;min-width:0;
+  }
+  .calendar-palette-area .kin-tiles .tile,
+  .calendar-palette-area .god-tiles .tile{
+    width:44px;min-width:44px;flex:0 0 44px;height:30px;
+  }
+  .date-card.manual-case-pillars .calendar-workarea{grid-template-columns:minmax(0,1fr);}
+  .date-card.manual-case-pillars .calendar-palette-area{display:none;}
+  /* After moving these two palettes, the lower palette card only contains the branch-pair source. */
+  .palette-card .palette-grid{grid-template-columns:minmax(0,1fr);justify-content:start;}
+  @media(max-width:900px){
+    .calendar-workarea{grid-template-columns:minmax(0,1fr);row-gap:10px;}
+    .calendar-palette-area{
+      padding:9px 0 0;border-left:0;border-top:1px solid var(--line);
+    }
+  }
+  @media(max-width:460px){
+    .calendar-palette-area .kin-tiles,
+    .calendar-palette-area .god-tiles{flex-wrap:wrap;}
+  }
+
 </style>
 </head>
 <body>
@@ -1008,6 +1049,7 @@
           </label>
         </div>
       </section>
+      <div class="calendar-workarea">
       <div class="calendar-pillars">
         <div class="pillar-group" aria-label="年柱">
           <div class="cal-cell">
@@ -1057,6 +1099,17 @@
           </div>
         </div>
       </div>
+        <div class="calendar-palette-area" aria-label="年月日六亲与日干六神拖拽选择">
+          <div class="calendar-palette-row">
+            <span class="calendar-palette-label">六亲</span>
+            <div class="tiles kin-tiles" id="kin-tiles" aria-label="拖入年柱、月柱、日柱的六亲"></div>
+          </div>
+          <div class="calendar-palette-row">
+            <span class="calendar-palette-label">六神</span>
+            <div class="tiles god-tiles" id="god-tiles" aria-label="拖入日干六神位置"></div>
+          </div>
+        </div>
+      </div>
       <p class="manual-pillar-validation visually-hidden" id="manual-pillar-validation" aria-live="polite"></p>
     </div>
   </section>
@@ -1101,14 +1154,6 @@
     <div class="palette-grid">
       <div class="palette-group">
         <div class="branch-groups" id="branch-pairs" aria-label="六合地支配对"></div>
-      </div>
-      <div class="palette-group">
-        <div class="palette-stack">
-          <div class="tiles kin-tiles" id="kin-tiles" aria-label="六亲项目"></div>
-          <div class="sixgod-palette">
-            <div class="tiles god-tiles" id="god-tiles" aria-label="六神项目"></div>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -2182,7 +2227,8 @@
           : '拖动'+typeName+value+'到对应位置，或点选后再点目标位置');
       tile.addEventListener('click',e=>{
         if(suppressTileClick){e.preventDefault();e.stopPropagation();return;}
-        if(autoFillNextYaoSlot(tile,type,value))return;
+        // Calendar palettes use drag/click-to-target; don't redirect their clicks into the six main yao.
+        if(!tile.closest('.calendar-palette-area') && autoFillNextYaoSlot(tile,type,value))return;
         if(selected && selected.value===value && selected.type===type){selected=null;} else {selected={type,value};}
         updateSelectedTiles();
         showToast(selected ? ('已选「'+value+'」，再点目标位置也可以') : '已取消选中');
