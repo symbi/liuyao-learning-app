@@ -2173,11 +2173,14 @@
   const hexagramHeading = document.querySelector('.hexagram-heading');
   const toast = document.getElementById('toast');
   const saveRecordStatus=document.getElementById('save-record-status');
+  const saveRecordButton=document.getElementById('save-record');
   function setSaveFeedback(message,state='info'){
-    if(!saveRecordStatus)return;
-    saveRecordStatus.textContent=message||'';
-    saveRecordStatus.className='save-record-status'+(state?' '+state:'');
-    saveRecordStatus.title=message||'';
+    if(saveRecordStatus){
+      saveRecordStatus.textContent=message||'';
+      saveRecordStatus.className='save-record-status'+(state?' '+state:'');
+      saveRecordStatus.title=message||'';
+    }
+    if(saveRecordButton) saveRecordButton.disabled=state==='pending';
   }
   const SVG_NS='http://www.w3.org/2000/svg';
   const trineOverlay=document.createElementNS(SVG_NS,'svg');
@@ -3612,10 +3615,19 @@
     renderRecords();
   }
   async function githubRequest(path, options={}){
-    const response=await fetch('/api'+path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
-    const payload=await response.json().catch(()=>({}));
-    if(!response.ok){const error=new Error(payload.error||('GitHub API error '+response.status));error.status=response.status;throw error;}
-    return payload;
+    const controller=new AbortController();
+    const timeoutId=window.setTimeout(()=>controller.abort(),20000);
+    try{
+      const response=await fetch('/api'+path,{...options,signal:controller.signal,headers:{'Content-Type':'application/json',...(options.headers||{})}});
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok){const error=new Error(payload.error||('GitHub API error '+response.status));error.status=response.status;throw error;}
+      return payload;
+    }catch(error){
+      if(error?.name==='AbortError') throw new Error('GitHub 请求超过 20 秒没有响应，请检查网络或重新连接 GitHub');
+      throw error;
+    }finally{
+      window.clearTimeout(timeoutId);
+    }
   }
   async function refreshGitHubAuth(){
     try{
@@ -3723,7 +3735,7 @@
         day:{...manualPillarOverride.day}
       }:null,
       // Keep user input separate from calculated analysis, so records can be independently re-evaluated.
-      lines:state.map(item=>{
+      lines:state.map((item,index)=>{
         const isMoving=!!getLineMovementInfo(item,currentDayBranch,index,state);
         return {flowers:item.flowers,branch:item.branch,relation:item.relation,hiddenRelation:item.hiddenRelation||null,shen:item.shen,
           changeBranch:isMoving?item.changeBranch:null,changeRelation:isMoving?item.changeRelation:null,
@@ -3790,7 +3802,14 @@
     setSaveFeedback('正在保存…','pending');
     const pillarProblem=manualPillarProblem();
     if(pillarProblem){setSaveFeedback('未保存：'+pillarProblem,'error');showToast(pillarProblem);return false;}
-    const record=makeRecordSnapshot();
+    let record;
+    try{record=makeRecordSnapshot();}
+    catch(error){
+      setGitHubStatus('未同步：'+error.message);
+      setSaveFeedback('保存前出错：'+error.message,'error');
+      showToast('生成卦例数据失败：'+error.message);
+      return false;
+    }
     const date=record.date;
     let doc;
     try{doc=await getDayDocumentForSave(date);}
