@@ -13,7 +13,7 @@
 - Active implementation branch: `phase1/m2c1-case-json-mapper`（M2-C1，已推送，见 Draft PR #7）
 - Active PR: [Draft PR #7](https://github.com/symbi/liuyao-learning-app/pull/7)（M2-C1，head 以 GitHub 为准）；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
 - Last completed milestone: M2-A/M2-B（经 PR #3 合并）；M1 已合并
-- Next action: M2-C1 本地修订完成后停下，等用户审查并决定是否推送与创建 Draft PR；C2/C3 不得顺手启动。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
+- Next action: M2-C1 已推送至 Draft PR #7，路径一致性修复已提交，正在等待 ChatGPT 最终复审和用户合并决定；C2/C3 不得顺手启动。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
 - Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
 - Merged M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3（merge commit `9505ce7`）
 - Last updated: 2026-11-22
