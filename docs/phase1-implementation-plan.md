@@ -271,7 +271,8 @@ tools/liuyao-kb/
 - document_id = source_type + repository + path（稳定身份）。
 - revision_id = document_id + content_hash。
 - chunk_id = document_id + chunker_version + normalized_chunk_hash + occurrence_index。
-- record_id = HTML JSON 中现有稳定 id；不能只用日期或卦名当 ID。
+- record_id = HTML 每日记录 JSON 中子记录的现有稳定 id（CastRecord 的身份）；不能只用日期或卦名当 ID。
+- case_id = 课堂案例的稳定身份（ClassCase 的身份，如 `L19-C01-work-transfer`）。case_id 与 record_id 是两套 ID，不得混用；只有 `dailyRecord.recordId` 明确匹配时，才在 ClassCase 与 CastRecord 之间建立 BASED_ON_RECORD。
 
 同步行为：
 
@@ -282,7 +283,8 @@ tools/liuyao-kb/
 | 文档修改 | 创建新 revision；仅对变化 Chunk 执行新处理；未变化 Chunk 尽量复用 |
 | 文档删除/路径变化 | 标记旧来源不再 active，不物理删除历史 |
 | Raw ASR v1 → v2 | 创建新 revision；不覆盖 v1，不自动提升为 Curated |
-| Case Memo 修改 | 同一个 record_id 更新 Case 当前内容，并保留 revision/audit 信息 |
+| 课堂案例内容修改（Memo、卦盘等） | 更新同一个 case_id 的 ClassCase 对应表示或 revision，并保留 audit 信息；案例身份（case_id）不变 |
+| 每日记录修改 | 更新对应 record_id 的 CastRecord 当前内容，并保留 revision/audit 信息；不因此创建或替换 ClassCase |
 | 规则候选重复抽取 | 使用稳定 candidate_id / MERGE 去重；始终保留来源 Chunk |
 
 模型升级规则：
