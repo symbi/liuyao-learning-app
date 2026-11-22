@@ -680,8 +680,7 @@
 
 
 
-  /* v83: separate 月破 from the branch token's seasonal fill and 旬空 outline.
-     Grey fill = 休囚死; dotted purple border = 旬空; red corner badge = 月破. */
+  /* v108: 旬空优先于月令旺相／休囚的圆圈和底色；月破角标仍独立显示。 */
   .drop-token.branch-token{
     width:27px;min-width:27px;height:27px;box-sizing:border-box;
     display:inline-flex;align-items:center;justify-content:center;
@@ -697,10 +696,10 @@
     background:var(--monthly-bg,#666666)!important;
   }
   .drop-token.branch-token.is-xunkong{
-    background:var(--monthly-bg,#f2effa)!important;
+    border:2px solid transparent;
+    background:#f2effa!important;
   }
-  /* Keep 旬空 as an independent outer ring so it remains visible alongside
-     monthly 旺相 rings, 休囚死 fills and the 月破 corner marker. */
+  /* 旬空只显示这一圈点状外环，不再叠加月令旺相内环。 */
   .drop-token.branch-token.is-xunkong::before{
     content:'';
     position:absolute;
@@ -1516,17 +1515,19 @@
   function applyBranchStatus(token,value){
     if(!token || !value) return;
     const status=getBranchStatus(value);
+    // 旬空在视觉上优先：仍保留月令状态供说明／记录使用，但不再叠加旺相环或休囚底色。
+    const showMonthlyMarker=!status.xunkong;
     token.classList.add('branch-token');
     token.classList.toggle('is-month-break',status.monthBreak);
     token.classList.toggle('is-xunkong',status.xunkong);
-    token.classList.toggle('is-monthly-wangxiang',status.monthly?.group==='wangxiang');
-    token.classList.toggle('is-monthly-xiuqiu',status.monthly?.group==='xiuqiu');
+    token.classList.toggle('is-monthly-wangxiang',showMonthlyMarker&&status.monthly?.group==='wangxiang');
+    token.classList.toggle('is-monthly-xiuqiu',showMonthlyMarker&&status.monthly?.group==='xiuqiu');
     token.style.removeProperty('--monthly-bg');
     token.style.removeProperty('--monthly-ring');
-    if(status.monthly?.group==='wangxiang'){
+    if(showMonthlyMarker&&status.monthly?.group==='wangxiang'){
       token.style.setProperty('--monthly-bg',elementPalette[status.monthly.wang].fill);
       token.style.setProperty('--monthly-ring',elementPalette[status.monthly.xiang].text);
-    }else if(status.monthly?.group==='xiuqiu'){
+    }else if(showMonthlyMarker&&status.monthly?.group==='xiuqiu'){
       token.style.setProperty('--monthly-bg','#666666');
     }
     const labels=[];
