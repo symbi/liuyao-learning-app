@@ -741,3 +741,11 @@
 - 保留原有底部六合地支来源卡片；未改动年/月/日六亲与日干六神的计算逻辑、记录格式或保存数据。
 - 验证：整页 inline JavaScript 通过 V8 syntax parsing；静态断言确认日期侧和卦盘侧各自只有一组六亲／六神、下方 palette 位于 worksheet 上方、日期卡片三个六亲目标和一个日干六神目标仍存在、两套 click 逻辑有区别、pointer 拖拽处理保留。
 - 待最新 Preview 部署后进行视觉和实际拖放验收；仅更新 PR #1 分支，不修改 main、Production 或 JSON／MD 案例数据。
+
+### v102 follow-up — 六爻六亲六神恢复与地支来源并排、选中状态按来源隔离（2026-11-22）
+
+- 用户指出：六爻专用六亲／六神不应另起一行放在 worksheet 上方；应恢复到原有底部 palette card，与地支子寅辰午申戌／丑亥酉未巳卯两行并排。已移除独立的 chart-entry-palette card，把六爻专用六亲／六神移回 palette-card 右侧第二列；窄屏继续按原布局上下折叠。
+- 日期卡片右侧的六亲／六神仍单独保留，仍只用于拖拽到年／月／日六亲目标和日干六神目标；不会改变它们的点击／拖拽用途。
+- 修复重复项目高亮：给每一个 palette tile 加来源 paletteId，点击和拖拽的 selected 状态同时记录来源。updateSelectedTiles() 现在只高亮同一来源 palette 中的同名项目，不会让日期旁边和底部两套「父母」同时变大。pointer drag 的选中反馈也按来源隔离。
+- 验证：内联 JavaScript 通过 V8 语法解析；静态断言确认底部不再存在独立卡片，六爻专用两排回到地支来源卡片中并排，顶部和底部 palette ID 独立；隔离选择测试确认点击一处「父母」只命中该 palette，不会选中另一处同名按钮。
+- 本次仅更新 PR #1 分支和维护记录；未修改 main、Production、已有 JSON／MD 卦例数据。
