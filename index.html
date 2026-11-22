@@ -681,7 +681,7 @@
 
 
 
-  /* v108: 旬空优先于月令旺相／休囚的圆圈和底色；月破角标仍独立显示。 */
+  /* 旬空用五行色粗虚线外环；休囚用灰底。旬空与休囚可叠加，旺相环仍让位给旬空。 */
   .drop-token.branch-token{
     width:27px;min-width:27px;height:27px;box-sizing:border-box;
     display:inline-flex;align-items:center;justify-content:center;
@@ -694,25 +694,21 @@
   }
   .drop-token.branch-token.is-monthly-xiuqiu{
     border:2px solid transparent;
-    background:var(--monthly-bg,#666666)!important;
+    background:var(--monthly-bg,#777777)!important;
   }
   .drop-token.branch-token.is-xunkong{
     border:2px solid transparent;
-    background:#f2effa!important;
+    background:var(--monthly-bg,#f2effa)!important;
   }
-  /* 旬空只显示按地支五行着色的醒目弧形线段外环，不再叠加月令旺相内环。 */
   .drop-token.branch-token.is-xunkong::before{
     content:'';
     position:absolute;
     inset:-7px;
+    z-index:2;
+    box-sizing:border-box;
+    border:3px dashed var(--xunkong-color,#7567a6);
     border-radius:50%;
-    background:repeating-conic-gradient(
-      from -90deg,
-      var(--xunkong-color,#7567a6) 0deg 25deg,
-      transparent 25deg 36deg
-    );
-    -webkit-mask:radial-gradient(circle,transparent 0 72%,#000 74% 100%);
-    mask:radial-gradient(circle,transparent 0 72%,#000 74% 100%);
+    background:none;
     pointer-events:none;
   }
   .drop-token.branch-token.is-month-break{
@@ -1523,13 +1519,14 @@
   function applyBranchStatus(token,value){
     if(!token || !value) return;
     const status=getBranchStatus(value);
-    // 旬空在视觉上优先：仍保留月令状态供说明／记录使用，但不再叠加旺相环或休囚底色。
-    const showMonthlyMarker=!status.xunkong;
+    // 旬空外环与休囚灰底可以并存；旬空时仍不叠加旺相内圈。
+    const showMonthlyWangxiang=!status.xunkong&&status.monthly?.group==='wangxiang';
+    const showMonthlyXiuqiu=status.monthly?.group==='xiuqiu';
     token.classList.add('branch-token');
     token.classList.toggle('is-month-break',status.monthBreak);
     token.classList.toggle('is-xunkong',status.xunkong);
-    token.classList.toggle('is-monthly-wangxiang',showMonthlyMarker&&status.monthly?.group==='wangxiang');
-    token.classList.toggle('is-monthly-xiuqiu',showMonthlyMarker&&status.monthly?.group==='xiuqiu');
+    token.classList.toggle('is-monthly-wangxiang',showMonthlyWangxiang);
+    token.classList.toggle('is-monthly-xiuqiu',showMonthlyXiuqiu);
     token.style.removeProperty('--monthly-bg');
     token.style.removeProperty('--monthly-ring');
     token.style.removeProperty('--xunkong-color');
@@ -1537,11 +1534,13 @@
       const xunkongElement=branchElements[value];
       token.style.setProperty('--xunkong-color',elementPalette[xunkongElement]?.text||'#7567a6');
     }
-    if(showMonthlyMarker&&status.monthly?.group==='wangxiang'){
+    if(showMonthlyXiuqiu){
+      token.style.setProperty('--monthly-bg','#777777');
+    }else if(showMonthlyWangxiang){
       token.style.setProperty('--monthly-bg',elementPalette[status.monthly.wang].fill);
       token.style.setProperty('--monthly-ring',elementPalette[status.monthly.xiang].text);
-    }else if(showMonthlyMarker&&status.monthly?.group==='xiuqiu'){
-      token.style.setProperty('--monthly-bg','#666666');
+    }else if(status.xunkong){
+      token.style.setProperty('--monthly-bg','#f2effa');
     }
     const labels=[];
     if(status.monthly){
@@ -2023,13 +2022,20 @@
     const item=manualPillarOverride[key]||{};
     return isValidGanzhiPair(item.stem,item.branch)?item.stem+item.branch:'';
   }
+  function manualPillarBranch(key){
+    const branch=manualPillarOverride[key]?.branch||'';
+    return GANZHI_BRANCHES.includes(branch)?branch:'';
+  }
   function manualPillarProblem(){
     if(!isCaseRecord||!manualPillarOverride.enabled) return '';
-    for(const key of ['month','day']){
-      const item=manualPillarOverride[key]||{};
-      if(!item.stem||!item.branch) return (key==='month'?'月柱':'日柱')+'尚未填写完整，请分别拖入天干和地支。';
-      if(!isValidGanzhiPair(item.stem,item.branch)) return (key==='month'?'月柱':'日柱')+'不是六十甲子中的有效组合，请核对老师给出的干支。';
-    }
+    // 月干是可选信息；月支才是月建旺衰、月破等分析的必要输入。
+    const month=manualPillarOverride.month||{};
+    if(!GANZHI_BRANCHES.includes(month.branch||'')) return '月支尚未填写，请拖入地支。';
+    if(month.stem&&!isValidGanzhiPair(month.stem,month.branch)) return '月柱天干与地支不是六十甲子中的有效组合，请核对老师给出的干支。';
+    // 日柱仍需完整干支：日干用于六神，日柱整体用于旬空。
+    const day=manualPillarOverride.day||{};
+    if(!day.stem||!day.branch) return '日柱尚未填写完整，请分别拖入天干和地支。';
+    if(!isValidGanzhiPair(day.stem,day.branch)) return '日柱不是六十甲子中的有效组合，请核对老师给出的干支。';
     const year=manualPillarOverride.year||{};
     if((year.stem&&!year.branch)||(!year.stem&&year.branch)) return '年柱请同时填写天干和地支，未知时两项都留空。';
     if(year.stem&&year.branch&&!isValidGanzhiPair(year.stem,year.branch)) return '年柱不是六十甲子中的有效组合，请核对老师给出的干支。';
@@ -2084,7 +2090,8 @@
       ?{year:manualPillarValue('year'),month:manualPillarValue('month'),day:manualPillarValue('day')}
       :{...calculatedPillars};
     currentPillars={...next};
-    currentMonthBranch=GANZHI_BRANCHES.includes(String(next.month||'').charAt(1))?String(next.month).charAt(1):null;
+    // 月支独立用于月建分析；即使课堂案例没有填写可选的月干，也不能丢失月令。
+    currentMonthBranch=manualActive?(manualPillarBranch('month')||null):(GANZHI_BRANCHES.includes(String(next.month||'').charAt(1))?String(next.month).charAt(1):null);
     currentDayBranch=GANZHI_BRANCHES.includes(String(next.day||'').charAt(1))?String(next.day).charAt(1):null;
     const currentDayPillarValue=String(next.day||'');
     currentXunkongBranches=currentDayPillarValue?calculateXunkongBranches(currentDayPillarValue):[];
@@ -2095,7 +2102,7 @@
       lastXunkongDayPillar=currentDayPillarValue;
     }
     renderCalendarValue(document.getElementById('year-pillar'),next.year||'— —');
-    renderCalendarValue(document.getElementById('month-pillar'),next.month||'— —');
+    renderCalendarValue(document.getElementById('month-pillar'),next.month||(manualActive&&currentMonthBranch?'—'+currentMonthBranch:'— —'));
     renderCalendarValue(document.getElementById('day-pillar'),next.day||'— —');
     renderJianChuInfo(manualActive?null:calculateJianChu(currentMonthBranch,currentDayBranch));
     if(manualActive) currentTwentyEightInfo=null;
@@ -2964,7 +2971,12 @@
     const recordLines=Array.isArray(record?.lines)?record.lines:[];
     const monthPillar=String(record?.pillars?.month||''),dayPillar=String(record?.pillars?.day||'');
     const monthCandidate=monthPillar.slice(-1),dayCandidate=dayPillar.slice(-1);
-    const monthBranch=GANZHI_BRANCHES.includes(monthCandidate)?monthCandidate:(record?.analysisSnapshot?.calendar?.monthBranch||null);
+    const hasManualPillarOverride=record?.pillarOverride?.enabled===true;
+    const overrideMonthBranch=record?.pillarOverride?.month?.branch||'';
+    const savedMonthBranch=record?.analysisSnapshot?.calendar?.monthBranch||'';
+    const monthBranch=GANZHI_BRANCHES.includes(monthCandidate)?monthCandidate:
+      (hasManualPillarOverride?(GANZHI_BRANCHES.includes(overrideMonthBranch)?overrideMonthBranch:null):
+        (GANZHI_BRANCHES.includes(savedMonthBranch)?savedMonthBranch:null));
     const dayBranch=GANZHI_BRANCHES.includes(dayCandidate)?dayCandidate:(record?.analysisSnapshot?.calendar?.dayBranch||null);
     const calculatedXunkong=dayPillar?calculateXunkongBranches(dayPillar):[];
     const storedXunkong=[record?.calendarAssignments?.xunkong1,record?.calendarAssignments?.xunkong2].filter(Boolean);
