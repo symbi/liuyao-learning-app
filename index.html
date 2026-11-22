@@ -699,13 +699,19 @@
     border:2px solid transparent;
     background:#f2effa!important;
   }
-  /* 旬空只显示按地支五行着色的粗虚线外环，不再叠加月令旺相内环。 */
+  /* 旬空只显示按地支五行着色的醒目弧形线段外环，不再叠加月令旺相内环。 */
   .drop-token.branch-token.is-xunkong::before{
     content:'';
     position:absolute;
-    inset:-5px;
-    border:3px dashed var(--xunkong-color,#7567a6);
+    inset:-7px;
     border-radius:50%;
+    background:repeating-conic-gradient(
+      from -90deg,
+      var(--xunkong-color,#7567a6) 0deg 25deg,
+      transparent 25deg 36deg
+    );
+    -webkit-mask:radial-gradient(circle,transparent 0 72%,#000 74% 100%);
+    mask:radial-gradient(circle,transparent 0 72%,#000 74% 100%);
     pointer-events:none;
   }
   .drop-token.branch-token.is-month-break{
@@ -3803,8 +3809,11 @@
     activeDayDocument=JSON.parse(JSON.stringify(doc));
     return JSON.parse(JSON.stringify(doc));
   }
+  let saveFeedbackRevision=0;
+  let markdownSyncQueue=Promise.resolve();
   async function saveCurrentRecord(){
-    setSaveFeedback('正在保存…','pending');
+    const feedbackRevision=++saveFeedbackRevision;
+    setSaveFeedback('正在保存…','pending');    setSaveFeedback('正在保存…','pending');
     const pillarProblem=manualPillarProblem();
     if(pillarProblem){setSaveFeedback('未保存：'+pillarProblem,'error');showToast(pillarProblem);return false;}
     let record;
@@ -3859,27 +3868,32 @@
       await saveDayToGitHub(date,doc);
       editingRecordId=record.id;forceNewRecord=false;
       replaceDayCache(date,doc);
-      let markdownError=null;
+      markEntryClean();
+      const savedLabel=record.isCase?(record.caseSource==='practice'?'个人练习案例已保存：':'课堂案例已保存：'):(shouldSaveAsDaily?'每日卦已另存：':(category==='daily'?'新卦例已另存：':'额外问题已保存：'));
+      const savedTime=new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
+      const savedName=recordHexagramName(record);
+      // JSON is the authoritative save. Confirm it immediately; Markdown is a secondary, queued sync.
+      setGitHubStatus('JSON 已保存：'+date+'；MD 正在同步…');
+      setSaveFeedback('JSON 已保存：'+savedName+' · '+savedTime,'success');
+      showToast(savedLabel+savedName+'；JSON 已保存，MD 正在同步');
       const markdownRecord={
         ...record,
         date,
         recordType:shouldSaveAsDaily?'dailyFortune':'additionalQuestion',
         ...(shouldSaveAsDaily?{dailyMemo:doc.dailyMemo||''}:{})
       };
-      try{await saveRecordMarkdown(markdownRecord);}
-      catch(error){markdownError=error;}
-      markEntryClean();
-      const savedLabel=record.isCase?(record.caseSource==='practice'?'个人练习案例已保存：':'课堂案例已保存：'):(shouldSaveAsDaily?'每日卦已保存：':(category==='daily'?'新卦例已另存：':'额外问题已保存：'));
-      const savedTime=new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
-      if(markdownError){
-        setGitHubStatus('JSON 已保存；MD 未同步：'+markdownError.message);
-        setSaveFeedback('JSON 已保存；MD 未同步 · '+savedTime,'partial');
-        showToast(savedLabel+recordHexagramName(record)+'；MD 保存失败');
-      }else{
+      markdownSyncQueue=markdownSyncQueue.catch(()=>{}).then(()=>saveRecordMarkdown(markdownRecord));
+      markdownSyncQueue.then(()=>{
+        if(feedbackRevision!==saveFeedbackRevision)return;
         setGitHubStatus('JSON 与 MD 已保存：'+date);
-        setSaveFeedback('已保存：'+recordHexagramName(record)+' · '+savedTime,'success');
-        showToast(savedLabel+recordHexagramName(record)+'；JSON 与 MD 均已保存');
-      }
+        setSaveFeedback('已保存：'+savedName+' · '+savedTime,'success');
+        showToast(savedLabel+savedName+'；JSON 与 MD 均已保存');
+      }).catch(error=>{
+        if(feedbackRevision!==saveFeedbackRevision)return;
+        setGitHubStatus('JSON 已保存；MD 未同步：'+error.message);
+        setSaveFeedback('JSON 已保存；MD 未同步 · '+savedTime,'partial');
+        showToast('JSON 已保存；MD 未同步：'+error.message);
+      });
       return true;
     }catch(error){
       setGitHubStatus('未同步：'+error.message);
