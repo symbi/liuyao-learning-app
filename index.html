@@ -93,6 +93,7 @@
   .auto-review-list li.note{color:#65685d}
   .drop-slot.auto-check-error{border:1.5px solid #b94d39!important;background:#fff0ec!important;box-shadow:0 0 0 2px rgba(185,77,57,.13)!important}
   .drop-slot.auto-check-missing{border:1.5px dashed #D19A00!important;background:#fff8e8!important;box-shadow:0 0 0 2px rgba(185,133,25,.11)!important}
+  .drop-slot.wrong-xunkong{outline:2px solid #c44738;outline-offset:2px;}
   .hexagram-heading{display:flex;align-items:center;min-height:34px;min-width:56px;gap:6px;flex-wrap:wrap;flex:1 1 auto}
   @media(max-width:560px){.auto-assembly-actions{width:100%;margin-left:0;justify-content:flex-start}.auto-assembly-actions .small-action{padding:5px 8px;font-size:11px}.auto-review-report{font-size:11px}}
   .date-branch-sidecar{white-space:nowrap;}
@@ -746,7 +747,7 @@
   .worksheet{position:relative;}
   .rows{padding-top:0;box-sizing:border-box;}
   .trigram-group-rows{position:relative;}
-  .date-branch-sidecar{position:absolute;z-index:20;display:flex;align-items:center;align-self:flex-start;gap:9px;width:max-content;margin:0;padding:0;left:0;top:-35px;pointer-events:none;white-space:nowrap;}
+  .date-branch-sidecar{position:absolute;z-index:20;display:flex;align-items:center;align-self:flex-start;gap:9px;width:max-content;max-width:100%;margin:0;padding:0;left:0;top:0;pointer-events:none;white-space:nowrap;}
   /* v57: date branches align above the top Najia slot; hexagram heading moves to the top-right band. */
   .worksheet-subhead{position:relative;}
   .hexagram-heading{position:absolute;left:0;top:0;z-index:22;width:max-content;max-width:none;pointer-events:auto;}
@@ -1366,8 +1367,8 @@
       monthRelation:draft.calendarAssignments?.monthRelation||null,
       dayRelation:draft.calendarAssignments?.dayRelation||null,
       dayGod:draft.calendarAssignments?.dayGod||null,
-      xunkong1:currentXunkongBranches[0]||null,
-      xunkong2:currentXunkongBranches[1]||null
+      xunkong1:draft.calendarAssignments?.xunkong1??currentXunkongBranches[0]??null,
+      xunkong2:draft.calendarAssignments?.xunkong2??currentXunkongBranches[1]??null
     };
     editingRecordId=draft.editingRecordId||null;
     forceNewRecord=!!draft.forceNewRecord;
@@ -1386,6 +1387,7 @@
     const classroom=mode==='classroom';
     state=Array.from({length:6},()=>({flowers:null,branch:null,relation:null,hiddenRelation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}));
     calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
+    lastXunkongDayPillar=null;
     selected=null;editingRecordId=null;forceNewRecord=false;
     const emptyOverride={enabled:true,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
     setCaseEditor(classroom?{isCase:true,caseSource:'classroom',caseReviewStatus:'pending',pillarOverride:emptyOverride}:null);
@@ -1738,6 +1740,7 @@
   let currentDayBranch=null;
   let currentMonthBranch=null;
   let currentXunkongBranches=[];
+  let lastXunkongDayPillar=null;
   let calculatedPillars={year:'',month:'',day:''};
   let currentPillars={year:'',month:'',day:''};
   let currentJianChuInfo=null;
@@ -2083,9 +2086,14 @@
     currentPillars={...next};
     currentMonthBranch=GANZHI_BRANCHES.includes(String(next.month||'').charAt(1))?String(next.month).charAt(1):null;
     currentDayBranch=GANZHI_BRANCHES.includes(String(next.day||'').charAt(1))?String(next.day).charAt(1):null;
-    currentXunkongBranches=next.day?calculateXunkongBranches(next.day):[];
-    calendarAssignments.xunkong1=currentXunkongBranches[0]||null;
-    calendarAssignments.xunkong2=currentXunkongBranches[1]||null;
+    const currentDayPillarValue=String(next.day||'');
+    currentXunkongBranches=currentDayPillarValue?calculateXunkongBranches(currentDayPillarValue):[];
+    // 日柱变化才重置为自动计算值；同一日柱下允许手动拖拽，留待检查时校正。
+    if(currentDayPillarValue!==lastXunkongDayPillar){
+      calendarAssignments.xunkong1=currentXunkongBranches[0]||null;
+      calendarAssignments.xunkong2=currentXunkongBranches[1]||null;
+      lastXunkongDayPillar=currentDayPillarValue;
+    }
     renderCalendarValue(document.getElementById('year-pillar'),next.year||'— —');
     renderCalendarValue(document.getElementById('month-pillar'),next.month||'— —');
     renderCalendarValue(document.getElementById('day-pillar'),next.day||'— —');
@@ -2121,6 +2129,7 @@
     followJapanToday=(dateKeyFromParts(date)===dateKeyFromParts(today));
     if(!preserveAssignments){
       calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
+      lastXunkongDayPillar=null;
       editingRecordId=null;
       forceNewRecord=false;
       setCaseEditor(null);
@@ -2393,12 +2402,14 @@
 
   function assignCalendarToken(key,type,value){
     clearAutoReviewReport();
-    if(key.startsWith('xunkong')){showToast('旬空由当前日柱自动计算，无需手动填写');return;}
-    const expectedType=key==='dayGod'?'god':(key.startsWith('xunkong')?'branch':'relation');
+    const isXunkong=key==='xunkong1'||key==='xunkong2';
+    const expectedType=key==='dayGod'?'god':(isXunkong?'branch':'relation');
     if(type!==expectedType){showToast(expectedType==='branch'?'这里需要地支':expectedType==='god'?'这里需要六神':'这里需要六亲');return;}
     calendarAssignments[key]=value;
     selected=null;updateSelectedTiles();renderCalendarDropSlots();refreshBranchStatusTokens();
-    if(key==='dayGod' && expectedDayGod && value!==expectedDayGod){
+    if(isXunkong){
+      showToast('已手动放入旬空：'+value+'；检查时会按日柱核对并校正');
+    }else if(key==='dayGod' && expectedDayGod && value!==expectedDayGod){
       const dayText=document.getElementById('day-pillar')?.textContent||'';
       showToast('提示：'+dayText.charAt(0)+'日应从'+expectedDayGod+'起；已保留你的选择');
     }else{
@@ -2409,7 +2420,7 @@
     document.querySelectorAll('[data-calendar-key]').forEach(slot=>{
       const key=slot.dataset.calendarKey;
       const isCalculatedXunkong=key==='xunkong1'||key==='xunkong2';
-      const value=key==='xunkong1'?currentXunkongBranches[0]:(key==='xunkong2'?currentXunkongBranches[1]:calendarAssignments[key]);
+      const value=calendarAssignments[key];
       const type=key==='dayGod'?'god':(key.startsWith('xunkong')?'branch':'relation');
       slot.classList.toggle('filled',!!value);
       slot.classList.toggle('kin-filled',type==='relation'&&!!value);
@@ -2417,9 +2428,14 @@
       Object.values(sixGodClasses).forEach(className=>slot.classList.remove(className));
       if(type==='god'&&value&&sixGodClasses[value]) slot.classList.add(sixGodClasses[value]);
       slot.classList.toggle('wrong-god',key==='dayGod'&&!!value&&!!expectedDayGod&&value!==expectedDayGod);
+      const expectedXunkong=isCalculatedXunkong?currentXunkongBranches[key==='xunkong1'?0:1]:null;
+      const wrongXunkong=isCalculatedXunkong&&!!value&&!!expectedXunkong&&value!==expectedXunkong;
+      slot.classList.toggle('wrong-xunkong',wrongXunkong);
       if(isCalculatedXunkong){
         const dayText=document.getElementById('day-pillar')?.textContent||'';
-        slot.title=value?'按日柱 '+dayText+' 自动计算旬空':'等待有效日柱后自动计算旬空';
+        slot.title=expectedXunkong
+          ?'日柱 '+dayText+' 自动计算旬空应为 '+expectedXunkong+'；可拖拽调整，检查时按日柱校正'
+          :'等待有效日柱后自动计算旬空；可拖拽填写';
       }else{
         slot.removeAttribute('title');
       }
@@ -2429,11 +2445,9 @@
       token.className='drop-token'+(type==='branch'&&elementClassForBranch(value)?' '+elementClassForBranch(value):'')+(type==='god'&&sixGodClasses[value]?' '+sixGodClasses[value]:'');
       if(type==='branch'){token.setAttribute('aria-label','地支'+value);}
       token.textContent=value;slot.appendChild(token);
-      if(!isCalculatedXunkong){
-        const clear=document.createElement('button');clear.type='button';clear.className='clear-slot';clear.title='清除此项';clear.setAttribute('aria-label','清除'+value);clear.textContent='×';
-        clear.addEventListener('click',e=>{e.stopPropagation();calendarAssignments[key]=null;renderCalendarDropSlots();refreshBranchStatusTokens();});
-        slot.appendChild(clear);
-      }
+      const clear=document.createElement('button');clear.type='button';clear.className='clear-slot';clear.title='清除此项';clear.setAttribute('aria-label','清除'+value);clear.textContent='×';
+      clear.addEventListener('click',e=>{e.stopPropagation();calendarAssignments[key]=null;clearAutoReviewReport();renderCalendarDropSlots();refreshBranchStatusTokens();});
+      slot.appendChild(clear);
     });
   }
   document.querySelectorAll('[data-calendar-key]').forEach(slot=>{
@@ -3045,6 +3059,9 @@
     const groupRect=topGroup.getBoundingClientRect();
     const targetRect=topBranchSlot.getBoundingClientRect();
     const sideRect=dateBranchSidecar.getBoundingClientRect();
+    // Reserve a dedicated row for the sidecar, so it cannot overlap the title band or the first yao.
+    topGroup.style.paddingTop=(sideRect.height+7)+'px';
+    dateBranchSidecar.style.top='0px';
     const branchItems=[...dateBranchSidecar.querySelectorAll('.date-branch-item')];
     const firstBranchRect=branchItems[0]?.getBoundingClientRect();
     const lastBranchRect=branchItems[branchItems.length-1]?.getBoundingClientRect();
@@ -3052,8 +3069,9 @@
     const branchGroupWidth=firstBranchRect&&lastBranchRect
       ?lastBranchRect.right-firstBranchRect.left
       :sideRect.width;
-    dateBranchSidecar.style.left=(desiredCenter-branchGroupWidth/2)+'px';
-    dateBranchSidecar.style.top=(-sideRect.height-7)+'px';
+    const maxLeft=Math.max(0,topGroup.clientWidth-branchGroupWidth);
+    const desiredLeft=desiredCenter-branchGroupWidth/2;
+    dateBranchSidecar.style.left=Math.max(0,Math.min(maxLeft,desiredLeft))+'px';
     return combination||null;
   }
 
@@ -3459,11 +3477,22 @@
     autoReviewReportEl.appendChild(list);
     autoReviewReportEl.hidden=false;
   }
+  function correctCalendarXunkongFromDayPillar(){
+    if(currentXunkongBranches.length!==2) return [];
+    const expected=[currentXunkongBranches[0],currentXunkongBranches[1]];
+    const actual=[calendarAssignments.xunkong1||null,calendarAssignments.xunkong2||null];
+    if(actual[0]===expected[0]&&actual[1]===expected[1]) return [];
+    calendarAssignments.xunkong1=expected[0];
+    calendarAssignments.xunkong2=expected[1];
+    renderCalendarDropSlots();
+    return ['旬空已按日柱校正：原填写为「'+actual.map(value=>value||'空').join('、')+'」，正确为「'+expected.join('、')+'」。'];
+  }
   function runAutoAssembly(mode){
+    const xunkongNotes=correctCalendarXunkongFromDayPillar();
     const plan=buildAutoAssemblyPlan();
     if(!plan.ready){
-      renderAutoAssemblyReport(mode,'',[],plan.notes.slice(0,1));
-      showToast('请先完成摇卦或核对卦盘条件');
+      renderAutoAssemblyReport(mode,'',[],[...xunkongNotes,...plan.notes.slice(0,1)]);
+      showToast(xunkongNotes.length?'已校正旬空；请先完成摇卦':'请先完成摇卦或核对卦盘条件');
       return;
     }
     // Preserve the original values so automatically inserted values are not
@@ -3487,9 +3516,9 @@
       else if(current!==entry.expected) errors.push({kind:'error',entry,message:entry.label+'：你填写的是「'+current+'」，正确应为「'+entry.expected+'」。已保留原值。'});
     }
     const issues=[...errors,...missing];
-    renderAutoAssemblyReport(mode,'',issues,[]);
-    if(mode==='fill') showToast(errors.length?'有项目需要核对':'装卦完成');
-    else showToast(issues.length?'发现需要核对的项目':'未发现错误');
+    renderAutoAssemblyReport(mode,'',issues,xunkongNotes);
+    if(mode==='fill') showToast(xunkongNotes.length?'已校正旬空；装卦完成':(errors.length?'有项目需要核对':'装卦完成'));
+    else showToast(xunkongNotes.length?'已校正旬空并完成检查':(issues.length?'发现需要核对的项目':'未发现错误'));
   }
   const autoAssembleCheckButton=document.getElementById('auto-assemble-check');
   if(autoAssembleCheckButton) autoAssembleCheckButton.addEventListener('click',()=>{
@@ -3756,7 +3785,7 @@
           changeBranch:isMoving?item.changeBranch:null,changeRelation:isMoving?item.changeRelation:null,
           effect:isMoving?(item.effect||''):''};
       }),
-      calendarAssignments:{...calendarAssignments,xunkong1:currentXunkongBranches[0]||null,xunkong2:currentXunkongBranches[1]||null},
+      calendarAssignments:{...calendarAssignments},
       jianchu:!(isCaseRecord&&manualPillarOverride.enabled)&&currentJianChuInfo?{...currentJianChuInfo,yi:currentJianChuInfo.yi||'',ji:currentJianChuInfo.ji||'',guidanceSnapshot:currentJianChuInfo.guidance||'',savedAt:new Date().toISOString()}:null,
       twentyEight:!(isCaseRecord&&manualPillarOverride.enabled)&&currentTwentyEightInfo?{...currentTwentyEightInfo,candidateYiji:{...currentTwentyEightInfo.candidateYiji}}:null
     };
@@ -3946,9 +3975,10 @@
       monthRelation:relations.includes(record.calendarAssignments?.monthRelation)?record.calendarAssignments.monthRelation:null,
       dayRelation:relations.includes(record.calendarAssignments?.dayRelation)?record.calendarAssignments.dayRelation:null,
       dayGod:sixGods.includes(record.calendarAssignments?.dayGod)?record.calendarAssignments.dayGod:null,
-      xunkong1:currentXunkongBranches[0]||null,
-      xunkong2:currentXunkongBranches[1]||null
+      xunkong1:record.calendarAssignments?.xunkong1??currentXunkongBranches[0]??null,
+      xunkong2:record.calendarAssignments?.xunkong2??currentXunkongBranches[1]??null
     };
+    lastXunkongDayPillar=String(record.pillars?.day||'');
     applyPillarContext();
     selected=null;updateSelectedTiles();
     renderCalendarDropSlots();
