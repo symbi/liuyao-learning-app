@@ -958,14 +958,24 @@
   .calendar-workarea .calendar-pillars{min-width:0;}
   .calendar-palette-area{
     display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0;
-    padding-left:18px;border-left:1px solid var(--line);
+    padding-left:0;border-left:0;
   }
   .calendar-palette-row{
-    display:grid;grid-template-columns:36px minmax(0,1fr);
-    align-items:center;column-gap:9px;min-width:0;
+    display:flex;align-items:center;min-width:0;
   }
-  .calendar-palette-label{
-    font-size:11px;font-weight:850;color:var(--muted);white-space:nowrap;
+  .chart-entry-palette{
+    padding:8px 12px;margin:0 0 8px;
+  }
+  .chart-entry-palette-stack{
+    display:flex;flex-direction:column;align-items:flex-start;gap:7px;
+  }
+  .chart-entry-palette .kin-tiles,
+  .chart-entry-palette .god-tiles{
+    display:flex;align-items:center;flex-wrap:nowrap;gap:4px;
+  }
+  .chart-entry-palette .kin-tiles .tile,
+  .chart-entry-palette .god-tiles .tile{
+    width:44px;min-width:44px;flex:0 0 44px;height:30px;
   }
   .calendar-palette-area .kin-tiles,
   .calendar-palette-area .god-tiles{
@@ -981,13 +991,13 @@
   .palette-card .palette-grid{grid-template-columns:minmax(0,1fr);justify-content:start;}
   @media(max-width:900px){
     .calendar-workarea{grid-template-columns:minmax(0,1fr);row-gap:10px;}
-    .calendar-palette-area{
-      padding:9px 0 0;border-left:0;border-top:1px solid var(--line);
-    }
+    .calendar-palette-area{padding:0;border:0;}
   }
   @media(max-width:460px){
     .calendar-palette-area .kin-tiles,
-    .calendar-palette-area .god-tiles{flex-wrap:wrap;}
+    .calendar-palette-area .god-tiles,
+    .chart-entry-palette .kin-tiles,
+    .chart-entry-palette .god-tiles{flex-wrap:wrap;}
   }
 
 </style>
@@ -1099,18 +1109,23 @@
           </div>
         </div>
       </div>
-        <div class="calendar-palette-area" aria-label="年月日六亲与日干六神拖拽选择">
+        <div class="calendar-palette-area" aria-label="拖拽到年月日六亲及日干六神位置">
           <div class="calendar-palette-row">
-            <span class="calendar-palette-label">六亲</span>
             <div class="tiles kin-tiles" id="kin-tiles" aria-label="拖入年柱、月柱、日柱的六亲"></div>
           </div>
           <div class="calendar-palette-row">
-            <span class="calendar-palette-label">六神</span>
             <div class="tiles god-tiles" id="god-tiles" aria-label="拖入日干六神位置"></div>
           </div>
         </div>
       </div>
       <p class="manual-pillar-validation visually-hidden" id="manual-pillar-validation" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="card chart-entry-palette" aria-label="单击填入六爻的六亲与六神">
+    <div class="chart-entry-palette-stack">
+      <div class="tiles kin-tiles" id="chart-kin-tiles" aria-label="单击依次填入六爻六亲"></div>
+      <div class="tiles god-tiles" id="chart-god-tiles" aria-label="单击依次填入六爻六神"></div>
     </div>
   </section>
 
@@ -2221,10 +2236,13 @@
       tile.draggable=false; tile.dataset.tokenType=type; tile.dataset.tokenValue=value;
       if(type==='branch') tile.dataset.branch=value;
       const typeName=type==='branch'?'地支':type==='stem'?'天干':type==='god'?'六神':'六亲';
+      const isDatePalette=!!container.closest('.calendar-palette-area');
       tile.setAttribute('aria-label',
-        ['branch','relation','god'].includes(type)
-          ? '单击自动填入从初爻开始的第一个空位；也可以拖到指定位置'
-          : '拖动'+typeName+value+'到对应位置，或点选后再点目标位置');
+        isDatePalette
+          ? '拖动到年月日或日干六神对应位置，也可点选后再点目标位置'
+          : (['branch','relation','god'].includes(type)
+              ? '单击自动填入从初爻开始的第一个空位；也可以拖到指定位置'
+              : '拖动'+typeName+value+'到对应位置，或点选后再点目标位置'));
       tile.addEventListener('click',e=>{
         if(suppressTileClick){e.preventDefault();e.stopPropagation();return;}
         // Calendar palettes use drag/click-to-target; don't redirect their clicks into the six main yao.
@@ -2269,6 +2287,9 @@
   });
   addTiles(document.getElementById('kin-tiles'),relations,'relation','');
   addTiles(document.getElementById('god-tiles'),sixGods,'god','');
+  // The separate chart palette fills the six main lines bottom-up on a single click.
+  addTiles(document.getElementById('chart-kin-tiles'),relations,'relation','');
+  addTiles(document.getElementById('chart-god-tiles'),sixGods,'god','');
   // Re-apply the day-stem highlight now that the six-god palette tiles exist.
   updateDailySixGod(document.getElementById('day-pillar').textContent.replace(/\s/g,''));
 
