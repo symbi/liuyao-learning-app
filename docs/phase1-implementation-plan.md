@@ -1,8 +1,8 @@
 # Phase 1 实施计划：Neo4j 知识库、增量 Importer 与 Evidence Pack
 
-> 版本：1.1  
-> 规划日期：2026-11-21  
-> 状态：按用户确认调整来源边界；M2-A/M2-B 已通过审查并经 PR #3 合并（merge commit `9505ce7`）；当前规划 PR #4（双仓库架构与来源目录）等待最终审查和用户决定；下一项 M2-C 仅做课堂案例 JSON Adapter，须等 PR #4 合并且用户明确授权后启动  
+> 版本：1.1
+> 规划日期：2026-11-21
+> 状态：按用户确认调整来源边界；M2-A/M2-B 已合并（PR #3，merge commit `9505ce7`）；双仓库架构与来源目录规划已合并（PR #4，merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构；M2-C 已按真实文件拆为 C1/C2/C3（见第 4、12 节），前置条件（PR #4 合并）已满足，但实现仍须用户明确授权后才启动；PDF Adapter/OCR 继续 deferred
 > 如果本文与早期概念文档有差异，以本文的实施范围和验收标准为准。概念解释见 [Phase 1 实际运行架构](phase1-operating-model.md)。
 
 ## 1. 目标与最终交付
@@ -126,13 +126,21 @@ flowchart TB
 5. 外部古籍/网页/GitHub 资料先由独立 Source Collector 采集并输出标准 Reference Package；知识库只读取经批准的包，不直接访问网站。
 6. PDF 目前不是已确认输入：当前两个仓库最近扫描均未发现 PDF；当前也没有指定要导入的 PDF 版本。因此 PDF Adapter 与 OCR 均 deferred。
 
-### 当前资料状态（最近核对：2026-11-21）
+### 当前资料状态（最近核对：2026-11-22，已含第十九课 case-002）
 
 - liuyao-learning-app 有第 5～20 课整理笔记、外部参考文档和案例目录说明；正式课程笔记以 Markdown 为主。
 - liuyao-learning-raw 有部分课程原始 ASR TXT；Raw ASR 默认不进入主要索引。
 - 2026-11-19 的两个仓库 main 分支扫描均未发现 PDF；2026-11-21 的 ChatGPT Library PDF 清单也没有返回 PDF。当前没有已选定、准备导入的 PDF。
-- materials/class-cases/ 已有第一份结构化课堂案例：`materials/class-cases/lesson-19/case-001.json`（第十九课工作调动案例）及对应分析文档 `materials/class-cases/lesson-19/case-001-analysis.md`，均已提交到 main。此前“只有 README 约定、没有已提交案例 JSON”的描述已过期。
-- M2-C 实施准备要求（本计划只记录要求，不在本 PR 实现）：（1）实施前先检查真实的 `case-001.json`，了解实际字段结构（如 recordType、lessonId、casting、teacherAnalysis 等）；（2）检查 HTML 导出 JSON 与课堂案例 JSON 的字段关系；（3）自动化测试使用合成 fixtures 独立进行，不把真实案例、私人 ASR 全文或个人每日记录复制进 fixtures；（4）映射时保留原始字段、来源链和案例身份，不随意丢弃数据；（5）不要因为已有一个案例就假定所有历史案例都符合相同结构，字段差异必须显式处理。
+- 课堂案例相关资料目前有四种不同形式，必须区分处理（以下均已按 main 真实文件核对）：
+  1. **课程案例 JSON**：`materials/class-cases/lesson-19/case-001.json`，`recordType=class-case`，独立案例 ID `L19-C01-work-transfer`，`lessonId=lesson-19`，并通过 `dailyRecord.recordId` 关联到 HTML 每日记录中的子记录 `9f89c47a-ba51-44d1-81b5-ffba16a30ca2`；其 `matchStatus=verified`，`verificationBasis` 记录了与第十九课 ASR 讲解的核对依据。
+  2. **课堂案例 MD 表示**：`materials/class-cases/lesson-19/case-001-analysis.md` 是 case-001 这同一个课堂案例的 Markdown 可读表示，与案例 JSON 同属一个 `case_id`，不是独立案例，也不是一份额外的分析来源；它与下面第 4 项的每日记录生成 MD 是两类不同的 MD，不得混淆。文件内容中出现的老师课堂讲解、用户补充的卦盘、用户 memo、AI 计算仍须分别标明来源——同属一个案例不等于来源权威性相同。
+  3. **HTML 每日记录 JSON**：`daily-records/2026/11/2026-11-21.json` 是每日记录容器，顶层不是案例；其 `additionalQuestions[]` 中有多个独立子记录（各有自己的 UUID、`recordType=additionalQuestion`、`isCase`、`caseSource`）。不得把整个每日记录容器当成一个 Case。注意该文件内两个子记录都带 `isCase=true`、`caseSource=classroom`，但只有 `9f89...` 被 case-001 显式关联——`isCase`/`caseSource` 只能用于分类，不能仅凭它们自动认定某条记录已匹配到具体课堂案例或已验证。
+  4. **自动生成的记录 MD**：`daily-records/2026/11/markdown/2026-11-21--7e0a6b19-92f2-4f8c-b7b0-8771955ad45b.md` 是 HTML 按每日记录 JSON 与确定性排盘规则生成的可读呈现，对应子记录 `7e0a6b19-...`（与 case-001 关联的 `9f89...` 是两条不同记录，不得混淆）；其 `## 原始记录 JSON` 一节内嵌完整 JSON。它是该记录的另一种表示，不是第二个独立案例，不得重复创建 Case 节点或重复计数。
+- **课堂案例身份原则（核心）**：Learning App 中的课堂案例是老师在实际课程中讲解过的教学案例（`classroom_case`），不是用户新创建的个人练习数据，不得归类为 `personal_practice`；个人练习是独立类别。每个课堂案例应尽可能连接五类来源：（1）老师原始课堂录音 / ASR 转录中的案例讲解位置；（2）对应课程整理笔记中的案例内容；（3）用户补充并核对的完整卦盘结构；（4）HTML 保存的 JSON 记录及其生成 MD 表达；（5）与案例 JSON 配对的课堂案例 MD 表示。课程笔记或 ASR 提到同一案例时，建立引用/提及关系并保留课程、文件、段落或时间定位；同一案例在笔记、ASR、案例 JSON、案例 MD 中重复出现，不产生多个案例。案例 JSON 与课堂案例 MD 都只是该案例的表示形式：在图模型中以 `ClassCase -[:HAS_REPRESENTATION]-> SourceDocument` 表达（关系上标明 format=json/markdown），不为 MD 另建案例身份。老师 ASR 的来源定位不依赖 Chunk：Raw ASR 默认不 Chunk，ClassCase 可以直接关联 ASR 的 SourceDocument / DocumentRevision，并在关系上保留 Locator（原始仓库与文件路径、课程 ID、转录段落序号、有可靠时间戳时的时间范围）与置信度/校正状态；未经音频校正的 ASR 只能标为当前可用的老师讲解线索，不得称为经音频验证的逐字原话。案例身份规则：保留稳定案例 ID；课程归属用 `lessonId` 与来源定位表达；HTML 原始记录 ID 只通过明确的 `dailyRecord.recordId` 关联；JSON 与课堂案例 MD 通过同一个稳定 `case_id` 配对；必要时辅以内容一致性校验；`matchStatus` / `verificationBasis` 说明与课堂原始教学资料的匹配程度；ASR 未经音频校正时保留低置信度说明；用户补充的卦盘结构、老师原话、AI 推算必须分开标记，不得混为一谈。此原则同时适用于 M2-C 的 Mapper、M3 的 Neo4j 数据模型与 M7 的 Evidence Pack 检索逻辑。
+- **案例核对生命周期样本（2026-11-22，真实数据）**：`daily-records/2026/11/2026-11-22.json` 的子记录 `13e9c29a-cdbc-41e0-912d-5e02fa7c54d3` 最初只有 `isCase=true`、`caseSource=classroom` 标记，其生成 MD 标注“案例核对状态：待核对”，记录本身没有 case_id 或 matchStatus——按上列身份原则，它当时只是待核对的 CastRecord 候选：不创建已验证的 ClassCase、不建 BASED_ON_RECORD、不计入课堂案例数量。其后它被显式核对并配对为第十九课案例：`materials/class-cases/lesson-19/case-002.json`（稳定 case_id `L19-C02-shop-operation-transfer`，`matchStatus=matched`，附 `verificationBasis`）通过 `dailyRecord.recordId` 显式关联该子记录，ClassCase 身份自此才成立。注意：关联信息保存在案例 JSON 一侧，每日记录本身没有被回填 case_id；从待核对到成立案例，走的是显式核对与显式关联，不是分类标记的自动升级。
+- **matchStatus 规范语义（2026-11-22 回读全部真实案例 JSON 后确定）**：规范状态为 `verified`——案例身份已与课堂来源（课程笔记 / ASR 定位）显式核对一致，且来源位置与 `verificationBasis` 已记录。case-002 使用的 `matched` 是同一状态的历史写法：其 verificationBasis 与 case-001（`verified`）同为“ASR 内容核对 + 用户提供卦盘 + 明确限定”，证据结构与严格程度相同，不构成更低一级的状态。M2-C Mapper 读取时须把 `matched` 归一化为 `verified` 并保留原始值；新案例统一写 `verified`；`needs_review` / `not_found` / `disputed` 及任何未知值不得静默丢弃或误判，未知值保留原始值并标记待核对。注意 `verified` 只证明案例身份已核对，不代表老师讲解已通过音频逐字验证——ASR 校正状态、卦盘来源等限定以 `verificationBasis` / `matchConfidence` 等字段为准，Evidence Pack 须一并呈现。
+- 每日记录仍默认不全量导入：只有显式允许的记录 ID 才进入知识库。
+- M2-C 实施准备要求（本计划只记录要求，不在本 PR 实现）：（1）实施前先检查真实的 `case-001.json` 与每日记录 JSON，了解实际字段结构；（2）检查 HTML 导出 JSON 与课堂案例 JSON 的字段关系；（3）自动化测试使用合成 fixtures 独立进行，不把真实案例、私人 ASR 全文或个人每日记录复制进 fixtures；（4）映射时保留原始字段、来源链和案例身份，不随意丢弃数据；（5）不要因为已有一个案例就假定所有历史案例都符合相同结构，字段差异必须显式处理。
 - daily-records/ 是否有真实记录以同步时重新扫描为准，默认仍不导入个人每日 Memo。
 
 因此 M2 只测试 Markdown/TXT 和结构化 JSON；不为不存在的 PDF 准备 fixture 或解析器。不得为了测试伪造老师案例。
@@ -222,7 +230,7 @@ tools/liuyao-kb/
 | Chunk | 可检索的文本段落 | chunk_id、text、text_hash、ordinal、page、heading、embedding、embedding_model、embedding_dimensions |
 | Lesson | 课程课次 | lesson_id、lesson_number、title |
 | CastRecord | HTML 记录/每日卦 | record_id、record_type、date、question、casting_json |
-| Case | 被标记为案例的 CastRecord | case_type、review_status、case_memo |
+| ClassCase | 老师课堂讲解的教学案例（classroom_case） | case_id、lesson_id、match_status、verification_basis、case_memo |
 | Concept | 六亲、暗动、日辰等概念 | concept_id、name、aliases |
 | RuleCandidate | LLM 抽取的候选规则 | candidate_id、statement、conditions、uncertainty、extractor_model、status=candidate |
 | ExternalProject | 外部 GitHub 项目来源 | repo_url、commit_sha、license、license_status |
@@ -234,15 +242,22 @@ tools/liuyao-kb/
 - DocumentRevision -[:CONTAINS]-> Chunk
 - Chunk -[:MENTIONS]-> Concept
 - RuleCandidate -[:EXTRACTED_FROM]-> Chunk
-- Case -[:TAUGHT_IN]-> Lesson
-- Case -[:REFERENCES]-> Chunk
+- ClassCase -[:TAUGHT_IN]-> Lesson
+- ClassCase -[:HAS_REPRESENTATION]-> SourceDocument（案例的某种文件表示；关系属性 format=json 或 markdown。案例 JSON 与课堂案例 MD 都用这条关系挂到同一个 ClassCase，不另建案例节点）
+- ClassCase -[:REFERENCES]-> Chunk（对已 Chunk 的来源，如课程整理笔记中的案例段落）
+- ClassCase -[:REFERENCES]-> SourceDocument / DocumentRevision（对未 Chunk 的来源，主要用于 Raw ASR：关系属性保留 Locator——source_uri、仓库与文件路径、lesson_id、转录段落序号、可选时间范围——以及置信度与校正状态，如 confidence=low、verification_status=asr_unverified）
+- SourceDocument（ASR 转录） -[:TRANSCRIPT_OF]-> SourceDocument（原始录音 WAV/M4A；录音补入后用这条关系把转录与原始音频关联）
+- ClassCase -[:BASED_ON_RECORD]-> CastRecord（仅当 `dailyRecord.recordId` 与 CastRecord 的 record_id 明确匹配时建立）
+- CastRecord -[:RENDERS]-> SourceDocument（仅指 daily-records 中 HTML 自动生成的记录 MD，是该 CastRecord 的可读呈现；与课堂案例 MD 的 HAS_REPRESENTATION 是两条不同的关系，不得混用）
 - ExternalProject -[:HAS_SOURCE]-> SourceDocument
 
 重要实现约束：
 
-- 对 document_id、revision_id、chunk_id、record_id 建唯一约束。
+- 对 document_id、revision_id、chunk_id、record_id、case_id 建唯一约束。
 - 对 JSON 中嵌套的六爻字段，用原始 JSON 字符串或明确的扁平化属性保存；不要假设 Neo4j 节点属性可直接存任意嵌套 JSON 对象。
-- Case 与 CastRecord 可以是同一个节点的多个 Label。
+- ClassCase 与 CastRecord 是两个独立节点，各自保留唯一 ID（case_id 与 record_id）；不得把两者压成同一个节点或同一个 ID。只有 `dailyRecord.recordId` 明确匹配时才建立 BASED_ON_RECORD 关系；匹配不明确时不建关系，并保留 matchStatus 说明。
+- 同一个课堂案例的 JSON 与 MD 是同一案例的两种表示（结构化读取与人类阅读/文本检索），不产生重复 ClassCase 节点或重复案例计数；课堂案例 MD 不是独立分析资料，不得为它另立来源身份。自动生成 MD（daily-records）与课堂案例 MD 是两类文件：前者是 CastRecord 的呈现（RENDERS），其 Chunk 必须排除 `## 原始记录 JSON` 代码块，避免把内嵌 JSON 当作独立文本重复索引。
+- 不得假设 Raw ASR 一定有 Chunk：案例与 ASR 的引用关系通过 ClassCase 直接关联 SourceDocument/DocumentRevision 并携带 Locator 与置信度建立；不得为了建立引用就把全部 Raw ASR 自动纳入 Chunk、Embedding 或主要课程规则抽取。
 - 每个候选概念/关系/规则必须连回产生它的 Chunk。
 - AI 抽取状态永远是 candidate，不得自动改成课程“已确认”。
 - 检索时优先当前 revision；历史 revision 仍保留，但默认不参与普通检索。
@@ -257,7 +272,8 @@ tools/liuyao-kb/
 - document_id = source_type + repository + path（稳定身份）。
 - revision_id = document_id + content_hash。
 - chunk_id = document_id + chunker_version + normalized_chunk_hash + occurrence_index。
-- record_id = HTML JSON 中现有稳定 id；不能只用日期或卦名当 ID。
+- record_id = HTML 每日记录 JSON 中子记录的现有稳定 id（CastRecord 的身份）；不能只用日期或卦名当 ID。
+- case_id = 课堂案例的稳定身份（ClassCase 的身份，如 `L19-C01-work-transfer`）。case_id 与 record_id 是两套 ID，不得混用；只有 `dailyRecord.recordId` 明确匹配时，才在 ClassCase 与 CastRecord 之间建立 BASED_ON_RECORD。
 
 同步行为：
 
@@ -268,7 +284,8 @@ tools/liuyao-kb/
 | 文档修改 | 创建新 revision；仅对变化 Chunk 执行新处理；未变化 Chunk 尽量复用 |
 | 文档删除/路径变化 | 标记旧来源不再 active，不物理删除历史 |
 | Raw ASR v1 → v2 | 创建新 revision；不覆盖 v1，不自动提升为 Curated |
-| Case Memo 修改 | 同一个 record_id 更新 Case 当前内容，并保留 revision/audit 信息 |
+| 课堂案例内容修改（Memo、卦盘等） | 更新同一个 case_id 的 ClassCase 对应表示或 revision，并保留 audit 信息；案例身份（case_id）不变 |
+| 每日记录修改 | 更新对应 record_id 的 CastRecord 当前内容，并保留 revision/audit 信息；不因此创建或替换 ClassCase |
 | 规则候选重复抽取 | 使用稳定 candidate_id / MERGE 去重；始终保留来源 Chunk |
 
 模型升级规则：
@@ -330,11 +347,15 @@ liuyao-kb evidence --question "老师在第十一课如何讲暗动？"
 3. 相关课堂案例：课堂案例标签、核对状态、老师分析 Memo 和来源。
 4. 个人练习案例：独立分区，不当作老师规则证据。
 5. 外部古籍/网页/GitHub 参考：独立分区，附书名/作者/版本或 URL、commit SHA、License/版权状态和用途；未核实来源必须显示待核实。
-6. Raw ASR：默认不返回；若用户显式启用，必须放在低置信度单独分区。
+6. Raw ASR 按三档规则返回（本节为唯一口径，第 12 节 M7 与其他章节与此一致）：
+   - **默认返回来源元数据**：Raw ASR 所在仓库与文件路径、DocumentRevision、Locator（段落序号；有可靠时间戳时附时间范围）、来源置信度、音频校正状态。
+   - **默认不返回**：Raw ASR 正文与长篇摘录。
+   - **仅当用户明确启用 Raw ASR 正文时**：才返回正文或摘录，且必须放在独立的低置信度区域，并明确说明其未经音频校正，不得当成经过验证的老师逐字原话。
+   此规则只管 Evidence Pack 的返回内容，不改变 Raw ASR 默认不进入主要 Chunk / Embedding / 规则抽取流程的原则。
 7. 来源冲突、缺少依据和模型不确定性。
 8. 提供一段可直接交给 ChatGPT 网页版的分析任务说明。
 
-Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”。
+Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”。涉及课堂案例时按 case_id 归并同一案例的多种表示与来源（课程笔记提及、ASR 定位、案例 JSON 与其 MD 表示、关联的每日记录），并分开标示老师讲解、用户补充与 AI 推算；同时按上面第 6 项的三档规则返回 ASR 来源元数据（文件定位、DocumentRevision、置信度与音频校正状态）——即使该 ASR 没有 Chunk，也不得丢失它作为课堂来源的引用；正文默认不返回，须用户明确启用后才可放入低置信度区域。
 
 ## 12. 里程碑与用户验收
 
@@ -344,7 +365,9 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 | M1：项目骨架 | Python CLI、配置、日志、单元测试 | doctor、sources list、ingest --dry-run 正常 |
 | M2-A：来源模型 | 统一 ParsedDocument/Section、Locator、source identity | `approved_merged`；PR #3，merge commit `9505ce7` |
 | M2-B：Markdown/TXT | Markdown 与 TXT Adapter | `approved_merged`；PR #3，merge commit `9505ce7`（验收：144 tests / 38 adapter tests 通过，用户接受等价复跑作为验收依据） |
-| M2-C：课堂案例 JSON | HTML JSON Case Mapper | 只做结构化映射、原字段保留、稳定 record ID；PR #3 已合并，须等 PR #4 合并且用户明确授权后启动 |
+| M2-C1：案例 JSON Mapping | class-case JSON 与每日记录容器中的独立子记录 Mapper | 支持 `recordType=class-case` 的课程案例 JSON，以及 HTML 每日记录容器中显式允许的子记录；保留原始字段、稳定 ID 与来源链；不把每日记录容器整体当成 Case；matchStatus 须显式处理真实历史值（`matched` 归一化为 `verified` 并保留原始值，未知值保留并标记待核对，不得静默丢弃或误判，见第 4 节）；实现须用户明确授权后启动 |
+| M2-C2：自动生成 MD 伴随文件 | Generated Markdown companion | 支持 HTML 自动生成的记录 MD：校验文件名、MD 内嵌 JSON 的 ID 与原始 daily JSON 中子记录 ID 一致；MD 以 RENDERS 关系关联到 CastRecord，不创建第二个 Case；Chunk 时排除 `## 原始记录 JSON` 代码块 |
+| M2-C3：课堂案例 MD 表示 | Classroom Case Markdown Representation | 处理与案例 JSON 配对的课堂案例 MD（如 `case-xxx-analysis.md`）：它是同一 ClassCase 的可读表示，以 HAS_REPRESENTATION（format=markdown）关联到同一 case_id，不建第二个 Case、不另立分析来源；内容中的老师讲解、用户补充、AI 计算仍分别标明来源 |
 | M2-D：PDF | PDF 文本解析 / 页码 Locator | **deferred**；没有当前 PDF 输入，不纳入本轮 M2 |
 | 外部参考包接收 | Reference Package Validator / Adapter | 首批采集验证后实施；知识库不负责爬网站 |
 | M3：Neo4j Schema | 唯一约束、关系、Vector Index、测试节点 | 可创建/查询节点；向量索引 smoke test 成功 |
@@ -352,7 +375,7 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 | M5：Gemini 双路径 | Embedding + 结构化候选抽取 | Chunk 有向量；候选知识能回到来源 Chunk；没有自动确认规则 |
 | M6：外部参考资料 | 从 Source Catalog 选择并导入获准 Reference Package 中的古籍章节、网页文本、README/docs 或源码文件 | 来源/版本/版权/commit 完整；不混入老师课程来源；不在本仓库内爬取 |
 | PDF 扩展 | 仅在将来用户明确指定 PDF 后单独立项 | 不属于当前 Phase 1 必需交付 |
-| M7：Evidence Pack | 本地 Query Tool、向量检索 + 图关系扩展 | 输入已知问题时找到相关课堂段落/案例；输出可读、可追溯的 Markdown |
+| M7：Evidence Pack | 本地 Query Tool、向量检索 + 图关系扩展 | 输入已知问题时找到相关课堂段落/案例；输出可读、可追溯的 Markdown；同一课堂案例无论出现在课程笔记、ASR、案例 JSON 还是案例 MD 中，都按同一 case_id 归并呈现，不重复计数；Raw ASR 按第 11 节三档规则返回（默认只返回来源元数据） |
 | M8：端到端验收 | 真实课程 + 真实课堂案例 + 至少一份获准的外部 Reference Package（若已完成采集） | 你能把 Evidence Pack 交给 ChatGPT，且引用来源正确、分类明确；PDF 不是验收前提 |
 
 ### 最低验收测试矩阵
@@ -414,7 +437,7 @@ Phase 2 不是把 Phase 1 数据库搬上云。AuraDB 从 Phase 1 开始就是�
 详细的 checkpoint 模板和停止规则见 [AGENTS.md](../AGENTS.md)、[CLAUDE.md](../CLAUDE.md)、[Phase 1 Progress](phase1-progress.md) 与 [Claude Code 执行 Prompt](claude-code-phase1-execution-prompt.md)。
 
 ChatGPT 可以直接检查 GitHub 上已推送的分支/PR，但无法代替用户在 Mac 上操作 Aura Console 或读取未提交的本地工作区。没有推送到 GitHub 的代码，ChatGPT 无法做完整 diff review。
-  
+
 ## 15. 官方技术参考
 
 - [Neo4j AuraDB quotas and limits](https://neo4j.com/docs/aura/quotas-and-limits/)

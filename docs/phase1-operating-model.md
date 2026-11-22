@@ -91,7 +91,7 @@ Pages Functions 是 Cloudflare 托管的执行环境，不是我们维护的 Doc
 
 ## 2.1 外部参考采集器：独立 repository
 
-外部网页采集不是知识库 Importer 的职责。拟建独立仓库：`symbi/liuyao-source-collector`（建议先 Private；远端 repository 尚待通过 GitHub UI 或 `gh repo create` 创建）。
+外部网页采集不是知识库 Importer 的职责。独立仓库 `symbi/liuyao-source-collector` 已创建且为 Private，由独立窗口维护；本仓库只记录与其交接所需的必要事实，不接管它的工作，也不在本仓库实现采集功能。
 
 **Project A — Source Collector**
 - 负责发现并读取经允许访问的古籍网站、网页文本、GitHub README/docs/选定源码及将来经批准的文件下载源。
@@ -118,7 +118,7 @@ reference-package/
 
 Package manifest 至少包含 package/schema ID、collector 名称/版本、生成时间、source_id、标题/作者、canonical URL、具体章节/文件 URL、版本/commit、采集时间、版权状态、允许云端处理/再分发标记、内容哈希和原文定位。没有许可依据或不允许云端处理的资料可以登记但不得送入 Gemini。Package v1 schema 以 [外部参考资料来源目录](reference-source-catalog.md) 为设计依据。
 
-> GitHub 集成当前不提供直接创建 repository 的操作；本次已确定仓库名称和职责，但远端创建尚未完成。不得把计划中的 Collector repository 说成已存在。
+> `symbi/liuyao-source-collector` 已创建（Private，独立窗口维护）。本仓库文档只陈述这一事实与 Reference Package 交接契约，不描述其内部进度，也不得把 Collector 的工作计入本仓库状态。
 
 ## 3. Importer 的输入、处理和输出
 
@@ -141,10 +141,10 @@ Phase 1 必须把课程资料的两个来源轨道分开保存，不能把原始
 
 另外还有：
 
-1. **HTML 卦例 JSON**：从 `daily-records/` 或后续案例目录读取。用 Case Mapper 按结构化字段写入 Case 节点，不让 LLM 重新猜测卦盘字段。
+1. **HTML 卦例 JSON**：从 `daily-records/` 或后续案例目录读取。用 Case Mapper 按结构化字段写入节点：课堂案例写为 ClassCase（身份 `case_id`），HTML 每日记录写为 CastRecord（身份 `record_id`），两者是不同节点、不同身份；不让 LLM 重新猜测卦盘字段（模型详见实施计划第 7 节）。
 2. **外部 Reference Package**：只导入由独立 Source Collector 输出、且 Source Catalog 明确批准的章节文本、网页正文、README/docs 或选定源码。必须保留原始 URL、版本/commit、章节/文件 locator、许可状态和内容哈希。知识库 Importer 不直接爬取网页。
 3. **PDF**：当前没有已确认要导入的 PDF，因此 PDF Adapter 与 OCR 暂缓；只有用户指定具体文件、确认版本及使用权后再单独立项。
-3. **外部 GitHub 参考项目**：可以参考，但不能把整个 Repository 当成一篇长文。先登记仓库 URL、作者、License、commit SHA，再选择 README、docs、规则文件和有价值源码。README/Markdown 按标题和段落切块；源码按文件、类、函数或符号边界切块。所有内容标记为 `external_reference`，不能混入老师课堂规则。
+4. **外部 GitHub 参考项目**：可以参考，但不能把整个 Repository 当成一篇长文。先登记仓库 URL、作者、License、commit SHA，再选择 README、docs、规则文件和有价值源码。README/Markdown 按标题和段落切块；源码按文件、类、函数或符号边界切块。所有内容标记为 `external_reference`，不能混入老师课堂规则。
 
 ### 处理
 
@@ -155,7 +155,7 @@ Phase 1 必须把课程资料的两个来源轨道分开保存，不能把原始
   -> Source Gate：按 sourceType / trustLevel 分流
        ├─ Raw ASR：默认只登记来源与版本，不进入主抽取流程
        ├─ Curated Notes：Markdown Parser -> Chunker -> Curated Chunks
-       ├─ Case JSON：Case Mapper -> 结构化 Case
+       ├─ Case JSON：Case Mapper -> 结构化 ClassCase / CastRecord（按 case_id / record_id 双身份）
        └─ Reference Package：验证 manifest/rights/hash 后，按选定文件处理，标记 external
   -> 对 Curated Chunk 并行执行两条路径：
        ├─ Embedding Model：Chunk -> Vector -> 写入 Chunk / Vector Index
@@ -174,7 +174,7 @@ Chunk 是共同的基础文本单位。Embedding 和候选知识抽取不是二�
 - `Lesson`：课程课次。
 - `SourceDocument`：文档 ID、仓库/路径、版本、内容哈希、来源类别。
 - `Chunk`：文本片段、原文位置、所属文档、Embedding。
-- `Case`：课堂案例或个人练习，包含卦盘字段、问题、Memo、日期、案例类型和来源。
+- `Case` 相关记录必须区分课堂案例与个人练习：课堂案例是老师在课程中讲解过的教学案例（classroom_case），不是用户个人练习数据，不得归类为 personal_practice；个人练习是独立类别。课堂案例保留自己的稳定 case_id，与 HTML 记录的 record_id 分开，只有通过明确的关联字段（如 `dailyRecord.recordId`）匹配时才建立关系（详见实施计划第 7 节）。
 - `Concept`：六亲、六神、日辰、月建、暗动等概念。
 - `RuleCandidate` / `Rule`：从课程材料抽取的规则陈述、适用条件、来源和状态。
 - 节点之间的关系，例如 `HAS_CHUNK`、`MENTIONS`、`TAUGHT_IN`、`ILLUSTRATES`、`SUPPORTED_BY`。
@@ -189,7 +189,8 @@ Importer 必须设计成幂等，并维护同步清单：
 - `documentId`：稳定标识同一个来源文件（例如 repo/path）。
 - `revisionHash`：某一次文件内容的哈希；文件变化就产生新 revision。
 - `chunkId`：来源身份 + chunking 版本 + 规范化片段身份。
-- `recordId`：案例记录本身的稳定 ID。
+- `case_id`：课堂案例的稳定身份（ClassCase），如 `L19-C01-work-transfer`。
+- `record_id`：HTML 每日记录子记录的稳定身份（CastRecord），即每日记录 JSON 中的子记录 UUID。它与 case_id 是两套 ID；只有课堂案例 JSON 的 `dailyRecord.recordId` 与某个 record_id 明确匹配时，才在 ClassCase 与 CastRecord 之间建立 BASED_ON_RECORD 关系。
 
 | 情况 | Importer 行为 |
 |---|---|
@@ -198,8 +199,10 @@ Importer 必须设计成幂等，并维护同步清单：
 | 文件有修改 | 建立新 revision；变化的 Chunk 重新处理，未变化 Chunk 尽量复用 |
 | Raw ASR v1 升级为 v2 | 保留 v1，新建 v2；不覆盖原始版本 |
 | 旧版 Chunk 不再属于当前版本 | 标记 superseded，保留历史，默认检索时不优先返回 |
-| 新增一条案例 | 按稳定 recordId 新增 Case |
-| 案例 Memo 或卦盘修改 | 更新同一个 Case，不产生重复 Case |
+| 新增一个课堂案例 | 按稳定 case_id 新增 ClassCase；其 JSON 与配对 MD 是同一案例的两种表示（HAS_REPRESENTATION），挂到同一个 ClassCase |
+| 新增一条每日记录 | 按 record_id 新增 CastRecord；不自动产生 ClassCase，仅凭 isCase/caseSource 标记也不得认定为已核实课堂案例 |
+| 课堂案例内容修改（Memo、卦盘等） | 更新同一个 ClassCase 的对应表示或 revision，case_id 不变，不产生重复 ClassCase |
+| 每日记录修改 | 更新对应 record_id 的 CastRecord；不因此创建或替换 ClassCase |
 | 外部项目新增文档 | 只导入选定的新文件，仍然标记 external |
 
 举例：以后你用更好的模型重新转写第 17 课，Raw Transcript v2 会成为一个新版本。Importer 比较新旧文本，变化的 Chunk 才重新生成 Embedding 和候选知识；相同内容可以复用。旧版仍保留为历史，不与 Curated Lesson Notes 混源。
@@ -340,7 +343,7 @@ Phase 1 不需要额外部署 PostgreSQL / Supabase。只有将来需要多用�
 7. M8：用真实课程、真实课堂案例和用户允许的参考资料完成端到端验收。
 
 Phase 2 的 Cloud Run 在线 API 不属于本阶段，不阻塞 Phase 1 的知识库辅助分析。
- 
+
 ## 官方技术参考
 
 - Neo4j Graph Database：<https://neo4j.com/docs/getting-started/graph-database/>
