@@ -42,7 +42,7 @@
   .calendar-char.element-wood{color:#32844b}
   .calendar-char.element-earth{color:#89613f}
   .calendar-char.element-fire{color:#c44738}
-  .calendar-char.element-metal{color:#b98519}
+  .calendar-char.element-metal{color:#D19A00}
   /* v49: monthly 旺相 marker. Fill = 旺 element; ring = 相 element.
      Compact 36px circle with a 3px ring; no glow/shadow and no pillar-width change. */
   .calendar-char.month-wangxiang{
@@ -75,7 +75,7 @@
   .tile.element-wood{color:#32844b;background:#edf6ed;border-color:#bfd9c2}
   .tile.element-earth{color:#89613f;background:#f5eee5;border-color:#d9c6ae}
   .tile.element-fire{color:#c44738;background:#fff0ed;border-color:#efc2b9}
-  .tile.element-metal{color:#b98519;background:#fcf4df;border-color:#e5d19b}
+  .tile.element-metal{color:#D19A00;background:#FFF7D6;border-color:#E6C454}
   .kin-tiles .tile{min-width:44px;width:44px;height:30px;padding:3px 1px}
   .palette-help{display:none}
   .palette-help strong{color:var(--jade)}
@@ -92,12 +92,25 @@
   .auto-review-list li.missing{color:#90651d}
   .auto-review-list li.note{color:#65685d}
   .drop-slot.auto-check-error{border:1.5px solid #b94d39!important;background:#fff0ec!important;box-shadow:0 0 0 2px rgba(185,77,57,.13)!important}
-  .drop-slot.auto-check-missing{border:1.5px dashed #b98519!important;background:#fff8e8!important;box-shadow:0 0 0 2px rgba(185,133,25,.11)!important}
+  .drop-slot.auto-check-missing{border:1.5px dashed #D19A00!important;background:#fff8e8!important;box-shadow:0 0 0 2px rgba(185,133,25,.11)!important}
   .hexagram-heading{display:flex;align-items:center;min-height:34px;min-width:56px;gap:6px;flex-wrap:wrap;flex:1 1 auto}
   @media(max-width:560px){.auto-assembly-actions{width:100%;margin-left:0;justify-content:flex-start}.auto-assembly-actions .small-action{padding:5px 8px;font-size:11px}.auto-review-report{font-size:11px}}
   .date-branch-sidecar{white-space:nowrap;}
   .hexagram-name{display:inline-flex;align-items:center;font-size:25px;font-weight:900;line-height:1;letter-spacing:.04em;white-space:nowrap}
   .hexagram-shi-prefix{margin-right:1px}
+  .hexagram-palace-badge{
+    width:27px;height:27px;min-width:27px;flex:0 0 27px;
+    display:inline-flex;align-items:center;justify-content:center;
+    box-sizing:border-box;border:2px solid currentColor;border-radius:50%;
+    background:#fffdf7;font-size:15px;font-weight:950;line-height:1;
+    margin-left:1px;white-space:nowrap;
+  }
+  .hexagram-palace-badge[hidden]{display:none!important}
+  .hexagram-palace-badge.element-water{color:#2677b8;background:#eaf3fb}
+  .hexagram-palace-badge.element-wood{color:#32844b;background:#edf6ed}
+  .hexagram-palace-badge.element-earth{color:#89613f;background:#f5eee5}
+  .hexagram-palace-badge.element-fire{color:#c44738;background:#fff0ed}
+  .hexagram-palace-badge.element-metal{color:#D19A00;background:#FFF7D6}
   .hexagram-meta{font-size:15px;font-weight:900;line-height:1.2;color:#282b25;white-space:nowrap;padding:0;margin-left:5px;min-height:0;display:inline-flex;align-items:center;gap:0}
   .hexagram-meta:empty{display:none}
   .hexagram-meta .relation-shi,.hexagram-meta .relation-ying{font-weight:950}
@@ -122,12 +135,12 @@
   .hexagram-name.element-wood{color:#32844b}
   .hexagram-name.element-earth{color:#89613f}
   .hexagram-name.element-fire{color:#c44738}
-  .hexagram-name.element-metal{color:#b98519}
+  .hexagram-name.element-metal{color:#D19A00}
   .hexagram-name .element-water{color:#2677b8}
   .hexagram-name .element-wood{color:#32844b}
   .hexagram-name .element-earth{color:#89613f}
   .hexagram-name .element-fire{color:#c44738}
-  .hexagram-name .element-metal{color:#b98519}
+  .hexagram-name .element-metal{color:#D19A00}
   .hexagram-name:empty{visibility:hidden}
   .worksheet-tools{display:flex;gap:7px;flex-wrap:wrap}
   .legend{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:11px;flex-wrap:wrap}
@@ -146,13 +159,13 @@
   .trigram-name.element-wood{color:#32844b}
   .trigram-name.element-earth{color:#89613f}
   .trigram-name.element-fire{color:#c44738}
-  .trigram-name.element-metal{color:#b98519}
+  .trigram-name.element-metal{color:#D19A00}
   .calendar-value{display:inline-flex;align-items:center;gap:1px;white-space:nowrap}
   .calendar-char.element-water{color:#2677b8}
   .calendar-char.element-wood{color:#32844b}
   .calendar-char.element-earth{color:#89613f}
   .calendar-char.element-fire{color:#c44738}
-  .calendar-char.element-metal{color:#b98519}
+  .calendar-char.element-metal{color:#D19A00}
   .calendar-divider{color:#999687;font-weight:500;padding:0 3px}
   .trigram-group-rows{display:flex;flex-direction:column;gap:7px;min-width:0}
   .line-row{display:grid;width:max-content;max-width:100%;grid-template-columns:116px 52px 52px 46px 52px 29px 46px 6em 88px;gap:6px;align-items:center;border:1px solid #e8e0d1;border-radius:9px;padding:6px 8px;background:#fffefb;transition:border-color .15s,background .15s;overflow-x:auto}
@@ -182,9 +195,9 @@
   .rows.element-fire .flower-btn{background:#fff0ed;border-color:#efc2b9;color:#c44738}
   .rows.element-fire .flower-btn:hover{background:#ffe2dc;border-color:#c44738}
   .rows.element-fire .flower-btn.active,.rows.element-fire .flower-btn.active.moving-option{background:#c44738;border-color:#9f382e;color:#fffdf7;box-shadow:inset 0 0 0 1px #9f382e}
-  .rows.element-metal .flower-btn{background:#fcf4df;border-color:#e5d19b;color:#b98519}
-  .rows.element-metal .flower-btn:hover{background:#f7eac5;border-color:#b98519}
-  .rows.element-metal .flower-btn.active,.rows.element-metal .flower-btn.active.moving-option{background:#b98519;border-color:#946a12;color:#fffdf7;box-shadow:inset 0 0 0 1px #946a12}
+  .rows.element-metal .flower-btn{background:#FFF7D6;border-color:#E6C454;color:#D19A00}
+  .rows.element-metal .flower-btn:hover{background:#FFF0B3;border-color:#D19A00}
+  .rows.element-metal .flower-btn.active,.rows.element-metal .flower-btn.active.moving-option{background:#D19A00;border-color:#A87900;color:#fffdf7;box-shadow:inset 0 0 0 1px #A87900}
 
   .line-result{text-align:center}
   .change-cell{display:flex;align-items:center;justify-content:center;min-width:0}
@@ -212,7 +225,7 @@
   .drop-token.element-wood{color:#32844b}
   .drop-token.element-earth{color:#89613f}
   .drop-token.element-fire{color:#c44738}
-  .drop-token.element-metal{color:#b98519}
+  .drop-token.element-metal{color:#D19A00}
   .kin-filled .drop-token{color:#80602b}
   .drop-token small{font-size:10px;font-weight:500;color:var(--muted);display:block;margin-top:3px}
   .clear-slot{position:absolute;right:-4px;top:-5px;z-index:2;border:0;border-radius:50%;width:13px;height:13px;display:grid;place-items:center;background:#f4e7de;color:#9c5b4c;padding:0;font-size:11px;line-height:1;opacity:0;cursor:pointer}
@@ -248,15 +261,21 @@
   .palace-element-wood{--palace-color:#32844b;}
   .palace-element-earth{--palace-color:#89613f;}
   .palace-element-fire{--palace-color:#c44738;}
-  .palace-element-metal{--palace-color:#b98519;}
+  .palace-element-metal{--palace-color:#D19A00;}
   .palace-column-head.palace-element-water,.palace-entry.palace-element-water{color:#2677b8;}
   .palace-column-head.palace-element-wood,.palace-entry.palace-element-wood{color:#32844b;}
   .palace-column-head.palace-element-earth,.palace-entry.palace-element-earth{color:#89613f;}
   .palace-column-head.palace-element-fire,.palace-entry.palace-element-fire{color:#c44738;}
-  .palace-column-head.palace-element-metal,.palace-entry.palace-element-metal{color:#b98519;}
+  .palace-column-head.palace-element-metal,.palace-entry.palace-element-metal{color:#D19A00;}
   .bottom-note{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-top:13px;color:var(--muted);font-size:11px}
   .footer-note{text-align:center;color:#8c8778;font-size:11px;margin:19px 0 0}
-  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(15px);background:#283e32;color:#fff;padding:10px 15px;border-radius:10px;box-shadow:0 7px 24px #0002;opacity:0;pointer-events:none;transition:.2s;z-index:10;font-size:12px}
+  .save-record-status{display:inline-flex;align-items:center;min-height:20px;font-size:11px;line-height:1.25;color:#747267;white-space:nowrap}
+  .save-record-status:empty{display:none}
+  .save-record-status.success{color:#286545;font-weight:850}
+  .save-record-status.pending{color:#946a08;font-weight:750}
+  .save-record-status.partial{color:#946a08;font-weight:800}
+  .save-record-status.error{color:#b44735;font-weight:800;white-space:normal;max-width:260px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(15px);background:#283e32;color:#fff;padding:10px 15px;border-radius:10px;box-shadow:0 7px 24px #0002;opacity:0;pointer-events:none;transition:.2s;z-index:1000;font-size:12px}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(max-width:1120px){
     .line-row{grid-template-columns:116px 48px 52px 44px 48px 28px 44px 6em 88px;gap:5px;padding:6px}
@@ -395,7 +414,7 @@
   .branch-pair.liuhe-earth{--pair-color:#89613f;--pair-bg:#f7f0e8;}
   .branch-pair.liuhe-wood{--pair-color:#32844b;--pair-bg:#eff7ee;}
   .branch-pair.liuhe-fire{--pair-color:#c44738;--pair-bg:#fff1ee;}
-  .branch-pair.liuhe-metal{--pair-color:#b98519;--pair-bg:#fcf6e7;}
+  .branch-pair.liuhe-metal{--pair-color:#D19A00;--pair-bg:#FFF7D6;}
   .branch-pair.liuhe-water{--pair-color:#2677b8;--pair-bg:#edf5fb;}
   .branch-pair.liuhe-fire-earth{
     --pair-bg:#faf2e9;
@@ -425,7 +444,7 @@
   .date-controls{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap;}
   .jianchu-glyph{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:22px;height:26px;margin-left:3px;font-size:19px;font-weight:900;line-height:1;white-space:nowrap;}
   .jianchu-glyph.tone-black{color:#202020;}
-  .jianchu-glyph.tone-yellow{color:#b98519;}
+  .jianchu-glyph.tone-yellow{color:#D19A00;}
   .jianchu-glyph.tone-neutral{color:#858585;}
   .jianchu-guidance{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;max-width:min(760px,62vw);margin-left:4px;font-size:14px;line-height:1.35;white-space:normal;}
   .jianchu-guidance:empty{display:none;}
@@ -516,7 +535,7 @@
   .drop-slot.shen-filled.god-gouchen,.drop-slot.shen-filled.god-tengshe{background:#f5eee5;border-color:#d9c6ae;}
   .drop-slot.shen-filled.god-gouchen .drop-token,.drop-slot.shen-filled.god-tengshe .drop-token{color:#89613f!important;background:transparent!important;}
   .drop-slot.shen-filled.god-baihu{background:#fcf4df;border-color:#e5d19b;}
-  .drop-slot.shen-filled.god-baihu .drop-token{color:#b98519!important;background:transparent!important;}
+  .drop-slot.shen-filled.god-baihu .drop-token{color:#D19A00!important;background:transparent!important;}
   .drop-slot.shen-filled.god-xuanwu{background:#eaf3fb;border-color:#b9d5ea;}
   .drop-slot.shen-filled.god-xuanwu .drop-token{color:#2677b8!important;background:transparent!important;}
   .records-dialog{width:min(640px,calc(100vw - 28px));max-height:min(76vh,760px);border:1px solid #d8cfbd;border-radius:15px;padding:0;background:#fffdf7;color:var(--ink);box-shadow:0 18px 65px #0003;}
@@ -552,12 +571,12 @@
   .tile.god-qinglong{color:#258b78!important;background:#e9f5f1!important;border-color:#b9ddd2!important;}
   .tile.god-zhuque{color:#c44738!important;background:#fff0ed!important;border-color:#efc2b9!important;}
   .tile.god-gouchen,.tile.god-tengshe{color:#89613f!important;background:#f5eee5!important;border-color:#d9c6ae!important;}
-  .tile.god-baihu{color:#b98519!important;background:#fcf4df!important;border-color:#e5d19b!important;}
+  .tile.god-baihu{color:#D19A00!important;background:#fcf4df!important;border-color:#e5d19b!important;}
   .tile.god-xuanwu{color:#2677b8!important;background:#eaf3fb!important;border-color:#b9d5ea!important;}
   .drop-token.god-qinglong{color:#258b78!important;background:transparent!important;}
   .drop-token.god-zhuque{color:#c44738!important;background:transparent!important;}
   .drop-token.god-gouchen,.drop-token.god-tengshe{color:#89613f!important;background:transparent!important;}
-  .drop-token.god-baihu{color:#b98519!important;background:transparent!important;}
+  .drop-token.god-baihu{color:#D19A00!important;background:transparent!important;}
   .drop-token.god-xuanwu{color:#2677b8!important;background:transparent!important;}
   .god-tiles .tile{font-size:13px;font-weight:850;}
   .day-god-hint{font-size:10px;line-height:1.15;color:var(--muted);white-space:nowrap;font-weight:750;visibility:hidden;}
@@ -744,7 +763,7 @@
   .date-branch-token.element-wood{color:#32844b;background:#edf6ed;}
   .date-branch-token.element-earth{color:#89613f;background:#f5eee5;}
   .date-branch-token.element-fire{color:#c44738;background:#fff0ed;}
-  .date-branch-token.element-metal{color:#b98519;background:#fcf4df;}
+  .date-branch-token.element-metal{color:#D19A00;background:#FFF7D6;}
   .trine-overlay .date-trine-fill{stroke:none;}
   .trine-overlay .date-trine-edge{fill:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:3.5 4;opacity:.86;}
   .trine-overlay .date-trine-edge.mode-a{stroke-width:3.1;stroke-dasharray:none;opacity:.88;}
@@ -1017,6 +1036,7 @@
         <div class="record-controls">
           <button type="button" class="small-action" id="toggle-case" aria-pressed="false" hidden></button>
           <button type="button" class="small-action primary" id="save-record">保存卦例</button>
+          <span class="save-record-status" id="save-record-status" role="status" aria-live="polite" aria-atomic="true"></span>
           <button type="button" class="small-action" id="open-records">卦例记录 <span id="record-count">0</span></button>
           <button type="button" class="small-action" id="github-login">连接 GitHub</button>
           <span id="github-sync-status" class="section-note" role="status" aria-live="polite">GitHub 未连接</span>
@@ -1114,7 +1134,7 @@
 
   <section class="card worksheet" aria-label="六爻输入区">
     <div class="worksheet-subhead">
-      <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
+      <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-palace-badge" id="hexagram-palace-badge" hidden></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
       <div class="auto-assembly-actions" role="group" aria-label="自动装卦与检查">
         <button type="button" class="small-action primary" id="auto-assemble-check" title="有空缺时自动补齐；全部填写后检查卦盘，不覆盖已有内容">自动装卦 / 检查</button>
       </div>
@@ -1577,7 +1597,7 @@
     const relation=getShiYingRelation(info);
     node.replaceChildren();
     if(!relation) return '';
-    const elementColors={water:'#2677b8',wood:'#32844b',earth:'#89613f',fire:'#c44738',metal:'#b98519'};
+    const elementColors={water:'#2677b8',wood:'#32844b',earth:'#89613f',fire:'#c44738',metal:'#D19A00'};
     const addLabel=(label,element,className)=>{
       const span=document.createElement('span');
       span.className=className;
@@ -1630,7 +1650,7 @@
     wood:{text:'#32844b',fill:'#eaf4e9'},
     earth:{text:'#89613f',fill:'#f3ebe4'},
     fire:{text:'#c44738',fill:'#fff0ed'},
-    metal:{text:'#b98519',fill:'#faf2d9'}
+    metal:{text:'#D19A00',fill:'#FFF2BF'}
   };
   // 按 v57 的月令旺相表识别每个纳甲地支的月令状态。
   // 旺：与月令同五行；相：月令所生；休：生月令；囚：月令所克；死：克月令。
@@ -2151,6 +2171,13 @@
   const worksheetHost = document.querySelector('.worksheet');
   const hexagramHeading = document.querySelector('.hexagram-heading');
   const toast = document.getElementById('toast');
+  const saveRecordStatus=document.getElementById('save-record-status');
+  function setSaveFeedback(message,state='info'){
+    if(!saveRecordStatus)return;
+    saveRecordStatus.textContent=message||'';
+    saveRecordStatus.className='save-record-status'+(state?' '+state:'');
+    saveRecordStatus.title=message||'';
+  }
   const SVG_NS='http://www.w3.org/2000/svg';
   const trineOverlay=document.createElementNS(SVG_NS,'svg');
   trineOverlay.classList.add('trine-overlay');
@@ -2173,7 +2200,7 @@
 
   function showToast(message){
     toast.textContent = message; toast.classList.add('show');
-    clearTimeout(toastTimer); toastTimer = setTimeout(()=>toast.classList.remove('show'),1800);
+    clearTimeout(toastTimer); toastTimer = setTimeout(()=>toast.classList.remove('show'),3800);
   }
 
   // Palette clicks fill the lowest empty main-line slot (初爻 -> 上爻).
@@ -2616,23 +2643,33 @@
     if(!node) return;
     const complete=state.every(item=>item.flowers!==null);
     const metaNode=document.getElementById('hexagram-meta');
+    const palaceBadge=document.getElementById('hexagram-palace-badge');
     if(!complete){
       currentHexagramInfo=null;
       rowsHost.classList.remove(...elementClasses);
       node.textContent=''; node.classList.remove(...elementClasses); node.removeAttribute('title');
       if(metaNode) metaNode.replaceChildren();
+      if(palaceBadge){palaceBadge.textContent='';palaceBadge.hidden=true;palaceBadge.classList.remove(...elementClasses);palaceBadge.removeAttribute('title');palaceBadge.removeAttribute('aria-label');}
       updatePalaceReferenceSelection();
       return;
     }
     const pattern=state.map(item=>mapping[item.flowers].yang?'1':'0').join('');
     const info=hexagramData[pattern];
-    if(!info){currentHexagramInfo=null;rowsHost.classList.remove(...elementClasses);node.textContent='';node.classList.remove(...elementClasses);if(metaNode)metaNode.textContent='';updatePalaceReferenceSelection();return;}
+    if(!info){currentHexagramInfo=null;rowsHost.classList.remove(...elementClasses);node.textContent='';node.classList.remove(...elementClasses);if(metaNode)metaNode.textContent='';if(palaceBadge){palaceBadge.textContent='';palaceBadge.hidden=true;palaceBadge.classList.remove(...elementClasses);palaceBadge.removeAttribute('title');palaceBadge.removeAttribute('aria-label');}updatePalaceReferenceSelection();return;}
     currentHexagramInfo={...info,pattern};
     rowsHost.classList.remove(...elementClasses);
     if(info.element) rowsHost.classList.add('element-'+info.element);
     node.replaceChildren();
     node.classList.remove(...elementClasses);
     const elementCharacters={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
+    if(palaceBadge){
+      palaceBadge.textContent=info.palace||'';
+      palaceBadge.hidden=!info.palace;
+      palaceBadge.classList.remove(...elementClasses);
+      if(info.element) palaceBadge.classList.add('element-'+info.element);
+      palaceBadge.title='所属卦宫：'+(info.palace||'')+'（五行'+(elementCharacters[info.element]||'')+'）';
+      palaceBadge.setAttribute('aria-label','所属卦宫：'+(info.palace||''));
+    }
     const shiPrefix=document.createElement('span');
     shiPrefix.className='hexagram-shi-prefix element-'+info.element;
     shiPrefix.textContent=String(info.shi||'');
@@ -2737,7 +2774,7 @@
     {branches:['申','子','辰'],element:'water',label:'申子辰三合水局',color:'#2677b8',activationBranches:['子','辰']},
     {branches:['亥','卯','未'],element:'wood',label:'亥卯未三合木局',color:'#32844b',activationBranches:['卯']},
     {branches:['寅','午','戌'],element:'fire',label:'寅午戌三合火局',color:'#c44738',activationBranches:['午']},
-    {branches:['巳','酉','丑'],element:'metal',label:'巳酉丑三合金局',color:'#b98519',activationBranches:['酉']}
+    {branches:['巳','酉','丑'],element:'metal',label:'巳酉丑三合金局',color:'#D19A00',activationBranches:['酉']}
   ];
   // Course rule: the middle branch must move; 申子辰 is the exception where 子 or 辰 may move.
   function isTrineActivationBranch(definition,branch){
@@ -3217,7 +3254,7 @@
   // 只有对应两爻的纳甲地支确实互为六合时才画虚线；三组都出现时即呈现完整六合卦。
   const liuhePairColors={
     '子丑':'#89613f','寅亥':'#32844b','卯戌':'#c44738',
-    '辰酉':'#b98519','巳申':'#2677b8','午未':'#89613f'
+    '辰酉':'#D19A00','巳申':'#2677b8','午未':'#89613f'
   };
   function renderLiuheOverlay(){
     if(!liuheOverlay || !rowsHost) return;
@@ -3456,7 +3493,7 @@
       shi.classList.toggle('active',isShi);
       ying.classList.toggle('active',isYing);
       // 世、应标记分别按各自纳甲地支的五行着色，关系判断也使用这两个五行。
-      const elementColors={water:'#2677b8',wood:'#32844b',earth:'#89613f',fire:'#c44738',metal:'#b98519'};
+      const elementColors={water:'#2677b8',wood:'#32844b',earth:'#89613f',fire:'#c44738',metal:'#D19A00'};
       const shiLine=(currentHexagramInfo?.shi-1);
       const yingLine=((currentHexagramInfo?.shi-1+3)%6);
       const shiElement=currentHexagramInfo ? branchElements[state[shiLine]?.branch] : '';
@@ -3749,13 +3786,14 @@
     return JSON.parse(JSON.stringify(doc));
   }
   async function saveCurrentRecord(){
+    setSaveFeedback('正在保存…','pending');
     const pillarProblem=manualPillarProblem();
-    if(pillarProblem){showToast(pillarProblem);return false;}
+    if(pillarProblem){setSaveFeedback('未保存：'+pillarProblem,'error');showToast(pillarProblem);return false;}
     const record=makeRecordSnapshot();
     const date=record.date;
     let doc;
     try{doc=await getDayDocumentForSave(date);}
-    catch(error){setGitHubStatus('未同步：'+error.message);showToast('GitHub 读取失败，未保存：'+error.message);return false;}
+    catch(error){setGitHubStatus('未同步：'+error.message);setSaveFeedback('保存失败：'+error.message,'error');showToast('GitHub 读取失败，未保存：'+error.message);return false;}
     const now=new Date().toISOString();
     doc.schemaVersion=1;doc.recordDate=date;doc.timezone=JAPAN_TZ;
     doc.createdAt=doc.createdAt||now;doc.updatedAt=now;
@@ -3807,15 +3845,23 @@
       catch(error){markdownError=error;}
       markEntryClean();
       const savedLabel=record.isCase?(record.caseSource==='practice'?'个人练习案例已保存：':'课堂案例已保存：'):(shouldSaveAsDaily?'每日卦已保存：':(category==='daily'?'新卦例已另存：':'额外问题已保存：'));
+      const savedTime=new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
       if(markdownError){
         setGitHubStatus('JSON 已保存；MD 未同步：'+markdownError.message);
+        setSaveFeedback('JSON 已保存；MD 未同步 · '+savedTime,'partial');
         showToast(savedLabel+recordHexagramName(record)+'；MD 保存失败');
       }else{
         setGitHubStatus('JSON 与 MD 已保存：'+date);
-        showToast(savedLabel+recordHexagramName(record)+'；MD 已保存');
+        setSaveFeedback('已保存：'+recordHexagramName(record)+' · '+savedTime,'success');
+        showToast(savedLabel+recordHexagramName(record)+'；JSON 与 MD 均已保存');
       }
       return true;
-    }catch(error){setGitHubStatus('未同步：'+error.message);showToast('GitHub 保存失败，尚未同步：'+error.message);return false;}
+    }catch(error){
+      setGitHubStatus('未同步：'+error.message);
+      setSaveFeedback('保存失败：'+error.message,'error');
+      showToast('GitHub 保存失败，尚未同步：'+error.message);
+      return false;
+    }
   }
   function openRecord(record){
     if(!record||!Array.isArray(record.lines)||record.lines.length!==6){showToast('卦例数据格式不正确');return;}
