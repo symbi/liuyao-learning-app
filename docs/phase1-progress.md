@@ -7,13 +7,13 @@
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
 - Status: in_progress
-- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 已按真实文件拆为 C1/C2/C3，当前为规划更新阶段 PR #5，实现待用户授权；PDF Adapter/OCR 已暂缓）
+- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 已按真实文件拆为 C1/C2/C3，当前为规划更新阶段 PR #6，实现待用户授权；PDF Adapter/OCR 已暂缓）
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
 - Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2 整体 in_progress（剩 M2-C）
-- Active implementation branch: none（M2-C 尚未启动）；规划分支 `phase1/m2c-planning`（PR #5，仅文档）
-- Active PR: Draft PR #5（M2-C 规划更新：案例资料分类、C1/C2/C3 拆分、课堂案例身份原则与数据模型修订；仅文档）
+- Active implementation branch: none（M2-C 尚未启动）；规划分支 `phase1/m2c-planning`（PR #6，仅文档）
+- Active PR: Draft PR #6（M2-C 规划更新：案例资料分类、C1/C2/C3 拆分、课堂案例身份原则与数据模型修订；仅文档）
 - Last completed milestone: M2-A/M2-B（经 PR #3 合并）；M1 已合并
-- Next action: ChatGPT 审查 PR #5，用户决定是否合并；之后由用户明确授权才启动 M2-C1 实现。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
+- Next action: ChatGPT 审查 PR #6，用户决定是否合并；之后由用户明确授权才启动 M2-C1 实现。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
 - Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
 - Merged M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3（merge commit `9505ce7`）
 - Last updated: 2026-11-22
@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #5](https://github.com/symbi/liuyao-learning-app/pull/5) | M2-A/M2-B 已合并；M2-C 按真实文件拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（人工分析 MD 关系），规划见 PR #5，实现待用户授权；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
+| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) | M2-A/M2-B 已合并；M2-C 按真实文件拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（人工分析 MD 关系），规划见 PR #6，实现待用户授权；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
@@ -300,7 +300,7 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - PR #4 分支已通过 GitHub merge commit `6f2c405` 合并最新 main：PR #3 的 M2-A/M2-B 代码与测试完整保留（adapters.py blob SHA 与此前核对一致），本 PR 的架构决策、来源目录与 Reference Package Schema 未被覆盖。
 - `docs/phase1-implementation-plan.md` 第 4 节已按现状修正：课堂案例不再是“只有 README 约定”，并记录 M2-C 实施准备要求。本节之后的状态以本节为准。
 
-## 2026-11-22 — PR #4 合并与 M2-C 规划更新（PR #5，docs-only）
+## 2026-11-22 — PR #4 合并与 M2-C 规划更新（PR #6，docs-only）
 
 - PR #4 已由用户合并：merge commit `65fb501f4dad5a380b41b1c304aafa47b4b685e3`。main 现已包含 Reference Source Catalog、Reference Package v1 Schema 与双仓库架构文档。ChatGPT 对 PR #4 最终 head `5b8e05b` 的复审为 PASS（PR 评论 #issuecomment-7064313428）。
 - `symbi/liuyao-source-collector` 已创建且为 Private（独立窗口维护）；此前文档中“尚未创建”的表述已在本 PR 修正。
