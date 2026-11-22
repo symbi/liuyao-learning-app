@@ -803,3 +803,13 @@
 - 月令旺衰的计算和辅助说明仍保留（例如无障碍标签仍可读到「月令木旺、火相：旺，旬空」），日期栏的月令旺相圈完全不变；仅针对旬空纳甲 token 的视觉优先级调整。月破角标逻辑仍独立，不在本次修改范围内。
 - 验证：整页 inline JavaScript 通过 V8 语法解析；对实际 `applyBranchStatus()` 做了行为测试：卯月卯支且旬空时，`is-xunkong=true`、`is-monthly-wangxiang=false`、不生成月令红色 ring；非旬空旺相地支仍正常显示旺相 ring；辅助标签仍保留月令及旬空信息。
 - 仅更新 PR #1 分支及 HTML 维护记录；未修改 main、Production、日历月令显示、课堂原始资料或任何已保存 JSON／MD 卦例数据。
+
+
+### v109 follow-up — 修复保存按钮一直停留在「正在保存」的问题（2026-11-22）
+
+- 定位到保存流程中的确定性运行时错误：`makeRecordSnapshot()` 的 `state.map()` 回调原先只接收 `item`，但函数内部将未定义的 `index` 传入 `getLineMovementInfo()`。该错误发生在保存状态设置为「正在保存…」之后、主要异步错误处理之前，因此界面会卡在 pending 状态，且不会正常进入成功／失败提示。
+- 将回调改为 `state.map((item,index)=>...)`，使每一爻都能按自己的爻位索引判断明动／暗动；保存快照及相关数据生成恢复正常。
+- 对保存前的 `makeRecordSnapshot()` 增加独立 try/catch，若数据构建再发生异常，会显示「保存前出错」及具体原因，不再留下「正在保存」。
+- 对 GitHub API 请求增加 20 秒超时及明确错误提示，网络请求无响应时会解除 pending 状态；保存按钮在请求中临时禁用，结束时根据成功／部分成功／失败状态恢复可点击，避免重复提交。
+- 验证：整页 inline JavaScript 通过 V8 语法解析；静态检查确认 map 回调定义 index、快照构建异常被捕获、GitHub 请求有超时保护、保存按钮 pending 时禁用且失败路径恢复状态。未进行真实浏览器的 GitHub OAuth／远端保存端到端测试。
+- 仅更新 PR #1 分支及 HTML 维护记录；未修改 main、Production、已保存 JSON／MD 案例或课程资料。
