@@ -174,6 +174,24 @@
   .flower-btn:hover{border-color:#b6c6b5}
   .flower-btn.active{background:var(--jade-soft);border-color:#7ca087;color:#315844;box-shadow:inset 0 0 0 1px #7ca087}
   .flower-btn.active.moving-option{background:var(--red-soft);border-color:var(--red);color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+
+  /* The six casting controls follow the completed hexagram's 八宫 element. */
+  .rows.element-water .flower-btn{background:#eaf3fb;border-color:#b9d5ea;color:#2677b8}
+  .rows.element-water .flower-btn:hover{background:#dcecf8;border-color:#2677b8}
+  .rows.element-water .flower-btn.active,.rows.element-water .flower-btn.active.moving-option{background:#2677b8;border-color:#1d6299;color:#fffdf7;box-shadow:inset 0 0 0 1px #1d6299}
+  .rows.element-wood .flower-btn{background:#edf6ed;border-color:#bfd9c2;color:#32844b}
+  .rows.element-wood .flower-btn:hover{background:#deefdf;border-color:#32844b}
+  .rows.element-wood .flower-btn.active,.rows.element-wood .flower-btn.active.moving-option{background:#32844b;border-color:#286b3c;color:#fffdf7;box-shadow:inset 0 0 0 1px #286b3c}
+  .rows.element-earth .flower-btn{background:#f5eee5;border-color:#d9c6ae;color:#89613f}
+  .rows.element-earth .flower-btn:hover{background:#eee0d0;border-color:#89613f}
+  .rows.element-earth .flower-btn.active,.rows.element-earth .flower-btn.active.moving-option{background:#89613f;border-color:#704b30;color:#fffdf7;box-shadow:inset 0 0 0 1px #704b30}
+  .rows.element-fire .flower-btn{background:#fff0ed;border-color:#efc2b9;color:#c44738}
+  .rows.element-fire .flower-btn:hover{background:#ffe2dc;border-color:#c44738}
+  .rows.element-fire .flower-btn.active,.rows.element-fire .flower-btn.active.moving-option{background:#c44738;border-color:#9f382e;color:#fffdf7;box-shadow:inset 0 0 0 1px #9f382e}
+  .rows.element-metal .flower-btn{background:#fcf4df;border-color:#e5d19b;color:#b98519}
+  .rows.element-metal .flower-btn:hover{background:#f7eac5;border-color:#b98519}
+  .rows.element-metal .flower-btn.active,.rows.element-metal .flower-btn.active.moving-option{background:#b98519;border-color:#946a12;color:#fffdf7;box-shadow:inset 0 0 0 1px #946a12}
+
   .line-result{text-align:center}
   .change-cell{display:flex;align-items:center;justify-content:center;min-width:0}
   .change-mark{width:48px;height:15px;position:relative;display:flex;gap:4px;align-items:center;justify-content:center}
@@ -2375,6 +2393,7 @@
     const elementBadge=document.getElementById('hexagram-element-badge');
     if(!complete){
       currentHexagramInfo=null;
+      rowsHost.classList.remove(...elementClasses);
       node.textContent=''; node.classList.remove(...elementClasses); node.removeAttribute('title');
       if(metaNode) metaNode.replaceChildren();
       if(elementBadge){elementBadge.textContent='';elementBadge.classList.remove(...elementClasses);elementBadge.removeAttribute('title');}
@@ -2383,8 +2402,10 @@
     }
     const pattern=state.map(item=>mapping[item.flowers].yang?'1':'0').join('');
     const info=hexagramData[pattern];
-    if(!info){currentHexagramInfo=null;node.textContent='';node.classList.remove(...elementClasses);if(metaNode)metaNode.textContent='';if(elementBadge){elementBadge.textContent='';elementBadge.classList.remove(...elementClasses);}updatePalaceReferenceSelection();return;}
+    if(!info){currentHexagramInfo=null;rowsHost.classList.remove(...elementClasses);node.textContent='';node.classList.remove(...elementClasses);if(metaNode)metaNode.textContent='';if(elementBadge){elementBadge.textContent='';elementBadge.classList.remove(...elementClasses);}updatePalaceReferenceSelection();return;}
     currentHexagramInfo={...info,pattern};
+    rowsHost.classList.remove(...elementClasses);
+    if(info.element) rowsHost.classList.add('element-'+info.element);
     node.replaceChildren();
     node.classList.remove(...elementClasses);
     if(elementBadge){
@@ -3707,9 +3728,9 @@
     function branchStatusText(status){
       if(!status) return '未记录地支';
       const parts=[];
-      parts.push(status.monthStatus?'月令'+status.monthStatus+'（'+(status.monthStatusGroup==='wangxiang'?'旺相':'休囚死')+'）':'月令状态未计算（缺少有效月支或地支）');
-      parts.push(status.xunkong===null?'旬空状态未计算':(status.xunkong?'旬空':'不旬空'));
-      parts.push(status.monthBreak===null?'月破状态未计算':(status.monthBreak?'月破':'不月破'));
+      parts.push(status.monthStatus?'月令状态：'+status.monthStatus+'（'+(status.monthStatusGroup==='wangxiang'?'旺相':'休囚死')+'）':'月令状态：未计算（缺少有效月支或地支）');
+      parts.push('旬空：'+(status.xunkong===null?'未计算':(status.xunkong?'是':'否')));
+      parts.push('月破：'+(status.monthBreak===null?'未计算':(status.monthBreak?'是':'否')));
       return parts.join('；');
     }
     function dayBranchInteractionText(lineBranch){
@@ -3783,7 +3804,7 @@
       calendar.monthRelation?'月柱六亲：'+calendar.monthRelation:'',
       calendar.dayRelation?'日柱六亲：'+calendar.dayRelation:'',
       calendar.dayGod?'日干起六神：'+calendar.dayGod+'（初爻起）':'日干起六神：未填写',
-      analysisSnapshot.calendar?.xunkongBranches?.length===2?'旬空：'+analysisSnapshot.calendar.xunkongBranches.join('、'):'旬空：无法从保存的日柱确认'
+      analysisSnapshot.calendar?.xunkongBranches?.length===2?'旬空：'+analysisSnapshot.calendar.xunkongBranches.join('、')+'（已在六爻中逐爻标记）':'旬空：无法从保存的日柱确认'
     ].filter(Boolean);
     function trineText(trine,kind){
       const participants=(trine.participants||[]).map(item=>{
