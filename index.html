@@ -1675,8 +1675,8 @@
     if(branchElement===rule.wang) return {group:'wangxiang',status:'旺',wang:rule.wang,xiang:rule.xiang};
     if(branchElement===rule.xiang) return {group:'wangxiang',status:'相',wang:rule.wang,xiang:rule.xiang};
     if(generates[branchElement]===rule.wang) return {group:'xiuqiu',status:'休'};
-    if(controls[rule.wang]===branchElement) return {group:'xiuqiu',status:'囚'};
-    if(controls[branchElement]===rule.wang) return {group:'xiuqiu',status:'死'};
+    if(controls[branchElement]===rule.wang) return {group:'xiuqiu',status:'囚'};
+    if(controls[rule.wang]===branchElement) return {group:'xiuqiu',status:'死'};
     return null;
   }
   function renderCalendarValue(node, text){
