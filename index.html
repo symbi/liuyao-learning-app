@@ -1196,6 +1196,9 @@
   const CASE_REVIEW_LABELS={pending:'待核对',verified:'已核实',disputed:'存在分歧'};
   let isCaseRecord=false;
   let manualPillarOverride={enabled:false,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
+  // Keep the daily worksheet and classroom-case worksheet as separate in-memory drafts.
+  // Drafts are scoped to the selected archive date and survive mode switches in this tab.
+  const entryModeDraftCache={daily:new Map(),classroom:new Map()};
   function updateCaseEditor(){
     caseToggleButton.textContent=isCaseRecord?'已标记为案例':'标记为案例';
     caseToggleButton.classList.toggle('primary',isCaseRecord);
@@ -1237,17 +1240,107 @@
     };
     updateCaseEditor();
   }
-  function switchEntryMode(mode){
-    const classroom=mode==='classroom';
-    if(classroom&&!isCaseRecord){
-      manualPillarOverride={enabled:true,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
-    }
-    isCaseRecord=classroom;
-    caseSourceSelect.value='classroom';
-    manualPillarOverride.enabled=classroom;
-    updateCaseEditor();
+  function modeDraftDateKey(){
+    return selectedDateKey||document.getElementById('record-date')?.value||'current';
+  }
+  function captureEntryModeDraft(){
+    return {
+      lines:state.map(item=>({...item})),
+      calendarAssignments:{...calendarAssignments},
+      question:getQuestionSnapshot(),
+      memo:memoTextarea.value,
+      caseConclusion:caseConclusionTextarea.value,
+      caseSource:caseSourceSelect.value,
+      caseReviewStatus:caseReviewStatusSelect.value,
+      manualPillarOverride:JSON.parse(JSON.stringify(manualPillarOverride)),
+      editingRecordId,
+      forceNewRecord,
+      entryBaseline
+    };
+  }
+  function renderRestoredEntryDraft(draft){
+    state=(draft.lines||Array.from({length:6},()=>({flowers:null,branch:null,relation:null,hiddenRelation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}))).map(item=>({...item}));
+    selected=null;
+    updateSelectedTiles();
     renderManualPillarInputs();
     applyPillarContext();
+    calendarAssignments={
+      yearRelation:draft.calendarAssignments?.yearRelation||null,
+      monthRelation:draft.calendarAssignments?.monthRelation||null,
+      dayRelation:draft.calendarAssignments?.dayRelation||null,
+      dayGod:draft.calendarAssignments?.dayGod||null,
+      xunkong1:currentXunkongBranches[0]||null,
+      xunkong2:currentXunkongBranches[1]||null
+    };
+    editingRecordId=draft.editingRecordId||null;
+    forceNewRecord=!!draft.forceNewRecord;
+    memoTextarea.value=draft.memo||'';
+    caseConclusionTextarea.value=draft.caseConclusion||'';
+    caseSourceSelect.value=draft.caseSource==='practice'?'practice':'classroom';
+    caseReviewStatusSelect.value=Object.prototype.hasOwnProperty.call(CASE_REVIEW_LABELS,draft.caseReviewStatus)?draft.caseReviewStatus:'pending';
+    restoreQuestion(draft.question||{category:'daily',text:''});
+    renderCalendarDropSlots();
+    state.forEach((_,index)=>renderRow(index));
+    refreshBranchStatusTokens();
+    renderTrigramNames();
+    entryBaseline=draft.entryBaseline;
+  }
+  function startFreshEntryMode(mode){
+    const classroom=mode==='classroom';
+    state=Array.from({length:6},()=>({flowers:null,branch:null,relation:null,hiddenRelation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}));
+    calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
+    selected=null;editingRecordId=null;forceNewRecord=false;
+    const emptyOverride={enabled:true,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
+    setCaseEditor(classroom?{isCase:true,caseSource:'classroom',caseReviewStatus:'pending',pillarOverride:emptyOverride}:null);
+    restoreQuestion(classroom?{category:'',text:''}:{category:'daily',text:''});
+    memoTextarea.value=classroom?'':(activeDayDocument?.recordDate===modeDraftDateKey()?(activeDayDocument.dailyMemo||''):'');
+    caseConclusionTextarea.value='';
+    renderManualPillarInputs();
+    applyPillarContext();
+    updateSelectedTiles();
+    renderCalendarDropSlots();
+    state.forEach((_,index)=>renderRow(index));
+    refreshBranchStatusTokens();
+    renderTrigramNames();
+    markEntryClean();
+  }
+  function savedDailyRecordForCurrentDate(){
+    const date=modeDraftDateKey();
+    const cloudRecord=activeDayDocument?.recordDate===date?activeDayDocument.dailyFortune:null;
+    if(cloudRecord) return {...cloudRecord,date,recordType:'dailyFortune'};
+    const localRecord=readRecords().find(record=>record.date===date&&(
+      record.recordType==='dailyFortune'||(!record.isCase&&(record.question?.category||'daily')==='daily')
+    ));
+    return localRecord?{...localRecord,recordType:'dailyFortune'}:null;
+  }
+  function switchEntryMode(mode){
+    const nextMode=mode==='classroom'?'classroom':'daily';
+    const currentMode=isCaseRecord?'classroom':'daily';
+    if(nextMode===currentMode) return;
+    const dateKey=modeDraftDateKey();
+
+    // Preserve the current worksheet exactly as it appears, including unsaved notes.
+    entryModeDraftCache[currentMode].set(dateKey,captureEntryModeDraft());
+
+    const cached=entryModeDraftCache[nextMode].get(dateKey);
+    if(cached){
+      setCaseEditor(nextMode==='classroom'?{
+        isCase:true,caseSource:cached.caseSource,caseReviewStatus:cached.caseReviewStatus,
+        caseConclusion:cached.caseConclusion,
+        pillarOverride:cached.manualPillarOverride
+      }:null);
+      renderRestoredEntryDraft(cached);
+      updateCaseEditor();
+      return;
+    }
+
+    if(nextMode==='daily'){
+      const savedDaily=savedDailyRecordForCurrentDate();
+      if(savedDaily){openRecord(savedDaily);return;}
+    }
+
+    // A mode with no saved or cached entry starts from a completely blank six-line chart.
+    startFreshEntryMode(nextMode);
   }
   dailyModeButton.addEventListener('click',()=>switchEntryMode('daily'));
   classroomModeButton.addEventListener('click',()=>switchEntryMode('classroom'));
@@ -3586,6 +3679,9 @@
     if(!record||!Array.isArray(record.lines)||record.lines.length!==6){showToast('卦例数据格式不正确');return;}
     clearAutoReviewReport();
     const date=record.date||getJapanDateParts();
+    const modeKey=record.isCase?'classroom':'daily';
+    const dateKey=typeof date==='string'?date:modeDraftDateKey();
+    entryModeDraftCache[modeKey]?.delete(dateKey);
     if(typeof date==='string'){
       if(!chooseCalendarDate(date,true)) return;
     }
