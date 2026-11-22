@@ -1,0 +1,404 @@
+{
+  "schemaVersion": 1,
+  "recordDate": "2026-11-22",
+  "timezone": "Asia/Tokyo",
+  "dailyFortune": null,
+  "additionalQuestions": [
+    {
+      "schemaVersion": 16,
+      "id": "13e9c29a-cdbc-41e0-912d-5e02fa7c54d3",
+      "savedAt": "2026-11-22T06:19:24.645Z",
+      "date": "2026-11-22",
+      "timezone": "Asia/Tokyo",
+      "question": {
+        "category": "wealth",
+        "categoryLabel": "财运、投资、项目",
+        "mainUseGod": "妻财",
+        "hint": "子孙、兄弟",
+        "text": "店铺何去何从，要不要关门。新签了一个经理，店铺能不能干下去。"
+      },
+      "isCase": true,
+      "caseSource": "classroom",
+      "caseMemo": "",
+      "caseConclusion": "",
+      "pillars": {
+        "year": "",
+        "month": "乙卯",
+        "day": "壬子"
+      },
+      "pillarSource": "manual-case",
+      "pillarOverride": {
+        "enabled": true,
+        "year": {
+          "stem": "",
+          "branch": ""
+        },
+        "month": {
+          "stem": "乙",
+          "branch": "卯"
+        },
+        "day": {
+          "stem": "壬",
+          "branch": "子"
+        }
+      },
+      "lines": [
+        {
+          "flowers": 3,
+          "branch": "辰",
+          "relation": "父母",
+          "hiddenRelation": null,
+          "shen": "玄武",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": "克"
+        },
+        {
+          "flowers": 2,
+          "branch": "午",
+          "relation": "官鬼",
+          "hiddenRelation": "妻财",
+          "shen": "青龙",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": "回头生"
+        },
+        {
+          "flowers": 1,
+          "branch": "申",
+          "relation": "兄弟",
+          "hiddenRelation": null,
+          "shen": "朱雀",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 1,
+          "branch": "亥",
+          "relation": "子孙",
+          "hiddenRelation": null,
+          "shen": "勾陈",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 1,
+          "branch": "酉",
+          "relation": "兄弟",
+          "hiddenRelation": null,
+          "shen": "螣蛇",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 2,
+          "branch": "未",
+          "relation": "父母",
+          "hiddenRelation": null,
+          "shen": "白虎",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        }
+      ],
+      "calendarAssignments": {
+        "yearRelation": null,
+        "monthRelation": "妻财",
+        "dayRelation": "子孙",
+        "dayGod": "玄武",
+        "xunkong1": "寅",
+        "xunkong2": "卯"
+      },
+      "jianchu": null,
+      "twentyEight": null,
+      "analysisSnapshot": {
+        "schemaVersion": 5,
+        "calculatedAt": "2026-11-22T06:19:24.644Z",
+        "calculationSource": "saved-pillars-and-line-inputs",
+        "calendar": {
+          "yearPillar": null,
+          "monthPillar": "乙卯",
+          "dayPillar": "壬子",
+          "pillarSource": "manual-case",
+          "monthBranch": "卯",
+          "dayBranch": "子",
+          "monthWangXiangRule": "木旺、火相",
+          "xunkongBranches": [
+            "寅",
+            "卯"
+          ],
+          "xunkongKnown": true
+        },
+        "pillarOverride": {
+          "enabled": true,
+          "year": {
+            "stem": "",
+            "branch": ""
+          },
+          "month": {
+            "stem": "乙",
+            "branch": "卯"
+          },
+          "day": {
+            "stem": "壬",
+            "branch": "子"
+          }
+        },
+        "hexagram": {
+          "name": "泽山咸",
+          "palace": "兑",
+          "element": "metal",
+          "elementName": "金",
+          "stage": "三世",
+          "shiLineNumber": 3,
+          "yingLineNumber": 6
+        },
+        "lines": [
+          {
+            "lineNumber": 1,
+            "position": "初爻",
+            "role": null,
+            "flowers": 3,
+            "relation": "父母",
+            "hiddenRelation": null,
+            "sixGod": "玄武",
+            "movement": "明动",
+            "original": {
+              "branch": "辰",
+              "element": "earth",
+              "elementName": "土",
+              "monthStatus": "囚",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": "克"
+          },
+          {
+            "lineNumber": 2,
+            "position": "二爻",
+            "role": null,
+            "flowers": 2,
+            "relation": "官鬼",
+            "hiddenRelation": "妻财",
+            "sixGod": "青龙",
+            "movement": "暗动",
+            "original": {
+              "branch": "午",
+              "element": "fire",
+              "elementName": "火",
+              "monthStatus": "相",
+              "monthStatusGroup": "wangxiang",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": "回头生"
+          },
+          {
+            "lineNumber": 3,
+            "position": "三爻",
+            "role": "世爻",
+            "flowers": 1,
+            "relation": "兄弟",
+            "hiddenRelation": null,
+            "sixGod": "朱雀",
+            "movement": null,
+            "original": {
+              "branch": "申",
+              "element": "metal",
+              "elementName": "金",
+              "monthStatus": "死",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": ""
+          },
+          {
+            "lineNumber": 4,
+            "position": "四爻",
+            "role": null,
+            "flowers": 1,
+            "relation": "子孙",
+            "hiddenRelation": null,
+            "sixGod": "勾陈",
+            "movement": null,
+            "original": {
+              "branch": "亥",
+              "element": "water",
+              "elementName": "水",
+              "monthStatus": "休",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": ""
+          },
+          {
+            "lineNumber": 5,
+            "position": "五爻",
+            "role": null,
+            "flowers": 1,
+            "relation": "兄弟",
+            "hiddenRelation": null,
+            "sixGod": "螣蛇",
+            "movement": null,
+            "original": {
+              "branch": "酉",
+              "element": "metal",
+              "elementName": "金",
+              "monthStatus": "死",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": true,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": ""
+          },
+          {
+            "lineNumber": 6,
+            "position": "上爻",
+            "role": "应爻",
+            "flowers": 2,
+            "relation": "父母",
+            "hiddenRelation": null,
+            "sixGod": "白虎",
+            "movement": null,
+            "original": {
+              "branch": "未",
+              "element": "earth",
+              "elementName": "土",
+              "monthStatus": "囚",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": ""
+          }
+        ],
+        "shiYing": {
+          "kind": "应生世",
+          "shiLineNumber": 3,
+          "yingLineNumber": 6,
+          "shiBranch": "申",
+          "yingBranch": "未",
+          "shiElement": "metal",
+          "yingElement": "earth"
+        },
+        "trines": {
+          "dateBased": [],
+          "withinHexagram": []
+        },
+        "branchRelations": {
+          "sameLineLiuHe": [],
+          "betweenLinesLiuHe": [
+            {
+              "pair": "辰酉",
+              "mode": "between-lines",
+              "first": {
+                "lineNumber": 1,
+                "position": "初爻",
+                "side": "本卦",
+                "branch": "辰",
+                "element": "earth",
+                "elementName": "土",
+                "monthStatus": "囚",
+                "monthStatusGroup": "xiuqiu",
+                "monthRule": "木旺、火相",
+                "monthBreak": false,
+                "xunkong": false
+              },
+              "second": {
+                "lineNumber": 5,
+                "position": "五爻",
+                "side": "本卦",
+                "branch": "酉",
+                "element": "metal",
+                "elementName": "金",
+                "monthStatus": "死",
+                "monthStatusGroup": "xiuqiu",
+                "monthRule": "木旺、火相",
+                "monthBreak": true,
+                "xunkong": false
+              },
+              "fiveElementRelation": "generation",
+              "controlText": null,
+              "generationText": "辰土生酉金",
+              "interpretation": "六合：仍需结合问事与全卦判断",
+              "forceJudgement": "not-automatically-determined"
+            },
+            {
+              "pair": "午未",
+              "mode": "between-lines",
+              "first": {
+                "lineNumber": 2,
+                "position": "二爻",
+                "side": "本卦",
+                "branch": "午",
+                "element": "fire",
+                "elementName": "火",
+                "monthStatus": "相",
+                "monthStatusGroup": "wangxiang",
+                "monthRule": "木旺、火相",
+                "monthBreak": false,
+                "xunkong": false
+              },
+              "second": {
+                "lineNumber": 6,
+                "position": "上爻",
+                "side": "本卦",
+                "branch": "未",
+                "element": "earth",
+                "elementName": "土",
+                "monthStatus": "囚",
+                "monthStatusGroup": "xiuqiu",
+                "monthRule": "木旺、火相",
+                "monthBreak": false,
+                "xunkong": false
+              },
+              "fiveElementRelation": "generation",
+              "controlText": null,
+              "generationText": "午火生未土",
+              "interpretation": "六合：仍需结合问事与全卦判断",
+              "forceJudgement": "not-automatically-determined"
+            }
+          ],
+          "lessonRule": {
+            "source": "第十二课",
+            "title": "合中带克、克中带合与贪合忘克",
+            "principle": "六合与五行生克可能同时存在；不能见合就一概判断不克，也不能只见相克就忽略合。",
+            "forceComparison": "力量接近时可考虑贪合忘克、以合为主；若克制一方力量明显强于被克一方，仍须论克。",
+            "assessmentFactors": "结合月令旺衰、日辰生扶克制、卦中其他动爻及整体卦局比较双方力量。",
+            "automation": "页面只识别六合配对并保存五行生克与旺衰背景，不自动判定贪合忘克是否成立。"
+          }
+        }
+      },
+      "createdAt": "2026-11-22T06:19:24.645Z",
+      "updatedAt": "2026-11-22T06:19:24.645Z",
+      "recordType": "additionalQuestion"
+    }
+  ],
+  "dailyMemo": "",
+  "createdAt": "2026-11-22T06:19:24.645Z",
+  "updatedAt": "2026-11-22T06:19:24.645Z"
+}
