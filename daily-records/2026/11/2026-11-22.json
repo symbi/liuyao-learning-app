@@ -7,7 +7,7 @@
     {
       "schemaVersion": 16,
       "id": "d4f2ced4-a5de-459c-b0cd-82b5481660be",
-      "savedAt": "2026-11-22T10:33:46.903Z",
+      "savedAt": "2026-11-22T10:34:37.872Z",
       "date": "2026-11-22",
       "timezone": "Asia/Tokyo",
       "question": {
@@ -106,8 +106,8 @@
       ],
       "calendarAssignments": {
         "yearRelation": null,
-        "monthRelation": null,
-        "dayRelation": null,
+        "monthRelation": "父母",
+        "dayRelation": "兄弟",
         "dayGod": null,
         "xunkong1": "申",
         "xunkong2": "酉"
@@ -116,7 +116,7 @@
       "twentyEight": null,
       "analysisSnapshot": {
         "schemaVersion": 5,
-        "calculatedAt": "2026-11-22T10:33:46.902Z",
+        "calculatedAt": "2026-11-22T10:34:37.871Z",
         "calculationSource": "saved-pillars-and-line-inputs",
         "calendar": {
           "yearPillar": null,
@@ -520,7 +520,7 @@
         }
       },
       "createdAt": "2026-11-22T10:33:21.220Z",
-      "updatedAt": "2026-11-22T10:33:46.903Z",
+      "updatedAt": "2026-11-22T10:34:37.872Z",
       "recordType": "additionalQuestion"
     },
     {
@@ -928,5 +928,5 @@
   ],
   "dailyMemo": "",
   "createdAt": "2026-11-22T06:19:24.645Z",
-  "updatedAt": "2026-11-22T10:33:46.903Z"
+  "updatedAt": "2026-11-22T10:34:37.872Z"
 }
