@@ -47,6 +47,12 @@ daily_records:
   include: false
   only_cases: true
   root: ~/src/liuyao-learning-app
+  # Fail-closed allowlist: even with include: true, ONLY the exact
+  # (container path, subrecord id) pairs listed here are ever mapped.
+  # isCase / caseSource flags on a record never substitute for an entry.
+  allowed_records: []
+  #  - path: "daily-records/2026/11/2026-11-21.json"
+  #    record_id: "<subrecord id from additionalQuestions[]>"
 
 # --- PDF references ----------------------------------------------------------
 # Only files the user has explicitly reviewed. Scanned PDFs without a text

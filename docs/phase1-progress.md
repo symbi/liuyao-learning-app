@@ -7,13 +7,13 @@
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
 - Status: in_progress
-- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 已按真实文件拆为 C1/C2/C3，当前为规划更新阶段 PR #6，实现待用户授权；PDF Adapter/OCR 已暂缓）
+- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 规划 PR #6 已合并；M2-C1 已获用户授权，正在本地分支实现与补充修订，尚未推送、未建 PR；C2/C3 未启动；PDF Adapter/OCR 已暂缓）
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
 - Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2 整体 in_progress（剩 M2-C）
-- Active implementation branch: none（M2-C 尚未启动）；规划分支 `phase1/m2c-planning`（PR #6，仅文档）
-- Active PR: Draft PR #6（M2-C 规划更新：案例资料分类、C1/C2/C3 拆分、课堂案例身份原则与数据模型修订；仅文档）
+- Active implementation branch: `phase1/m2c1-case-json-mapper`（M2-C1，本地分支，尚未推送）
+- Active PR: none（PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`；M2-C1 尚未创建 PR）
 - Last completed milestone: M2-A/M2-B（经 PR #3 合并）；M1 已合并
-- Next action: ChatGPT 审查 PR #6，用户决定是否合并；之后由用户明确授权才启动 M2-C1 实现。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
+- Next action: M2-C1 本地修订完成后停下，等用户审查并决定是否推送与创建 Draft PR；C2/C3 不得顺手启动。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
 - Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
 - Merged M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3（merge commit `9505ce7`）
 - Last updated: 2026-11-22
@@ -33,7 +33,7 @@
 11. Phase 1 Query Tool 从 AuraDB 检索并输出带出处的 Evidence Pack；最终报告由 ChatGPT Web 完成，用户手动交接。
 12. 用户不需要逐条审核节点；系统自动保留来源、课程、页码/段落、版本、模型和不确定性。
 13. 系统拆分为两个独立 Repository（2026-11-21 决定）：`symbi/liuyao-source-collector`（独立新仓库，由单独窗口负责；远端尚未创建）负责外部古籍网站/GitHub 资料的合规采集并输出标准化 Reference Package；本仓库 `symbi/liuyao-learning-app` 负责课程 Markdown/TXT、课堂案例 JSON、Reference Package 的接收与验证、解析、Chunk、Embedding、Neo4j 与 Evidence Pack。两边只通过 Reference Package 文件交接；本仓库不实现爬虫或网站采集器。来源登记见 [reference-source-catalog.md](reference-source-catalog.md)。（状态更新 2026-11-22：`symbi/liuyao-source-collector` 已创建且为 Private，由独立窗口维护；本仓库只记录这一事实，不接管其工作。）
-14. 课堂案例身份原则（2026-11-22 决定）：课堂案例是老师在实际课程中讲解过的教学案例（classroom_case），不是用户个人练习数据，不得归类为 personal_practice。每个课堂案例保留稳定案例 ID，并尽可能连接老师 ASR/录音讲解位置、课程整理笔记、用户核对的卦盘结构、HTML JSON 记录、与案例 JSON 配对的 MD 表示；课程笔记/ASR 对同一案例的提及建立引用关系并保留定位。同一案例的 JSON 与 MD 是同一案例的两种表示，不产生重复 Case 节点或重复计数。ClassCase 与 CastRecord 保留独立身份和唯一 ID，仅当 `dailyRecord.recordId` 明确匹配时建立 BASED_ON_RECORD；案例 JSON 与课堂案例 MD 以 HAS_REPRESENTATION 关联到同一个 ClassCase（MD 不是独立分析来源）；daily-records 的自动生成 MD 以 RENDERS 关联 CastRecord，与课堂案例 MD 分属两类。老师 ASR 的来源定位不依赖 Chunk：ClassCase 可直接关联 ASR 的 SourceDocument/DocumentRevision，保留 Locator（仓库/路径、课程、段落序号、可选时间范围）与置信度/校正状态；不得为建引用而把全部 Raw ASR 自动 Chunk/Embedding。老师讲解、用户补充、AI 推算必须分开标记；ASR 未经音频校正时保留低置信度说明，不得称为已验证的逐字原话。
+14. 课堂案例身份原则（2026-11-22 决定）：课堂案例是老师在实际课程中讲解过的教学案例（classroom_case），不是用户个人练习数据，不得归类为 personal_practice。每个课堂案例保留稳定案例 ID，并尽可能连接老师 ASR/录音讲解位置、课程整理笔记、用户核对的卦盘结构、HTML JSON 记录、与案例 JSON 配对的 MD 表示；课程笔记/ASR 对同一案例的提及建立引用关系并保留定位。同一案例的 JSON 与 MD 是同一案例的两种表示，不产生重复 Case 节点或重复计数。ClassCase 与 CastRecord 保留独立身份和唯一 ID，仅当 `dailyRecord.recordId` 明确匹配时建立 BASED_ON_RECORD；案例 JSON 与课堂案例 MD 以 HAS_REPRESENTATION 关联到同一个 ClassCase（MD 不是独立分析来源）；daily-records 的自动生成 MD 以 RENDERS 关联 CastRecord，与课堂案例 MD 分属两类。老师 ASR 的来源定位不依赖 Chunk：ClassCase 可直接关联 ASR 的 SourceDocument/DocumentRevision，保留 Locator（仓库/路径、课程、段落序号、可选时间范围）与置信度/校正状态；不得为建引用而把全部 Raw ASR 自动 Chunk/Embedding。老师讲解、用户补充、AI 推算必须分开标记；ASR 未经音频校正时保留低置信度说明，不得称为已验证的逐字原话。（设计修正 2026-11-22：JSON 与配对 MD 是同一 ClassCase 的两份不同资料，不要求内容一致；C1 只识别 MD 的路径/存在/关联，C3 解析正文；链接只登记不抓取；内容冲突保留双源并标记待核对。详见 M2-C1 checkpoint。）
 
 ## 里程碑状态
 
@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) | M2-A/M2-B 已合并；M2-C 按真实文件拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示），规划见 PR #6，实现待用户授权；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
+| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已获授权并在本地分支 `phase1/m2c1-case-json-mapper` 实现中（未推送、无 PR），C2/C3 未启动；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
@@ -316,3 +316,14 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 再次同步 main（2026-11-22）：main 前进 8 个提交至 `cf06eee0094602dd0bf02e2050d0921914468782`（2026-11-22 每日记录的多次更新保存，以及第十九课 case-002 的建立：分析稿、结构化图表与来源记录、与每日记录的显式关联、matched 标记），已以 merge commit `c112ba66ef3720b79cffe2691753a764659ba131` 合入本分支，无冲突；经逐文件比对，这 8 个提交未触及本 PR 的五份文档，合并后每日记录与 case-002 文件与 main 逐字节一致。此前待核对的子记录 `13e9c29a-...` 已被显式配对为 case-002（`L19-C02-shop-operation-transfer`，matchStatus=matched），实施计划第 4 节的样本已相应更新为完整的核对生命周期记录。PR 保持 Draft，不合并、不启动 M2-C。
 - matchStatus 语义统一（2026-11-22，据最终复审）：回读 main 上全部真实课堂案例 JSON（仅 lesson-19 的 case-001、case-002 两个）后确认——case-001 的 `verified` 与 case-002 的 `matched` 是同一状态的两种历史写法（两者的 verificationBasis 均为 ASR 内容核对 + 用户提供卦盘 + 明确限定，证据结构相同），规范状态定为 `verified`，`matched` 作为历史别名由 M2-C Mapper 读取时归一化并保留原始值，未知值不得静默丢弃或误判；`verified` 不等于音频逐字验证。已同步 README 状态列表、实施计划第 4 节与第 12 节 M2-C1 要求；真实案例 JSON 未修改。另修正 operating-model 第 3 节输入列表的重复编号（两个“3.”），实施计划资料状态核对日期更新为 2026-11-22。
 - 最终同步 main（2026-11-22）：main 前进 8 个提交至 `a306ffa70691a16d369ecb343c686123122efa25`，全部为 2026-11-22 每日记录的更新保存与新子记录 `d4f2ced4-a5de-459c-b0cd-82b5481660be` 生成 MD 的保存，未触及五份规划文档与 case-001/case-002；已以 merge commit `ab9c5f650cb349aaf5c6634062c8761fa67f0efd` 合入本分支，无冲突，main 已成为分支祖先（behind 0）。新子记录 d4f2ced4 同样只是待核对的 CastRecord 候选（isCase=true、caseSource=classroom、生成 MD 标注待核对、无课堂案例 JSON 关联），未自动建立 ClassCase。合并后每日记录 JSON 与生成 MD 与 main 逐字节一致，matchStatus 规范与双身份模型完整保留。PR 保持 Draft，不合并、不启动 M2-C。
+
+## M2-C1 checkpoint (2026-11-22)
+
+- PR #6（M2-C 规划更新）已由用户授权合并：merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`。本节之前各处“PR #6 Draft / 等待合并”的表述均为合并前的历史记录。
+- 设计修正（2026-11-22，用户确认，取代此前“JSON 与配对 MD 表达同一份内容”的表述）：课堂案例 JSON 与配对 Markdown 是同一个 ClassCase 的**两份不同资料**，不是两份案例，也不要求内容一致；MD 可以包含自身的分析内容、来源链接与上下文。两者各自保留来源、路径与版本；内容冲突时保留各自来源、标记待核对、不静默合并；MD 中的链接只登记引用信息，不自动抓取目标文件；老师分析、用户 Memo、AI 分析保留各自来源身份，不能互相转化为老师确认内容。M2-C1 只识别 A 类配对 MD 的路径、存在状态与 case_id 关联（不解析正文）；M2-C3 负责解析 A 类 MD 正文；B 类 daily-records 自动生成 MD 继续按 CastRecord 的 RENDERS 呈现处理，两类 MD 不共用身份模型。已同步修订 implementation-plan 第 4、7 节、operating-model、class-cases README 与本文件决定 14 的适用说明。
+- M2-C1 实现（本地分支 `phase1/m2c1-case-json-mapper`，从 main `dbc2c19` 创建；**尚未推送、尚未创建 PR**）：
+  - 提交 `67be290`：新增 `tools/liuyao-kb/src/liuyao_kb/sources/case_json.py`（ClassCase/CastRecord 类型化映射、完整原始 JSON 冻结保留、dailyRecord `path`/`jsonPath` 双别名兼容且冲突报错、matchStatus 归一化、精确 recordId 关联、严格 JSON 解码）；`sources/config.py` 新增 fail-closed `allowed_records` 白名单（(容器路径, 子记录 ID) 精确条目，默认空，重复/冲突在配置层报错）；`sources/__init__.py` 导出；`sources.example.yaml` 补说明；新增 `tests/test_case_json.py`。
+  - 提交 `150d7fb`：补全 A 类配对 MD 识别——`PairedMarkdownRef`（case_id 关联、预期仓库相对路径、canonical repo:// source URI 与 source identity、exists 三态：已查存在/已查缺失/未查为 None），路径只依据 JSON 文件自身路径与文件名推导（同目录 `<stem>-analysis.md`），文件缺失不使映射失败；bytes 级解析保持纯 JSON、不访问文件系统，识别只发生在文件级 Mapper / resolver 层；与 B 类 `dailyRecord.markdownPath` 严格区分。
+  - 测试（执行环境：执行 Agent 本机 clone 的 venv，Python 3.12.3；非用户 Mac）：pytest 全套 193 passed（原 144 + C1 新增 49）；Ruff check/format 通过；Mypy strict 通过；`git diff --check` 退出码 0。测试全部使用 synthetic fixtures，无真实案例/每日记录内容。
+  - 边界：未做 Neo4j 写入、Chunk、Embedding、LLM 调用；未修改真实案例 JSON、每日记录、HTML、Cloudflare Functions 或 Source Collector；C2/C3 未启动。
+- 下一步：停下等用户审查本地分支；是否推送并创建 Draft PR 由用户决定。

@@ -199,7 +199,7 @@ Importer 必须设计成幂等，并维护同步清单：
 | 文件有修改 | 建立新 revision；变化的 Chunk 重新处理，未变化 Chunk 尽量复用 |
 | Raw ASR v1 升级为 v2 | 保留 v1，新建 v2；不覆盖原始版本 |
 | 旧版 Chunk 不再属于当前版本 | 标记 superseded，保留历史，默认检索时不优先返回 |
-| 新增一个课堂案例 | 按稳定 case_id 新增 ClassCase；其 JSON 与配对 MD 是同一案例的两种表示（HAS_REPRESENTATION），挂到同一个 ClassCase |
+| 新增一个课堂案例 | 按稳定 case_id 新增 ClassCase；其 JSON 与配对 MD 是同一案例的两份不同资料（HAS_REPRESENTATION），挂到同一个 ClassCase；不要求内容一致，冲突时保留各自来源并标记待核对 |
 | 新增一条每日记录 | 按 record_id 新增 CastRecord；不自动产生 ClassCase，仅凭 isCase/caseSource 标记也不得认定为已核实课堂案例 |
 | 课堂案例内容修改（Memo、卦盘等） | 更新同一个 ClassCase 的对应表示或 revision，case_id 不变，不产生重复 ClassCase |
 | 每日记录修改 | 更新对应 record_id 的 CastRecord；不因此创建或替换 ClassCase |
