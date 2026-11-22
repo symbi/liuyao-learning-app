@@ -98,7 +98,7 @@
   .date-branch-sidecar{white-space:nowrap;}
   .hexagram-name{display:inline-flex;align-items:center;font-size:25px;font-weight:900;line-height:1;letter-spacing:.04em;white-space:nowrap}
   .hexagram-element-badge{width:27px;height:27px;flex:0 0 27px;border:1.8px solid currentColor;border-radius:50%;display:inline-grid;place-items:center;font-size:14px;font-weight:900;line-height:1;white-space:nowrap;background:rgba(255,253,247,.75)}
-  .hexagram-element-badge:empty{display:none}
+  .hexagram-name{margin-left:4px}
   .hexagram-element-badge.element-water{color:#2677b8;border-color:#2677b8}
   .hexagram-element-badge.element-wood{color:#32844b;border-color:#32844b}
   .hexagram-element-badge.element-earth{color:#89613f;border-color:#89613f}
@@ -1122,8 +1122,7 @@
     <div class="worksheet-subhead">
       <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-element-badge" id="hexagram-element-badge" aria-label="卦宫五行"></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
       <div class="auto-assembly-actions" role="group" aria-label="自动装卦与检查">
-        <button type="button" class="small-action primary" id="auto-fill-hexagram" title="根据本卦、日柱和动爻计算并补齐空白项目；不会覆盖已有填写">自动装卦</button>
-        <button type="button" class="small-action" id="check-hexagram" title="只检查当前填写，不会修改任何内容">检查卦盘</button>
+        <button type="button" class="small-action primary" id="auto-assemble-check" title="有空缺时自动补齐；全部填写后检查卦盘，不覆盖已有内容">自动装卦 / 检查</button>
       </div>
     </div>
     <div class="auto-review-report" id="auto-review-report" hidden aria-live="polite"></div>
@@ -2629,13 +2628,13 @@
       rowsHost.classList.remove(...elementClasses);
       node.textContent=''; node.classList.remove(...elementClasses); node.removeAttribute('title');
       if(metaNode) metaNode.replaceChildren();
-      if(elementBadge){elementBadge.textContent='';elementBadge.classList.remove(...elementClasses);elementBadge.removeAttribute('title');}
+      if(elementBadge){elementBadge.textContent='';elementBadge.hidden=true;elementBadge.classList.remove(...elementClasses);elementBadge.removeAttribute('title');}
       updatePalaceReferenceSelection();
       return;
     }
     const pattern=state.map(item=>mapping[item.flowers].yang?'1':'0').join('');
     const info=hexagramData[pattern];
-    if(!info){currentHexagramInfo=null;rowsHost.classList.remove(...elementClasses);node.textContent='';node.classList.remove(...elementClasses);if(metaNode)metaNode.textContent='';if(elementBadge){elementBadge.textContent='';elementBadge.classList.remove(...elementClasses);}updatePalaceReferenceSelection();return;}
+    if(!info){currentHexagramInfo=null;rowsHost.classList.remove(...elementClasses);node.textContent='';node.classList.remove(...elementClasses);if(metaNode)metaNode.textContent='';if(elementBadge){elementBadge.textContent='';elementBadge.hidden=true;elementBadge.classList.remove(...elementClasses);}updatePalaceReferenceSelection();return;}
     currentHexagramInfo={...info,pattern};
     rowsHost.classList.remove(...elementClasses);
     if(info.element) rowsHost.classList.add('element-'+info.element);
@@ -2643,12 +2642,18 @@
     node.classList.remove(...elementClasses);
     if(elementBadge){
       const elementCharacters={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
-      elementBadge.textContent=elementCharacters[info.element]||'';
+      elementBadge.textContent='';
+      elementBadge.hidden=false;
       elementBadge.classList.remove(...elementClasses);
       if(info.element) elementBadge.classList.add('element-'+info.element);
       elementBadge.title='所属卦宫五行：'+elementBadge.textContent;
       elementBadge.setAttribute('aria-label','所属卦宫五行：'+elementBadge.textContent);
     }
+    const shiNumerals=['','一','二','三','四','五','六'];
+    const shiPrefix=document.createElement('span');
+    shiPrefix.className='hexagram-shi-prefix';
+    shiPrefix.textContent=shiNumerals[info.shi]||String(info.shi||'');
+    node.appendChild(shiPrefix);
     const symbolElements={'天':'metal','泽':'metal','火':'fire','雷':'wood','风':'wood','水':'water','山':'earth','地':'earth'};
     if(info.label===info.full){
       // The eight pure hexagrams have a single established name, e.g. 乾为天.
@@ -3436,10 +3441,13 @@
     if(mode==='fill') showToast(errors.length?'有项目需要核对':'装卦完成');
     else showToast(issues.length?'发现需要核对的项目':'未发现错误');
   }
-  const autoFillHexagramButton=document.getElementById('auto-fill-hexagram');
-  const checkHexagramButton=document.getElementById('check-hexagram');
-  if(autoFillHexagramButton) autoFillHexagramButton.addEventListener('click',()=>runAutoAssembly('fill'));
-  if(checkHexagramButton) checkHexagramButton.addEventListener('click',()=>runAutoAssembly('check'));
+  const autoAssembleCheckButton=document.getElementById('auto-assemble-check');
+  if(autoAssembleCheckButton) autoAssembleCheckButton.addEventListener('click',()=>{
+    const plan=buildAutoAssemblyPlan();
+    if(!plan.ready){runAutoAssembly('fill');return;}
+    const hasMissing=plan.entries.some(entry=>!readAutoEntry(entry));
+    runAutoAssembly(hasMissing?'fill':'check');
+  });
 
   function renderLineIndicators(){
     state.forEach((item,id)=>{
