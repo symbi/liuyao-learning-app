@@ -7,15 +7,15 @@
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
 - Status: in_progress
-- Current milestone: M2 — Source Adapters（M2-A 已通过审查；M2-B 已完成，等待 ChatGPT 审查）
+- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；下一项 M2-C 课堂案例 JSON；PDF Adapter/OCR 已暂缓）
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: M1 approved_merged; M2-A 代码审查通过; M2-B 实现完成待审查; M2 整体 in_progress
-- Active implementation branch: phase1/m2-source-adapters
-- Active PR: Draft PR #3（M2-A + M2-B）
-- Last completed milestone: M1
-- Next action: 等待 ChatGPT 复审 Draft PR #3（M2-B 围栏修复已推送）；不合并、不开始 PDF/JSON 等 M2 后续阶段
-- Latest M2 implementation commit: 38b4e09
-- Active M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3
+- Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2 整体 in_progress（剩 M2-C）
+- Active implementation branch: none（M2-C 尚未启动）；规划分支 `phase1/reference-source-catalog`（PR #4，仅文档）
+- Active PR: Draft PR #4（双仓库架构与来源目录规划文档；已同步到 PR #3 合并后的 main，等待 ChatGPT 最终复审与用户决定）
+- Last completed milestone: M2-A/M2-B（经 PR #3 合并）；M1 已合并
+- Next action: ChatGPT 对 PR #4 新 head 做最终复审，用户决定是否合并；随后启动 M2-C 课堂案例 JSON Adapter。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
+- Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
+- Merged M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3（merge commit `9505ce7`）
 - Last updated: 2026-11-21
 
 ## 已冻结的架构决定
@@ -26,12 +26,13 @@
 4. Phase 2 才把 Query / Evidence Pack / Rule Engine / LLM Orchestrator 整合为 Cloud Run FastAPI 服务；继续使用同一个 AuraDB，不重新导入。
 5. Source A Raw：Private raw 中的录音和低准确率 ASR 默认只登记来源/版本，不进入主要 Chunk、Embedding 或规则抽取。
 6. Source B Curated：Learning 中经过 ChatGPT 整理的课堂笔记，是主要课程 Chunk 来源。
-7. 用户明确选择的 PDF、外部 GitHub README/docs 可以进入外部参考轨道；保留 URL、版本、License，不与课程来源混淆。源码按文件/类/函数边界处理，属于后续子阶段。
+7. 外部 GitHub README/docs 等外部参考资料进入外部参考轨道；保留 URL、版本、License，不与课程来源混淆。源码按文件/类/函数边界处理，属于后续子阶段。外部资料统一经独立仓库 Source Collector 采集并输出 Reference Package 后再导入（见决定 13）。PDF 已暂缓：当前没有明确准备导入的 PDF 文件，不为 PDF 增加开发依赖；将来选定具体 PDF 后再单独评估（2026-11-21 决定，取代早期“用户明确选择的 PDF 可进入参考轨道”的表述）。
 8. Chunk 之后并行执行 Embedding 和 Generative LLM 候选知识抽取。Generative LLM 是大语言模型；抽取结果永远是 candidate，不自动成为老师确认规则。
 9. Neo4j 保存 Document、Revision、Chunk、Case、Concept、RuleCandidate、关系和向量。同步 Manifest 放在 Neo4j，不另建 SQLite 数据库。
 10. HTML 的每日 JSON 继续由现有 Cloudflare Pages Functions 保存到 GitHub；Phase 1 Importer 另行增量同步，不做浏览器实时双写。
 11. Phase 1 Query Tool 从 AuraDB 检索并输出带出处的 Evidence Pack；最终报告由 ChatGPT Web 完成，用户手动交接。
 12. 用户不需要逐条审核节点；系统自动保留来源、课程、页码/段落、版本、模型和不确定性。
+13. 系统拆分为两个独立 Repository（2026-11-21 决定）：`symbi/liuyao-source-collector`（独立新仓库，由单独窗口负责；远端尚未创建）负责外部古籍网站/GitHub 资料的合规采集并输出标准化 Reference Package；本仓库 `symbi/liuyao-learning-app` 负责课程 Markdown/TXT、课堂案例 JSON、Reference Package 的接收与验证、解析、Chunk、Embedding、Neo4j 与 Evidence Pack。两边只通过 Reference Package 文件交接；本仓库不实现爬虫或网站采集器。来源登记见 [reference-source-catalog.md](reference-source-catalog.md)。
 
 ## 里程碑状态
 
@@ -39,11 +40,11 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/PDF/JSON Source Adapters | in_progress | [Draft PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) | M2-A 已通过 ChatGPT 代码审查（`3b89bbc` / `d4d55fb`）；M2-B 已实现（`dc222bd`），首轮审查发现的 fenced code block 关闭围栏问题已修复（`38b4e09`），等待 ChatGPT 复审；PDF/JSON 未开始；未合并；daily JSON excluded from classroom-case ingestion |
+| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7` | M2-A 已通过 ChatGPT 代码审查并合并；M2-B 已实现、围栏问题已修复（`38b4e09`）、复审通过并合并；下一项 M2-C 为课堂案例 JSON Adapter；daily JSON excluded from classroom-case ingestion |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
-| M6 | Allowlist 外部 PDF/GitHub 文档和后续代码参考 | not_started | — | 用户先确认来源与 License |
+| M6 | 经 Source Catalog 批准、由 Source Collector 输出 Reference Package 的外部文档与代码参考 | not_started | — | 用户先确认来源与 License；本仓库不直接爬取网站；PDF 不在当前范围 |
 | M7 | Query Tool、向量/图关系检索、Evidence Pack | not_started | — | 不生成最终占卜报告 |
 | M8 | 端到端验收 | not_started | — | 真实课程、真实案例、获准参考材料 |
 
@@ -276,3 +277,24 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - Files changed: `tools/liuyao-kb/src/liuyao_kb/sources/adapters.py`、`tools/liuyao-kb/tests/test_source_adapters.py`、`docs/phase1-progress.md`（本节）。未改动 PDF/JSON，未重构无关代码，未触碰其他工作流文件。
 - Secrets: confirm no secrets committed — 无新增凭据或私人内容；测试仍全部使用 synthetic fixtures。
 - Next step: 保持 Draft PR #3 为 Draft，等待 ChatGPT 复审；不合并，不开始 PDF/JSON。
+
+## 2026-11-21 — PR #3 合并完成与 PR #4 同步记录
+
+本节是当前最新状态，取代上文各 checkpoint 中关于“等待 PR #3 复审/不合并”的 Next step 表述；上文 M2-A/M2-B 的 checkpoint 记录原文保留，不作改写。
+
+- Milestone: M2-A / M2-B 合并完成；PR #4 规划文档同步到新 main
+- PR #3: https://github.com/symbi/liuyao-learning-app/pull/3 — **已合并**（closed, merged）
+- PR #3 head at merge: `e09ae718230a2100156baa8a2f46379a68f7b089`
+- Merge method: Merge Commit（与 PR #2 相同）
+- Merge commit / 最新 main SHA: `9505ce70e38b729bfb4d7dd36924a25229389194`
+- 验收依据: 用户明确豁免了手动在 Mac 复跑测试，接受以执行 Agent 的等价复跑作为本机验收依据。复跑前已逐文件核对远端 head `e09ae71` 的 5 个代码/测试文件与复跑环境内容逐字一致、工作区干净；复跑结果（`tools/liuyao-kb`，Python 3.12.3）：pytest **144 passed**、adapter tests **38 passed**、Ruff check 通过、Ruff format check 通过（17 files）、Mypy 通过（10 source files）、`git diff --check` 通过。合并前再次确认 PR 仍 open、head 未变、mergeable_state clean、无新的阻断性审查意见。注意：该复跑不是在用户 Mac 上执行的，这一事实已如实告知用户并由用户确认接受。
+- PR #4 同步方式: PR #4（`phase1/reference-source-catalog`）与 PR #3 共同修改本文件。处理顺序为：先把本文件对齐到 main 的合并后版本，再由 GitHub 将 main 合并进 PR #4 分支（merge commit `428b9a7`），最后写入本节及顶部状态、冻结决定 7/13 与里程碑表的合成更新。结果：PR #3 的全部 M2-A/M2-B checkpoint 记录完整保留；PR #4 的 2026-11-21 双仓库架构决策与 PDF deferred 决定完整保留（冻结决定 7、13 与里程碑表）；没有任何一方内容被整文件覆盖。
+- PR #4 当前状态: Draft、未合并；已同步到 main `9505ce7`；共 11 个文件；等待 ChatGPT 对新 head 做最终复审，用户再决定是否合并。
+- Secrets: 未写入任何密钥、凭据或私人内容。
+- Next step: 等待 ChatGPT 复审 PR #4 与用户决定；不启动 M2-C、不创建 Source Collector 仓库、不开发 PDF Adapter/OCR。
+
+## 2026-11-21 — PR #4 再次同步 main 记录
+
+- main 已前进：PR #3 合并后，main 新增第十九课课堂案例（`materials/class-cases/lesson-19/case-001.json` 与 `case-001-analysis.md`，提交 `a92bf4a`）及数次每日记录更新，同步时最新 main 为 `de7d884`。
+- PR #4 分支已通过 GitHub merge commit `6f2c405` 合并最新 main：PR #3 的 M2-A/M2-B 代码与测试完整保留（adapters.py blob SHA 与此前核对一致），本 PR 的架构决策、来源目录与 Reference Package Schema 未被覆盖。
+- `docs/phase1-implementation-plan.md` 第 4 节已按现状修正：课堂案例不再是“只有 README 约定”，并记录 M2-C 实施准备要求。本节之后的状态以本节为准。
