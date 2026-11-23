@@ -36,7 +36,12 @@ from typing import Any, Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from liuyao_kb.sources.adapters import MarkdownAdapter
+from liuyao_kb.sources.adapters import (
+    _FENCE_LINE_RE,
+    MarkdownAdapter,
+    _is_closing_fence,
+    _is_opening_fence,
+)
 from liuyao_kb.sources.case_json import (
     DailyRecordMappingResult,
     _resolve_within_root,
@@ -59,7 +64,6 @@ DAILY_MARKDOWN_PARSER_VERSION = "daily-markdown-mapper/1"
 RAW_RECORD_HEADING = "原始记录 JSON"
 
 _HEADING_RE = re.compile(r"^ {0,3}(#{1,6})[ \t]+(\S.*?)[ \t]*$")
-_FENCE_RE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 _NON_FINITE = {"NaN", "Infinity", "-Infinity"}
 
 
@@ -162,7 +166,13 @@ def _iter_lines(text: str) -> list[tuple[int, str]]:
 
 
 def _raw_record_spans(text: str) -> list[tuple[int, int]]:
-    """Locate ``## 原始记录 JSON`` section spans, ignoring fenced code."""
+    """Locate ``## 原始记录 JSON`` section spans, ignoring fenced code.
+
+    Fence recognition reuses the MarkdownAdapter's own rules
+    (``_FENCE_LINE_RE`` / ``_is_opening_fence`` / ``_is_closing_fence``),
+    so this scan and the adapter parse can never disagree about what
+    is fenced code.
+    """
     lines = _iter_lines(text)
     spans: list[tuple[int, int]] = []
     section_start: int | None = None
@@ -170,17 +180,12 @@ def _raw_record_spans(text: str) -> list[tuple[int, int]]:
     fence_char = ""
     fence_length = 0
     for start, content in lines:
-        fence_match = _FENCE_RE.match(content)
+        fence_match = _FENCE_LINE_RE.match(content)
         if in_fence:
-            if (
-                fence_match is not None
-                and fence_match.group(1)[0] == fence_char
-                and len(fence_match.group(1)) >= fence_length
-                and not fence_match.group(2).strip()
-            ):
+            if fence_match is not None and _is_closing_fence(fence_match, fence_char, fence_length):
                 in_fence = False
             continue
-        if fence_match is not None:
+        if fence_match is not None and _is_opening_fence(fence_match):
             in_fence = True
             fence_char = fence_match.group(1)[0]
             fence_length = len(fence_match.group(1))
@@ -206,9 +211,11 @@ def _extract_embedded_json(text: str, span: tuple[int, int], source_uri: str) ->
     fence_char = ""
     fence_length = 0
     for index, content in enumerate(lines):
-        fence_match = _FENCE_RE.match(content)
+        fence_match = _FENCE_LINE_RE.match(content)
         if opening is None:
-            if fence_match is not None:
+            # Only a valid opening fence (MarkdownAdapter rules) starts
+            # the block; an invalid fence-shaped line is plain content.
+            if fence_match is not None and _is_opening_fence(fence_match):
                 info = fence_match.group(2).strip().lower()
                 if info not in ("", "json"):
                     raise GeneratedMarkdownError(
@@ -218,12 +225,7 @@ def _extract_embedded_json(text: str, span: tuple[int, int], source_uri: str) ->
                 fence_char = fence_match.group(1)[0]
                 fence_length = len(fence_match.group(1))
             continue
-        if (
-            fence_match is not None
-            and fence_match.group(1)[0] == fence_char
-            and len(fence_match.group(1)) >= fence_length
-            and not fence_match.group(2).strip()
-        ):
+        if fence_match is not None and _is_closing_fence(fence_match, fence_char, fence_length):
             return "\n".join(lines[opening + 1 : index])
     raise GeneratedMarkdownError(
         f"Raw-record section has no complete fenced JSON block in {source_uri}"

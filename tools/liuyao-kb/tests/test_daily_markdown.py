@@ -272,3 +272,35 @@ class TestSameNameHeadingsKept:
                 <= section.locator.start_offset
                 < mapping.embedded_raw_record.section_end_offset
             )
+
+
+class TestFenceRulesMatchMarkdownAdapter:
+    def test_invalid_backtick_fence_before_section_does_not_hide_it(self) -> None:
+        # A backtick fence whose info string contains a backtick is not
+        # an opening fence for MarkdownAdapter; it must not swallow the
+        # real raw-record heading either.
+        text = (
+            "# Synthetic Daily Record\n"
+            "\n"
+            "```not`a`fence\n"
+            "\n"
+            "## 原始记录 JSON\n"
+            "\n"
+            "```json\n" + json.dumps({"id": RECORD_ID, "schemaVersion": 99}) + "\n```\n"
+        )
+        mapping = parse_generated_markdown_bytes(text.encode(), source_uri=MD_URI)
+        assert mapping.record_id == RECORD_ID
+
+    def test_invalid_fence_inside_section_is_skipped_for_real_json(self) -> None:
+        text = (
+            "# Synthetic Daily Record\n"
+            "\n"
+            "## 原始记录 JSON\n"
+            "\n"
+            "```json`with`backticks\n"
+            "\n"
+            "```json\n" + json.dumps({"id": RECORD_ID, "schemaVersion": 99}) + "\n```\n"
+        )
+        mapping = parse_generated_markdown_bytes(text.encode(), source_uri=MD_URI)
+        assert mapping.record_id == RECORD_ID
+        assert mapping.embedded_raw_record.raw["schemaVersion"] == 99

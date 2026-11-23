@@ -12,7 +12,7 @@
 - Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2-C1 approved_merged（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）; M2 整体 in_progress（剩 M2-C2/C3）
 - Active implementation branch: `phase1/m2c2-daily-markdown-adapter`（M2-C2，基于最新 main `51a0476` 创建，见 Draft PR #8）
 - Active PR: [Draft PR #8](https://github.com/symbi/liuyao-learning-app/pull/8)（M2-C2，已提交，等待 ChatGPT 复审）；PR #7（M2-C1）已合并，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
-- Last completed milestone: M2-A/M2-B（经 PR #3 合并）；M1 已合并
+- Last completed milestone: M2-C1（经 PR #7 合并，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）；M2-A/M2-B 已合并（PR #3）；M1 已合并
 - Next action: M2-C2 已提交 Draft PR #8，正在等待 ChatGPT 复审和用户合并决定；C3 仍须单独授权，不得顺手启动。第一轮路线（用户 2026-11-23 决定）：先用现有课程笔记、课堂案例与每日记录完成 M2-C、M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后，不作为第一轮验收前置条件（M6 不取消）。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
 - Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
 - Merged M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3（merge commit `9505ce7`）
@@ -365,3 +365,11 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 修正 2（文档）：progress 的 Active PR 改为 PR #8 并注明等待 ChatGPT 复审、Last updated 更新为 2026-11-23；handoff 将 M2-C2 改为 Draft PR #8 审查中，明确 C2 已获用户授权并正在实施、C3 仍未启动且仍须单独授权，并更新 Knowledge Base 工作流授权描述与 Claude Code / Knowledge Base 窗口启动提示（删除“规划阶段、C2 尚未启动、不得开始实现”的过时表述）。plan §12 的第一轮路线（M6 延期、非前置、不取消）保持不变。
 - 修正后验证：pytest 222 passed（原 221 + 新增 1）；Ruff check 通过、format 通过；Mypy strict 通过（12 个源文件）；git diff --check 退出码 0。测试均在实现方 Linux Python 3.12.3 venv 中运行，不是用户 Mac，也不是 CI。
 - 修正后停下：更新推送至现有 Draft PR #8，等待 ChatGPT 最终复审与用户合并决定；不合并、不标记 Ready；C3 不启动。
+
+## M2-C2 第二轮复审修正检查点（2026-11-23）
+
+- ChatGPT 第二轮复审 PR #8：上轮 body_sections 的 span 精确排除已确认修复（普通 H1/H3 同名标题保留）；本轮只处理围栏识别一致性与小型文档同步。
+- 修正（代码）：`daily_markdown.py` 的 `_raw_record_spans()` 与 `_extract_embedded_json()` 不再使用自有 `_FENCE_RE` 判断围栏，改为直接复用 MarkdownAdapter 的 `_FENCE_LINE_RE`、`_is_opening_fence()`、`_is_closing_fence()`：反引号 info string 中含反引号的 fence-shaped 行不再被当作开围栏；关闭围栏须同字符、长度不短于开围栏、其后只能有空格或 tab。两个 Parser 对同一份 Markdown 的围栏理解从此不可能不一致。新增 2 个 synthetic 测试（`TestFenceRulesMatchMarkdownAdapter`）：真实原始记录 Section 之前放无效反引号 fence-shaped 行仍能正确识别 H2 Section；原始记录 Section 内先放无效 fence-shaped 行、再放真正的 ```json 围栏时能正确提取实际 JSON。原有同名 H1/H3 保留测试继续通过。
+- 修正（文档）：本文件 Last completed milestone 更新为 M2-C1（PR #7）；PR #8 描述中 `test_daily_markdown.py` 的测试数量已改为当前真实数量（21 个；全文合计见下）。历史 checkpoint 不改写。plan §12 第一轮路线保持不变（M6 延期、非前置、不取消）。
+- 修正后验证：pytest 224 passed（原 222 + 新增 2）；Ruff check 通过、format 通过；Mypy strict 通过（12 个源文件）；git diff --check 退出码 0。测试均在实现方 Linux Python 3.12.3 venv 中运行，不是用户 Mac，也不是 CI。
+- 修正后停下：更新推送至现有 Draft PR #8，等待 ChatGPT 最终复审与用户合并决定；不合并、不标记 Ready；C3、M3 不启动。
