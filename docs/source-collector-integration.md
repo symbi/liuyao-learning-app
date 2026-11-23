@@ -26,7 +26,7 @@
 
 - 仓库：`symbi/liuyao-learning-app`
 - 最新 main：`51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`（Merge PR #7，M2-C1）
-- 活跃 PR：[PR #8](https://github.com/symbi/liuyao-learning-app/pull/8)（Draft，M2-C2，分支 `phase1/m2c2-daily-markdown-adapter`，head `4f2b03622fbf2168f406be00f87fb8aef56fb083`）——本协调工作不修改该分支及其文件，不干扰 M2-C2 复审。
+- 活跃 PR：[PR #8](https://github.com/symbi/liuyao-learning-app/pull/8)（Draft，M2-C2，分支 `phase1/m2c2-daily-markdown-adapter`，head `04e76cf982d7d77a6c174b76dfd6042d10cb332c`，2026-11-23 更新核实；初版记录时为 `4f2b03622fbf2168f406be00f87fb8aef56fb083`，属历史快照）——本协调工作不修改该分支及其文件，不干扰 M2-C2 复审。
 - 里程碑：M2-A/M2-B 已合并；M2-C1 已合并（PR #7）；M2-C2 在 PR #8 待复审；M2-C3 未启动；M3/M4/M5/M7/M8 未启动。
 - 注意：main 上的 `docs/phase1-progress.md` 尚未反映 PR #7 合并与 PR #8 的状态（仍记为 2026-11-22 的状态），最新进度在 PR #8 分支上；以 GitHub PR 状态为准。
 
@@ -102,3 +102,4 @@
 | 日期 | 变更 | 版本影响 |
 |---|---|---|
 | 2026-11-23 | 建立本协调记录；确认 v1.0 为当前唯一交接契约；提出 `locator` 层级约定（拟议，未生效）与 v1.1 讨论意向 | 无（不改 Schema） |
+| 2026-11-23 | 按 PR #9 审查意见更新 PR #8 基线 head 至 `04e76cf982d7d77a6c174b76dfd6042d10cb332c`（初版所记 `4f2b036…` 为记录时快照，已在正文注明） | 无（仅状态同步） |
