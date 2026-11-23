@@ -34,6 +34,15 @@ from liuyao_kb.sources.case_json import (
     parse_daily_container_bytes,
     resolve_paired_markdown,
 )
+from liuyao_kb.sources.case_markdown import (
+    CASE_MARKDOWN_PARSER_VERSION,
+    ClassCaseMarkdownError,
+    ClassCaseMarkdownMapping,
+    HasRepresentationLink,
+    map_class_case_markdown_file,
+    map_class_case_markdown_for_case_file,
+    parse_class_case_markdown_bytes,
+)
 from liuyao_kb.sources.config import (
     AllowedDailyRecord,
     DailyRecordsSettings,
@@ -76,6 +85,7 @@ from liuyao_kb.sources.models import (
 
 __all__ = [
     "CASE_JSON_PARSER_VERSION",
+    "CASE_MARKDOWN_PARSER_VERSION",
     "DAILY_MARKDOWN_PARSER_VERSION",
     "MARKDOWN_PARSER_VERSION",
     "RAW_RECORD_HEADING",
@@ -85,6 +95,8 @@ __all__ = [
     "CaseMappingError",
     "CastRecordMapping",
     "ClassCaseMapping",
+    "ClassCaseMarkdownError",
+    "ClassCaseMarkdownMapping",
     "DailyRecordMappingResult",
     "DailyRecordRef",
     "DailyRecordsSettings",
@@ -92,6 +104,7 @@ __all__ = [
     "EmptySourceError",
     "GeneratedMarkdownError",
     "GeneratedMarkdownMapping",
+    "HasRepresentationLink",
     "InvalidCaseJsonError",
     "InvalidSourceEncodingError",
     "JsonLocator",
@@ -117,11 +130,14 @@ __all__ = [
     "link_daily_records",
     "load_sources_config",
     "map_class_case_file",
+    "map_class_case_markdown_file",
+    "map_class_case_markdown_for_case_file",
     "map_daily_records_file",
     "map_generated_markdown_file",
     "normalize_match_status",
     "paired_markdown_relative_path",
     "parse_class_case_bytes",
+    "parse_class_case_markdown_bytes",
     "parse_daily_container_bytes",
     "parse_generated_markdown_bytes",
     "parse_markdown_bytes",
