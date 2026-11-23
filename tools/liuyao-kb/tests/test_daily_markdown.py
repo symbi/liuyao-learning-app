@@ -304,3 +304,22 @@ class TestFenceRulesMatchMarkdownAdapter:
         mapping = parse_generated_markdown_bytes(text.encode(), source_uri=MD_URI)
         assert mapping.record_id == RECORD_ID
         assert mapping.embedded_raw_record.raw["schemaVersion"] == 99
+
+    def test_unicode_line_separator_does_not_start_a_fence(self) -> None:
+        # U+2028 is a line boundary for str.splitlines() but not for
+        # MarkdownAdapter, which splits physical lines on "\n" only.
+        # The fence-shaped text after U+2028 is mid-line body text for
+        # both parsers, so the real raw-record section is still found.
+        text = (
+            "# Synthetic Daily Record\n"
+            "\n"
+            "body text\u2028```json\n"
+            "\n"
+            "## 原始记录 JSON\n"
+            "\n"
+            "```json\n" + json.dumps({"id": RECORD_ID, "schemaVersion": 99}) + "\n```\n"
+        )
+        mapping = parse_generated_markdown_bytes(text.encode(), source_uri=MD_URI)
+        assert mapping.record_id == RECORD_ID
+        body_text = "\n".join(section.text for section in mapping.body_sections)
+        assert "body text" in body_text

@@ -41,6 +41,7 @@ from liuyao_kb.sources.adapters import (
     MarkdownAdapter,
     _is_closing_fence,
     _is_opening_fence,
+    _iter_lines,
 )
 from liuyao_kb.sources.case_json import (
     DailyRecordMappingResult,
@@ -155,16 +156,6 @@ class GeneratedMarkdownMapping(BaseModel):
     renders: RendersLink
 
 
-def _iter_lines(text: str) -> list[tuple[int, str]]:
-    """Yield (start_offset, line_without_newline) pairs."""
-    lines: list[tuple[int, str]] = []
-    offset = 0
-    for chunk in text.splitlines(keepends=True):
-        lines.append((offset, chunk.rstrip("\r\n")))
-        offset += len(chunk)
-    return lines
-
-
 def _raw_record_spans(text: str) -> list[tuple[int, int]]:
     """Locate ``## 原始记录 JSON`` section spans, ignoring fenced code.
 
@@ -173,7 +164,7 @@ def _raw_record_spans(text: str) -> list[tuple[int, int]]:
     so this scan and the adapter parse can never disagree about what
     is fenced code.
     """
-    lines = _iter_lines(text)
+    lines = [(line.start, line.content) for line in _iter_lines(text)]
     spans: list[tuple[int, int]] = []
     section_start: int | None = None
     in_fence = False
@@ -206,7 +197,7 @@ def _raw_record_spans(text: str) -> list[tuple[int, int]]:
 def _extract_embedded_json(text: str, span: tuple[int, int], source_uri: str) -> str:
     """Return the fenced JSON text inside the raw-record section span."""
     section = text[span[0] : span[1]]
-    lines = section.splitlines()
+    lines = [line.content for line in _iter_lines(section)]
     opening: int | None = None
     fence_char = ""
     fence_length = 0

@@ -373,3 +373,11 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 修正（文档）：本文件 Last completed milestone 更新为 M2-C1（PR #7）；PR #8 描述中 `test_daily_markdown.py` 的测试数量已改为当前真实数量（21 个；全文合计见下）。历史 checkpoint 不改写。plan §12 第一轮路线保持不变（M6 延期、非前置、不取消）。
 - 修正后验证：pytest 224 passed（原 222 + 新增 2）；Ruff check 通过、format 通过；Mypy strict 通过（12 个源文件）；git diff --check 退出码 0。测试均在实现方 Linux Python 3.12.3 venv 中运行，不是用户 Mac，也不是 CI。
 - 修正后停下：更新推送至现有 Draft PR #8，等待 ChatGPT 最终复审与用户合并决定；不合并、不标记 Ready；C3、M3 不启动。
+
+## M2-C2 第三轮复审修正检查点（2026-11-23）
+
+- ChatGPT 第三轮复审 PR #8：围栏规则一致性已确认修复；仅剩切行规则一处窄边界：C2 自有 `_iter_lines()` 用 `str.splitlines()`，会把 U+2028、U+0085、单独 `\r` 等也当作行分隔符，与 MarkdownAdapter 只按 `\n` 切分（并处理紧邻的 `\r`）不一致，极端情况下两者对围栏位置的判断可能不同。
+- 修正（代码）：删除 C2 自有 `_iter_lines()`，`_raw_record_spans()` 与 `_extract_embedded_json()` 改为直接复用 MarkdownAdapter 的 `_iter_lines()`，物理行切分规则与适配器完全相同（顺带消除了 `_extract_embedded_json` 内部 `splitlines()` 的同类分歧）。新增 U+2028 边界 synthetic 测试：正文行中 U+2028 后的 fence-shaped 文本只是行内正文，两个 Parser 判断一致，真正的原始记录 Section 仍被正确识别。
+- 修正（文档）：workspace-handoff.md 的 Last updated 更新为 2026-11-23。按复审建议，本轮不更新 PR #8 描述（避免测试数量再次变动后重复改），待最终复审通过后统一更新。
+- 修正后验证：pytest 225 passed（原 224 + 新增 1；`test_daily_markdown.py` 共 22 个）；Ruff check 通过、format 通过；Mypy strict 通过（12 个源文件）；git diff --check 退出码 0。测试均在实现方 Linux Python 3.12.3 venv 中运行，不是用户 Mac，也不是 CI。
+- 修正后停下：更新推送至现有 Draft PR #8，等待 ChatGPT 最终复审与用户合并决定；不合并、不标记 Ready；C3、M3 不启动。

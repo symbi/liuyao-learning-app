@@ -3,7 +3,7 @@
 > 本文件是不同 ChatGPT 窗口、Claude Code、Codex、Muse 之间的总入口。GitHub main 是已确认项目状态的共同来源；尚未合并的 Draft PR 不自动成为 main 的共同状态。
 
 - Repository: symbi/liuyao-learning-app
-- Last updated: 2026-11-22
+- Last updated: 2026-11-23
 - Shared memory rule: 每个工作流维护自己的进度文件；重要状态变化合并到 main 后，其他窗口才把它视为共同确认的最新状态。
 - Security: 不在本文件或其他文档中保存密码、Token、私密录音、私密 Memo 或本机敏感路径。
 
