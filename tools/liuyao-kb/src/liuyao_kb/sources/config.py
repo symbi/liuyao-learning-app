@@ -15,11 +15,11 @@ Safe defaults, all of them:
 
 from __future__ import annotations
 
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class RawAsrSettings(BaseModel):
@@ -40,8 +40,57 @@ class RawAsrSettings(BaseModel):
     allow_model_processing: bool = False
 
 
+class AllowedDailyRecord(BaseModel):
+    """One daily-record subrecord the user has explicitly allowlisted.
+
+    The pair (``path``, ``record_id``) is the whole grant: ``path`` is the
+    repository-relative POSIX path of a daily-records JSON container and
+    ``record_id`` is the ``id`` of one ``additionalQuestions[]`` subrecord
+    inside it. Classification flags on the record itself (``isCase``,
+    ``caseSource``) never substitute for this explicit entry.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    path: str
+    record_id: str
+
+    @field_validator("path")
+    @classmethod
+    def _validate_path(cls, value: str) -> str:
+        raw = value.strip().replace("\\", "/")
+        if not raw or raw.startswith("/") or ":" in raw.split("/")[0]:
+            raise ValueError("allowed record path must be a repository-relative POSIX path")
+        segments: list[str] = []
+        for segment in raw.split("/"):
+            if segment in {"", "."}:
+                continue
+            if segment == "..":
+                raise ValueError("allowed record path must not contain '..' segments")
+            segments.append(segment)
+        if not segments:
+            raise ValueError("allowed record path must not be empty")
+        return PurePosixPath(*segments).as_posix()
+
+    @field_validator("record_id")
+    @classmethod
+    def _validate_record_id(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("allowed record_id must not be empty")
+        return stripped
+
+
 class DailyRecordsSettings(BaseModel):
-    """Personal daily casting records."""
+    """Personal daily casting records.
+
+    Fail-closed: ``include`` defaults to ``False``, and even with
+    ``include`` on, only subrecords named in ``allowed_records`` are
+    eligible. ``only_cases`` (default ``True``) additionally requires an
+    allowlisted subrecord to be explicitly marked ``isCase: true``
+    before it is mapped; it never widens the allowlist and is never a
+    substitute for explicit (path, record_id) entries.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -49,6 +98,34 @@ class DailyRecordsSettings(BaseModel):
     #: Only import records explicitly marked as classroom cases.
     only_cases: bool = True
     root: Path | None = None
+    #: Exact (container path, subrecord id) pairs the user has approved.
+    allowed_records: list[AllowedDailyRecord] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate_allowlist(self) -> DailyRecordsSettings:
+        seen_pairs: set[tuple[str, str]] = set()
+        paths_by_id: dict[str, str] = {}
+        for entry in self.allowed_records:
+            pair = (entry.path, entry.record_id)
+            if pair in seen_pairs:
+                raise ValueError(
+                    f"duplicate allowed_records entry: {entry.path} / {entry.record_id}"
+                )
+            seen_pairs.add(pair)
+            other_path = paths_by_id.setdefault(entry.record_id, entry.path)
+            if other_path != entry.path:
+                raise ValueError(
+                    f"record_id {entry.record_id} is allowlisted under two different "
+                    f"paths: {other_path} and {entry.path}"
+                )
+        return self
+
+    def allowed_ids_for(self, relative_path: str) -> tuple[str, ...]:
+        """Return the allowlisted subrecord ids for one container path."""
+        normalized = relative_path.strip().replace("\\", "/")
+        segments = [s for s in normalized.split("/") if s not in {"", "."}]
+        canonical = PurePosixPath(*segments).as_posix() if segments else ""
+        return tuple(entry.record_id for entry in self.allowed_records if entry.path == canonical)
 
 
 class PdfSettings(BaseModel):
