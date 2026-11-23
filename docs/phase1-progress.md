@@ -7,13 +7,13 @@
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
 - Status: in_progress
-- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 规划 PR #6 已合并；M2-C1 已推送并开启 Draft PR #7，正在审查与修订中；C2/C3 未启动；PDF Adapter/OCR 已暂缓）
+- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 规划 PR #6 已合并；M2-C1 已合并（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）；M2-C2 进行中（本分支，Draft PR 待创建）；C3 未启动；PDF Adapter/OCR 已暂缓）
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2 整体 in_progress（剩 M2-C）
-- Active implementation branch: `phase1/m2c1-case-json-mapper`（M2-C1，已推送，见 Draft PR #7）
-- Active PR: [Draft PR #7](https://github.com/symbi/liuyao-learning-app/pull/7)（M2-C1，head 以 GitHub 为准）；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
+- Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2-C1 approved_merged（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）; M2 整体 in_progress（剩 M2-C2/C3）
+- Active implementation branch: `phase1/m2c2-daily-markdown-adapter`（M2-C2，基于最新 main `51a0476` 创建，Draft PR 待创建）
+- Active PR: M2-C2 Draft PR（本分支，待创建）；PR #7（M2-C1）已合并，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
 - Last completed milestone: M2-A/M2-B（经 PR #3 合并）；M1 已合并
-- Next action: M2-C1 已推送至 Draft PR #7，路径一致性修复已提交，正在等待 ChatGPT 最终复审和用户合并决定；C2/C3 不得顺手启动。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
+- Next action: M2-C2（自动生成每日记录 MD Adapter）已在本分支实现，等待以 Draft PR 提交后由 ChatGPT 复审和用户决定合并；C3 不得顺手启动。第一轮路线（用户 2026-11-23 决定）：先用现有课程笔记、课堂案例与每日记录完成 M2-C、M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后，不作为第一轮验收前置条件（M6 不取消）。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
 - Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
 - Merged M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3（merge commit `9505ce7`）
 - Last updated: 2026-11-22
@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已推送并开启 Draft PR #7，正在审查与修订中，C2/C3 未启动；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
+| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已合并（PR #7，merge commit `51a0476`）；C2 进行中（本分支，Draft PR 待创建）；C3 未启动；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
@@ -343,3 +343,17 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 测试修正与新增：修正 `test_map_daily_records_file_with_allowlist`（默认配置下被映射的记录改为显式 `isCase=True`）及 CWD 回归测试的 repo 侧记录；allowlist 机制类测试显式传 `only_cases=False`；新增 4 个测试（解析层与文件层各 2 个：only_cases=True 排除 allowlist 内非案例含 isCase 缺失、only_cases=False 允许 allowlist 内非案例）。
 - 验证（实现方 Linux clone 的 venv，Python 3.12.3，非用户 Mac、非 CI）：pytest 203 passed（原 199 + 新增 4），Ruff check/format 通过，Mypy strict 通过，`git diff --check` 退出码 0。
 - 当前状态：修复已推送至 Draft PR #7，等待 ChatGPT 对新 head 的最终复审与用户合并决定；C2/C3 未启动。
+
+## M2-C1 合并与 M2-C2 启动检查点（2026-11-23）
+
+- PR #7（M2-C1）已由用户授权并正式合并到 main，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`。M2-C1 完成。
+- 用户 2026-11-23 授权启动 M2-C2，并决定第一轮路线：先用现有知识（课程笔记、课堂案例、每日记录）完成端到端验收，再引入外部资料来源；M6 延期到现有知识验收之后，不作为第一轮验收前置条件，不取消（计划文档 §12 同步）。
+- M2-C2 在新分支 `phase1/m2c2-daily-markdown-adapter`（基于 main `51a0476`）实现，新增 `tools/liuyao-kb/src/liuyao_kb/sources/daily_markdown.py`：
+  - 复用既有 MarkdownAdapter 完整解析生成的每日记录 MD（type-B），保留正文 Section、来源 URI/身份、内容哈希与原文定位；
+  - 提取 `## 原始记录 JSON` 内嵌块（围栏感知，围栏内的同名标题行不算该 Section；重复 Section、缺失、JSON 格式错误、id 缺失均为显式错误）；
+  - 三方身份核对：文件名 `<日期>--<record_id>.md` 的 id、内嵌 JSON 的 id 必须一致；提供容器时再经 C1 的容器 Mapping 验证该 id 是已映射的 CastRecord（allowlist 与 only_cases 已在 C1 生效），不一致、未映射或容器未处理均为显式错误，不静默猜测；
+  - `body_sections` 排除原始记录 Section（标题与其 JSON 围栏块），下游 Chunk 不会重复索引内嵌结构化 JSON；内嵌 JSON 原文以哈希与冻结副本保留在 `embedded_raw_record`；
+  - 关联以 `RendersLink`（relation=`RENDERS`）表达，只引用既有 CastRecord 的 record_id 与容器身份，不创建 ClassCase 或第二个 CastRecord；未提供容器时链接为未验证状态，不伪造容器身份。
+- 测试：新增 `tests/test_daily_markdown.py` 18 个 synthetic 测试（身份一致/不匹配、内嵌缺失/格式错误、重复 Section、缺失 id、文件名无 id、围栏内假标题、排除后正文与定位、容器验证与不重复创建）。完整测试：pytest 221 passed（原 203 + 新增 18）；Ruff check 通过、format 通过；Mypy strict 通过（12 个源文件）；git diff --check 退出码 0。测试均在实现方 Linux Python 3.12.3 venv 中运行，不是用户 Mac，也不是 CI。
+- 人工核查：以仓库内真实生成 MD（2026-11-21 的 7e0a6b19 记录）只读试跑文件级 Mapper 并经真实容器验证通过（record_id 一致、RENDERS 容器验证为真、19 个 Section 中正文 17 个、内嵌 schemaVersion 16、正文不含原始记录标题）；真实文件未修改、未提交为测试 fixture。
+- 本检查点之后停下：M2-C2 以 Draft PR 提交，等待 ChatGPT 复审与用户合并决定；不合并、不标记 Ready；C3、M3–M8 不启动。
