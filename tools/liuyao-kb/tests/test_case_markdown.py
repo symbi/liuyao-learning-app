@@ -264,3 +264,19 @@ class TestFailureModes:
         assert case.paired_markdown.exists is False
         with pytest.raises(ClassCaseMarkdownError, match="missing"):
             map_class_case_markdown_file(case, source_root=tmp_path)
+
+    def test_parse_bytes_rejects_missing_paired(self, tmp_path: Path) -> None:
+        _write_case(tmp_path, md_text=None)
+        case = map_class_case_file(JSON_RELATIVE, repository=REPO, source_root=tmp_path)
+        assert case.paired_markdown is not None
+        assert case.paired_markdown.exists is False
+        with pytest.raises(ClassCaseMarkdownError, match="missing"):
+            parse_class_case_markdown_bytes(MD_TEXT.encode("utf-8"), class_case=case)
+
+    def test_parse_bytes_rejects_unverified_paired(self) -> None:
+        case = parse_class_case_bytes(_case_json(), source_uri=f"repo://{REPO}/{JSON_RELATIVE}")
+        case = attach_paired_markdown(case, repository=REPO, case_json_relative_path=JSON_RELATIVE)
+        assert case.paired_markdown is not None
+        assert case.paired_markdown.exists is None
+        with pytest.raises(ClassCaseMarkdownError, match="has not been verified"):
+            parse_class_case_markdown_bytes(MD_TEXT.encode("utf-8"), class_case=case)

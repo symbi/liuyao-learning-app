@@ -42,6 +42,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from liuyao_kb.sources.adapters import MarkdownAdapter
 from liuyao_kb.sources.case_json import (
     ClassCaseMapping,
+    PairedMarkdownRef,
     _resolve_within_root,
     map_class_case_file,
 )
@@ -89,18 +90,14 @@ class ClassCaseMarkdownMapping(BaseModel):
     has_representation: HasRepresentationLink
 
 
-def parse_class_case_markdown_bytes(
-    data: bytes | bytearray | memoryview,
-    *,
-    class_case: ClassCaseMapping,
-    revision_ref: str | None = None,
-) -> ClassCaseMarkdownMapping:
-    """Parse paired-Markdown bytes for an already-mapped ClassCase.
+def _require_verified_paired(class_case: ClassCaseMapping) -> PairedMarkdownRef:
+    """Return the ClassCase's paired reference, fail-closed.
 
-    The source URI and identity come from the ClassCase's
-    ``paired_markdown`` reference (M2-C1); a ClassCase without one is
-    an explicit error. Encoding and emptiness failures propagate from
-    the MarkdownAdapter unchanged.
+    Shared by the bytes-level and file-level APIs so both apply the
+    exact same gate: the reference must exist, its case_id must match,
+    and C1 must have verified the file's existence (``exists is
+    True``). An unchecked reference (``exists is None``) or a missing
+    file (``exists is False``) never produces a mapping.
     """
     paired = class_case.paired_markdown
     if paired is None:
@@ -112,6 +109,35 @@ def parse_class_case_markdown_bytes(
             f"Paired Markdown case_id {paired.case_id!r} does not match "
             f"ClassCase case_id {class_case.case_id!r}"
         )
+    if paired.exists is None:
+        raise ClassCaseMarkdownError(
+            f"Paired Markdown existence has not been verified for case "
+            f"{class_case.case_id!r}: {paired.relative_path}"
+        )
+    if paired.exists is False:
+        raise ClassCaseMarkdownError(
+            f"Paired Markdown is missing for case {class_case.case_id!r}: {paired.relative_path}"
+        )
+    return paired
+
+
+def parse_class_case_markdown_bytes(
+    data: bytes | bytearray | memoryview,
+    *,
+    class_case: ClassCaseMapping,
+    revision_ref: str | None = None,
+) -> ClassCaseMarkdownMapping:
+    """Parse paired-Markdown bytes for an already-mapped ClassCase.
+
+    The source URI and identity come from the ClassCase's
+    ``paired_markdown`` reference (M2-C1). The reference is gated by
+    :func:`_require_verified_paired`: no reference, an unverified
+    existence state, or a missing file is an explicit error, so bytes
+    supplied directly by a caller can never mint a HAS_REPRESENTATION
+    mapping for a Markdown C1 did not confirm. Encoding and emptiness
+    failures propagate from the MarkdownAdapter unchanged.
+    """
+    paired = _require_verified_paired(class_case)
     document = MarkdownAdapter().parse_bytes(
         bytes(data), source_uri=paired.source_uri, revision_ref=revision_ref
     )
@@ -155,20 +181,7 @@ def map_class_case_markdown_file(
     logic, so the boundary check and the read use the same resolved
     path and out-of-root or symlink escapes fail explicitly.
     """
-    paired = class_case.paired_markdown
-    if paired is None:
-        raise ClassCaseMarkdownError(
-            f"ClassCase {class_case.case_id!r} has no paired Markdown reference"
-        )
-    if paired.exists is None:
-        raise ClassCaseMarkdownError(
-            f"Paired Markdown existence has not been verified for case "
-            f"{class_case.case_id!r}: {paired.relative_path}"
-        )
-    if paired.exists is False:
-        raise ClassCaseMarkdownError(
-            f"Paired Markdown is missing for case {class_case.case_id!r}: {paired.relative_path}"
-        )
+    paired = _require_verified_paired(class_case)
     resolved, relative = _resolve_within_root(Path(paired.relative_path), Path(source_root))
     if relative != paired.relative_path:
         raise ClassCaseMarkdownError(
