@@ -12,7 +12,7 @@
 | 工作流 | 负责内容 | 当前状态 | 当前分支 / PR | 权威进度文件 |
 |---|---|---|---|---|
 | HTML 窗口 | 修复现有 HTML 页面及用户明确指定的前端问题 | 独立工作流；按具体任务启动 | 具体任务分支 / Draft PR | [html-maintenance-progress.md](html-maintenance-progress.md) |
-| Phase 1 / Knowledge Base | AuraDB、Python Importer、课程/案例解析、Chunk、Embedding、检索和 Evidence Pack | M1、M2-A/M2-B 已合并（PR #3）；双仓库架构与来源目录已合并（PR #4，merge commit `65fb501`）；M2-C 规划已合并（PR #6，merge commit `dbc2c19`）；M2-C1 已合并（PR #7，merge commit `51a0476`）；M2-C2 进行中（分支 `phase1/m2c2-daily-markdown-adapter`，Draft PR #8 审查中）；C3 未启动 | [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6)（已合并）；M2-C1：[PR #7](https://github.com/symbi/liuyao-learning-app/pull/7)（已合并）；M2-C2：[PR #8](https://github.com/symbi/liuyao-learning-app/pull/8)（Draft，审查中） | [phase1-progress.md](phase1-progress.md)、[phase1-implementation-plan.md](phase1-implementation-plan.md) |
+| Phase 1 / Knowledge Base | AuraDB、Python Importer、课程/案例解析、Chunk、Embedding、检索和 Evidence Pack | M1、M2-A/M2-B 已合并（PR #3）；双仓库架构与来源目录已合并（PR #4，merge commit `65fb501`）；M2-C 规划已合并（PR #6，merge commit `dbc2c19`）；M2-C1 已合并（PR #7，merge commit `51a0476`）；M2-C2 已合并（PR #8，merge commit `e963bf3`）；M2-C3 进行中（分支 `phase1/m2c3-classroom-case-markdown-adapter`，Draft PR #10 已创建，等待 ChatGPT 复审） | [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6)（已合并）；M2-C1：[PR #7](https://github.com/symbi/liuyao-learning-app/pull/7)（已合并）；M2-C2：[PR #8](https://github.com/symbi/liuyao-learning-app/pull/8)（已合并）；M2-C3：[PR #10](https://github.com/symbi/liuyao-learning-app/pull/10)（Draft，等待 ChatGPT 复审） | [phase1-progress.md](phase1-progress.md)、[phase1-implementation-plan.md](phase1-implementation-plan.md) |
 | Source Collector（独立项目） | 外部古籍网站/网页/GitHub 文档的合规采集与 Reference Package 输出；不做 Chunk/Embedding/Neo4j | 仓库 `symbi/liuyao-source-collector` 已创建且为 Private，由独立窗口维护；架构与启动章程已随 PR #4 合并进入 main | [symbi/liuyao-source-collector](https://github.com/symbi/liuyao-source-collector)（Private） | [reference-source-catalog.md](reference-source-catalog.md)、[source-collector-project-charter.md](source-collector-project-charter.md) |
 
 ## 工作流边界
@@ -31,8 +31,8 @@
 - 按 AGENTS.md、CLAUDE.md、docs/phase1-progress.md 和 Phase 1 实施计划执行。
 - M0 已完成实际 AuraDB Free 验证；M1 已合并到 main。
 - M2-A（来源模型）与 M2-B（Markdown/TXT）已通过复审并合并：PR #3 以 Merge Commit 合并，merge commit 为 `9505ce70e38b729bfb4d7dd36924a25229389194`。验收依据为执行 Agent 在与 PR head `e09ae71` 逐字一致的代码上复跑的 144 passed、38 adapter tests 及 Ruff/Mypy 全通过；用户已豁免手动 Mac 复跑并确认接受该验收依据（详见 phase1-progress.md 的合并记录）。
-- PR #4（双仓库架构、Reference Catalog 与 Reference Package 契约）已合并（merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构。PR #6（M2-C 规划更新，docs-only）已合并（merge commit `dbc2c19`）；PR #7（M2-C1）已合并（merge commit `51a0476`），M2-C1 完成。当前进行中的工作是 M2-C2（自动生成每日记录 MD Adapter；分支 phase1/m2c2-daily-markdown-adapter，Draft PR #8 审查中；详见 phase1-progress.md 的 2026-11-23 M2-C2 检查点）。用户 2026-11-23 决定第一轮先用现有知识完成端到端验收（M2-C、M3、M4、M5、M7、M8），M6 外部参考资料延期到现有知识验收之后，不作为第一轮前置条件（不取消）。
-- M2-C 已拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已完成并合并（PR #7）；C2 已获用户明确授权并正在实施（Draft PR #8 审查中）；C3 尚未启动，仍须用户单独明确授权。不开发 PDF Adapter/OCR。
+- PR #4（双仓库架构、Reference Catalog 与 Reference Package 契约）已合并（merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构。PR #6（M2-C 规划更新，docs-only）已合并（merge commit `dbc2c19`）；PR #7（M2-C1）已合并（merge commit `51a0476`），M2-C1 完成；PR #8（M2-C2）已合并（merge commit `e963bf3`），M2-C2 完成。当前进行中的工作是 M2-C3（课堂案例 MD 表示解析；分支 phase1/m2c3-classroom-case-markdown-adapter，Draft PR #10 已创建、处于 Draft、等待 ChatGPT 复审；详见 phase1-progress.md 的 2026-11-23 M2-C3 检查点）。用户 2026-11-23 决定第一轮先用现有知识完成端到端验收（M2-C、M3、M4、M5、M7、M8），M6 外部参考资料延期到现有知识验收之后，不作为第一轮前置条件（不取消）。
+- M2-C 已拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1、C2 均已完成并合并（PR #7、PR #8）；C3 已获用户明确授权并正在实施（Draft PR #10 已创建，等待 ChatGPT 复审）；M3 及后续里程碑尚未启动，仍须用户单独明确授权。不开发 PDF Adapter/OCR。
 - Knowledge Base 只读取显式批准的本地资料或 Reference Package，不负责爬网站。
 - 维护 docs/phase1-progress.md；不修改 HTML 页面或 Cloudflare Functions。
 
@@ -66,7 +66,7 @@
 
 ## 新 Claude Code / Knowledge Base 窗口继续执行提示
 
-> 请先读取 AGENTS.md、CLAUDE.md、docs/workspace-handoff.md、docs/phase1-progress.md 和 Phase 1 实施计划。M0 已完成，M1 已合并，M2-A/M2-B 已合并（PR #3），双仓库架构与来源目录已合并（PR #4，merge commit 65fb501），M2-C 规划已合并（PR #6，merge commit dbc2c19），M2-C1 已合并（PR #7，merge commit 51a0476）。当前进行中：M2-C2（自动生成每日记录 MD Adapter）已获用户明确授权并正在实施，Draft PR #8 审查中；M2-C3 尚未启动，仍须用户单独明确授权，不得顺手开始。第一轮先用现有课程笔记、课堂案例及每日记录完成 M2-C、M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后（不取消、不作为第一轮前置条件）；PDF Adapter/OCR 暂缓。课堂案例是老师讲解过的教学案例，不是个人练习，案例 JSON 与其配对 MD 是同一案例的两种不同材料（详见实施计划第 4、7 节）。知识库只负责批准来源的解析/Chunk/Embedding/Neo4j，不承担外部网页采集；Source Collector 已创建（Private）且是独立窗口的工作，不属于本仓库实现任务。
+> 请先读取 AGENTS.md、CLAUDE.md、docs/workspace-handoff.md、docs/phase1-progress.md 和 Phase 1 实施计划。M0 已完成，M1 已合并，M2-A/M2-B 已合并（PR #3），双仓库架构与来源目录已合并（PR #4，merge commit 65fb501），M2-C 规划已合并（PR #6，merge commit dbc2c19），M2-C1 已合并（PR #7，merge commit 51a0476），M2-C2 已合并（PR #8，merge commit e963bf3）。当前进行中：M2-C3（课堂案例 MD 表示解析）已获用户明确授权并正在实施，Draft PR #10 已创建、处于 Draft、等待 ChatGPT 复审；M3 及后续里程碑尚未启动，仍须用户单独明确授权，不得顺手开始。第一轮先用现有课程笔记、课堂案例及每日记录完成 M2-C、M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后（不取消、不作为第一轮前置条件）；PDF Adapter/OCR 暂缓。课堂案例是老师讲解过的教学案例，不是个人练习，案例 JSON 与其配对 MD 是同一案例的两种不同材料（详见实施计划第 4、7 节）。知识库只负责批准来源的解析/Chunk/Embedding/Neo4j，不承担外部网页采集；Source Collector 已创建（Private）且是独立窗口的工作，不属于本仓库实现任务。
 
 ## 更新日志
 
