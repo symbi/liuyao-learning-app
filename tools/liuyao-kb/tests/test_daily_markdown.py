@@ -237,3 +237,38 @@ class TestFileLevel:
                 source_root=tmp_path,
                 container_path=CONTAINER_RELATIVE,
             )
+
+
+class TestSameNameHeadingsKept:
+    def test_h1_h3_with_raw_heading_text_are_body(self) -> None:
+        text = (
+            "# 原始记录 JSON\n"
+            "\n"
+            "intro under the h1 heading\n"
+            "\n"
+            "### 原始记录 JSON\n"
+            "\n"
+            "body under the h3 heading\n"
+            "\n"
+            "## 原始记录 JSON\n"
+            "\n"
+            "```json\n" + json.dumps({"id": RECORD_ID, "schemaVersion": 99}) + "\n```\n"
+        )
+        mapping = parse_generated_markdown_bytes(text.encode(), source_uri=MD_URI)
+        body_text = "\n".join(section.text for section in mapping.body_sections)
+        # Ordinary H1/H3 sections with the same heading text are body:
+        assert "intro under the h1 heading" in body_text
+        assert "body under the h3 heading" in body_text
+        assert body_text.count("原始记录 JSON") == 2  # the H1 and H3 heading lines
+        # Only the identified H2 raw-record section is excluded:
+        assert "schemaVersion" not in body_text
+        excluded = [
+            section for section in mapping.document.sections if section not in mapping.body_sections
+        ]
+        assert excluded
+        for section in excluded:
+            assert (
+                mapping.embedded_raw_record.section_start_offset
+                <= section.locator.start_offset
+                < mapping.embedded_raw_record.section_end_offset
+            )

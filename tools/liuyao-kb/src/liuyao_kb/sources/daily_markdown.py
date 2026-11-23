@@ -304,12 +304,15 @@ def parse_generated_markdown_bytes(
             f"Record id mismatch in {source_uri}: file name carries "
             f"{filename_record_id!r} but embedded JSON carries {embedded_id!r}"
         )
+    # Exclude exactly the identified raw-record section, by its span:
+    # heading text alone is not the criterion, so an ordinary H1/H3 that
+    # happens to read like the raw-record heading keeps its body text.
     body_sections = tuple(
         section
         for section in document.sections
         if not (
             isinstance(section.locator, MarkdownLocator)
-            and section.locator.heading == RAW_RECORD_HEADING
+            and span[0] <= section.locator.start_offset < span[1]
         )
     )
     return GeneratedMarkdownMapping(

@@ -7,16 +7,16 @@
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
 - Status: in_progress
-- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 规划 PR #6 已合并；M2-C1 已合并（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）；M2-C2 进行中（本分支，Draft PR 待创建）；C3 未启动；PDF Adapter/OCR 已暂缓）
+- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 规划 PR #6 已合并；M2-C1 已合并（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）；M2-C2 进行中（Draft PR #8 已提交，等待 ChatGPT 复审）；C3 未启动；PDF Adapter/OCR 已暂缓）
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
 - Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2-C1 approved_merged（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）; M2 整体 in_progress（剩 M2-C2/C3）
-- Active implementation branch: `phase1/m2c2-daily-markdown-adapter`（M2-C2，基于最新 main `51a0476` 创建，Draft PR 待创建）
-- Active PR: M2-C2 Draft PR（本分支，待创建）；PR #7（M2-C1）已合并，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
+- Active implementation branch: `phase1/m2c2-daily-markdown-adapter`（M2-C2，基于最新 main `51a0476` 创建，见 Draft PR #8）
+- Active PR: [Draft PR #8](https://github.com/symbi/liuyao-learning-app/pull/8)（M2-C2，已提交，等待 ChatGPT 复审）；PR #7（M2-C1）已合并，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
 - Last completed milestone: M2-A/M2-B（经 PR #3 合并）；M1 已合并
-- Next action: M2-C2（自动生成每日记录 MD Adapter）已在本分支实现，等待以 Draft PR 提交后由 ChatGPT 复审和用户决定合并；C3 不得顺手启动。第一轮路线（用户 2026-11-23 决定）：先用现有课程笔记、课堂案例与每日记录完成 M2-C、M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后，不作为第一轮验收前置条件（M6 不取消）。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
+- Next action: M2-C2 已提交 Draft PR #8，正在等待 ChatGPT 复审和用户合并决定；C3 仍须单独授权，不得顺手启动。第一轮路线（用户 2026-11-23 决定）：先用现有课程笔记、课堂案例与每日记录完成 M2-C、M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后，不作为第一轮验收前置条件（M6 不取消）。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
 - Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
 - Merged M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3（merge commit `9505ce7`）
-- Last updated: 2026-11-22
+- Last updated: 2026-11-23
 
 ## 已冻结的架构决定
 
@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已合并（PR #7，merge commit `51a0476`）；C2 进行中（本分支，Draft PR 待创建）；C3 未启动；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
+| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已合并（PR #7，merge commit `51a0476`）；C2 进行中（Draft PR #8，等待 ChatGPT 复审）；C3 未启动；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
@@ -357,3 +357,11 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 测试：新增 `tests/test_daily_markdown.py` 18 个 synthetic 测试（身份一致/不匹配、内嵌缺失/格式错误、重复 Section、缺失 id、文件名无 id、围栏内假标题、排除后正文与定位、容器验证与不重复创建）。完整测试：pytest 221 passed（原 203 + 新增 18）；Ruff check 通过、format 通过；Mypy strict 通过（12 个源文件）；git diff --check 退出码 0。测试均在实现方 Linux Python 3.12.3 venv 中运行，不是用户 Mac，也不是 CI。
 - 人工核查：以仓库内真实生成 MD（2026-11-21 的 7e0a6b19 记录）只读试跑文件级 Mapper 并经真实容器验证通过（record_id 一致、RENDERS 容器验证为真、19 个 Section 中正文 17 个、内嵌 schemaVersion 16、正文不含原始记录标题）；真实文件未修改、未提交为测试 fixture。
 - 本检查点之后停下：M2-C2 以 Draft PR 提交，等待 ChatGPT 复审与用户合并决定；不合并、不标记 Ready；C3、M3–M8 不启动。
+
+## M2-C2 复审修正检查点（2026-11-23）
+
+- ChatGPT 第一轮复审 PR #8：整体实现方向符合设计，提出两项修正，本检查点记录修正结果；PR #8 已创建并审查中（当前状态行中的“Draft PR 待创建”已按现状更正，历史检查点保留不改写）。
+- 修正 1（代码）：`body_sections` 的排除逻辑由“标题文字等于 `原始记录 JSON`”改为按已识别原始记录 Section 的实际 span 精确排除（`section_start_offset`/`section_end_offset` 区间）。普通 H1/H3 即使标题文字同为“原始记录 JSON”，只要不在该 span 内，一律保留为正文；原有围栏识别、重复 Section 检查与原文定位行为不变。新增 synthetic 测试 `TestSameNameHeadingsKept`：同名 H1/H3 及其正文保留、只有被识别的 H2 原始记录 Section 被排除、被排除 Section 全部落在记录的 span 内。
+- 修正 2（文档）：progress 的 Active PR 改为 PR #8 并注明等待 ChatGPT 复审、Last updated 更新为 2026-11-23；handoff 将 M2-C2 改为 Draft PR #8 审查中，明确 C2 已获用户授权并正在实施、C3 仍未启动且仍须单独授权，并更新 Knowledge Base 工作流授权描述与 Claude Code / Knowledge Base 窗口启动提示（删除“规划阶段、C2 尚未启动、不得开始实现”的过时表述）。plan §12 的第一轮路线（M6 延期、非前置、不取消）保持不变。
+- 修正后验证：pytest 222 passed（原 221 + 新增 1）；Ruff check 通过、format 通过；Mypy strict 通过（12 个源文件）；git diff --check 退出码 0。测试均在实现方 Linux Python 3.12.3 venv 中运行，不是用户 Mac，也不是 CI。
+- 修正后停下：更新推送至现有 Draft PR #8，等待 ChatGPT 最终复审与用户合并决定；不合并、不标记 Ready；C3 不启动。
