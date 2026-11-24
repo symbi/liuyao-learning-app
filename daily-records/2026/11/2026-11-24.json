@@ -476,7 +476,7 @@
     {
       "schemaVersion": 16,
       "id": "518d525a-838e-479d-8d2c-815296358b5e",
-      "savedAt": "2026-11-24T07:23:15.037Z",
+      "savedAt": "2026-11-24T07:23:37.215Z",
       "date": "2026-11-24",
       "timezone": "Asia/Tokyo",
       "question": {
@@ -489,7 +489,7 @@
       "isCase": true,
       "caseSource": "classroom",
       "caseMemo": "官鬼持世，世爻生应爻，已经有男朋友\n两重官鬼，多个婚姻，官鬼很旺\n午火的官鬼，结婚在午年",
-      "caseConclusion": "",
+      "caseConclusion": "已经有男朋友，有多个婚姻",
       "pillars": {
         "year": "",
         "month": "乙卯",
@@ -585,7 +585,7 @@
       "twentyEight": null,
       "analysisSnapshot": {
         "schemaVersion": 5,
-        "calculatedAt": "2026-11-24T07:23:15.036Z",
+        "calculatedAt": "2026-11-24T07:23:37.215Z",
         "calculationSource": "saved-pillars-and-line-inputs",
         "calendar": {
           "yearPillar": null,
@@ -837,7 +837,7 @@
         }
       },
       "createdAt": "2026-11-24T07:23:15.037Z",
-      "updatedAt": "2026-11-24T07:23:15.037Z",
+      "updatedAt": "2026-11-24T07:23:37.215Z",
       "recordType": "additionalQuestion"
     },
     {
@@ -1174,5 +1174,5 @@
   ],
   "dailyMemo": "兄弟爻持世，兄弟爻动了，化退\n世爻生应爻\n日月不帮",
   "createdAt": "2026-11-24T05:19:39.583Z",
-  "updatedAt": "2026-11-24T07:23:15.037Z"
+  "updatedAt": "2026-11-24T07:23:37.215Z"
 }
