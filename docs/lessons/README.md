@@ -20,7 +20,7 @@
 | 第十六课 | 求官、求职、升迁与岗位问题 | [lesson-16-notes-v0.1.md](lesson-16-notes-v0.1.md) |
 | 第十七课 | 求财、项目收益、资金链与三合判断 | [lesson-17-notes-v0.1.md](lesson-17-notes-v0.1.md) |
 | 第十八课 | 求学、考试、求名与择校/选专业 | [lesson-18-notes-v0.1.md](lesson-18-notes-v0.1.md) |
-| 第十九课 | 综合案例分析（工作调动、求财项目、创业合伙、健康、投资、婚姻等） | [lesson-19-notes-v0.1.md](lesson-19-notes-v0.1.md)；[工作调动案例 001 复盘](../../materials/class-cases/lesson-19/case-001-analysis.md) |
+| 第十九课 | 综合案例分析（工作调动、求财项目、创业合伙、健康、投资、婚姻等） | [lesson-19-notes-v0.1.md](lesson-19-notes-v0.1.md)；[工作调动案例 001](../../materials/class-cases/lesson-19/case-001-analysis.md)；[店铺案例 002](../../materials/class-cases/lesson-19/case-002-analysis.md)；[女性婚姻案例 003](../../materials/class-cases/lesson-19/case-003-analysis.md) |
 | 第二十课 | 课程总结、学习方法与核心规则回顾 | [lesson-20-notes-v0.1.md](lesson-20-notes-v0.1.md) |
 
 ## 规则总览
