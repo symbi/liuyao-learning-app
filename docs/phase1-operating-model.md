@@ -4,13 +4,13 @@
 
 ## 1. 一句话结论
 
-**Phase 1 不部署新的在线 Backend Container。** 先在用户 Mac 上运行 Python Importer（虚拟环境即可），读取整理后的课程资料、HTML 保存的卦例，以及由独立 Source Collector 采集并经批准的标准 Reference Package；Importer 调用 Gemini 生成模型做结构化抽取，调用 Embedding 模型生成向量，再通过 Neo4j Python Driver 写入 Neo4j AuraDB Free。采集器和知识库 Importer 是两个独立项目，Importer 不直接爬取网页。
+**Phase 1 不部署新的在线 Backend Container。** 由运行在 Google Cloud Run Jobs 上的 Python Importer（本地运行仅作开发便利）读取整理后的课程资料、HTML 保存的卦例，以及由独立 Source Collector 采集并经批准的标准 Reference Package；Importer 调用生成模型做结构化抽取，调用 Embedding 模型生成向量，再通过 Neo4j Python Driver 写入 Neo4j AuraDB Free。在线分析由 Cloud Run Service 承载（M7），用户在 HTML 点击“分析”即可得到带出处的完整报告（2026-11-24 云端优先决策）。采集器和知识库 Importer 是两个独立项目，Importer 不直接爬取网页。
 
 - 原始文件和版本来源继续保存在 GitHub。
 - Neo4j AuraDB 是 Phase 1 的知识图谱数据库；课程、文本片段、概念、规则候选和案例都可以作为节点/关系存放在同一个 Neo4j 数据库中。
-- 暂不需要 Supabase、单独的 PostgreSQL、VPS 或 Docker。
+- 暂不需要 Supabase、单独的 PostgreSQL 或 VPS；云端运行统一使用 Google Cloud Run。
 - 当前 HTML 仍通过 Cloudflare Pages Functions 保存每日 JSON 到 GitHub；Phase 1 Importer 再把新增/变更记录同步进 Neo4j。它不是实时双写，也不会在每次浏览器保存时自动连接 Neo4j。
-- Phase 1 初期由用户在 Mac 手动启动增量同步；稳定后才考虑 GitHub Actions 或其他自动触发方式。
+- Phase 1 的增量同步由 Cloud Run Jobs 执行（M4 起）；具体触发方式（手动执行 Job 或经 GitHub Actions 调度）在 M3/M4 设计时确定，不依赖用户在 Mac 上手动启动。
 
 ## 2. 当前、Phase 1、Phase 2 的部署边界
 
@@ -31,8 +31,8 @@ flowchart TB
   end
   F -->|"GitHub App API"| L
 
-  subgraph MAC["用户 Mac — Phase 1 导入环境"]
-    I["Python Importer<br/>本地命令运行 / venv<br/>不需要 Docker"]
+  subgraph MAC["Google Cloud Run Jobs — Phase 1 导入环境"]
+    I["Python Importer<br/>Cloud Run Job 运行<br/>（本地运行仅作开发便利）"]
     M["Sync Manifest<br/>sourceId + contentHash + chunkHash"]
   end
   L -->|"读取新增/变更文件"| I
@@ -55,14 +55,14 @@ flowchart TB
   G -->|"structured candidates + provenance"| I
   I -->|"Neo4j Driver / Cypher MERGE"| A
 
-  subgraph P2["Phase 2 — 后续在线分析集成"]
+  subgraph P2["Phase 1 M7 — 在线分析集成"]
     API["Cloud Run：FastAPI<br/>一个 Container / 一个服务"]
     MOD["内部模块：Case API · GraphRAG Retriever<br/>六爻 Rule Engine · LLM Orchestrator"]
     API --- MOD
     Q["Gemini Generate 或 OpenAI API<br/>最终报告生成模型"]
     API --> Q
   end
-  B -.->|"未来 /api/analyze"| API
+  B -.->|"/api/analysis（M7）"| API
   API -->|"向量 + Cypher 检索"| A
   A -->|"来源证据、案例、规则、课程片段"| API
   Q -->|"分析报告 + 来源引用"| B
@@ -255,23 +255,22 @@ Builder 是可选构建工具，不是 AuraDB，也不是 GraphRAG。我们可�
 
 ## 8. “谁来分析卦？”——Phase 1 和 Phase 2 的区别
 
-### Phase 1：可以进行知识辅助分析，但采用半自动交接
+### Phase 1：云端完整在线分析（M7/M8 交付）
 
-Phase 1 不只是建库，也可以逐步做出可用的知识检索流程：
+2026-11-24 决策后，Phase 1 的分析形态是在线完成，不再是半自动交接：
 
-1. HTML 保存卦例到 GitHub（现有流程）。
-2. Mac 上的 Python Query Tool 读取用户选定的卦盘/问题，并用同一个 Embedding 模型把问题向量化。
-3. Query Tool 连接 AuraDB，执行 Vector Search + Cypher 图关系查询，按来源等级优先返回整理后的课程笔记和课堂案例；个人练习、外部项目和 Raw ASR 分开标记。
-4. Query Tool 生成带课次、文件路径、原文片段和案例出处的 Evidence Pack。
-5. 用户把卦盘 + Evidence Pack 提供给 ChatGPT 网页版，由 ChatGPT 完成最终分析报告。
+1. HTML 保存卦例到 GitHub（现有流程），用户在页面录入或选择卦例并点击“分析”。
+2. 请求经同源 Pages Function 代理（BFF 形态与服务间认证方式待 M7 设计确认）到达 Cloud Run Service。
+3. Service 用选定的 Embedding 模型把问题向量化，连接 AuraDB 执行 Vector Search + Cypher 图关系查询，按来源等级优先返回整理后的课程笔记和课堂案例；个人练习、外部项目和 Raw ASR 分开标记。
+4. Service 构建内部 Evidence Context（带课次、文件路径、原文片段和案例出处），调用生成模型生成完整分析报告并返回 HTML 展示。
 
-也就是说 Phase 1 可以支持“基于知识库的卦例辅助分析”，不必等到 Phase 2；但 Query Tool 需要在 Importer 之后增加，而且用户要把检索结果交给 ChatGPT。**当前 ChatGPT 网页版不会自行直连 AuraDB，现有 HTML 也还没有自动触发这条查询链。**
+在 M7 落地前，开发阶段仍可用本地 CLI 做检索验证（Evidence Pack 的 Markdown 形式），但那只是开发手段，不是 Phase 1 的最终产品形态；HTML 自动触发这条查询链由 M7 实现，目前尚未实施。
 
 没有知识库检索时，你仍然可以像现在一样直接把卦例、笔记和问题交给 ChatGPT 分析；Phase 1 的价值是逐步让资料查找更系统、更可追溯。
 
-### Phase 2：如果希望 HTML 页面里直接出现 AI 分析报告
+### Phase 2：扩展项（不再负责在线分析的第一次实现）
 
-后续在 Cloud Run 部署一个 Python FastAPI 服务。初期一个服务、一个 Container 即可，内部拆成普通 Python 模块：
+HTML 页面里直接出现 AI 分析报告已由 Phase 1 的 M7/M8 交付（Cloud Run Python FastAPI 服务，初期一个服务、一个 Container，内部拆成普通 Python 模块）：
 
 - Case API：案例保存/读取/更新。
 - GraphRAG Retriever：对问题做 Embedding，再用 Neo4j 向量索引、Cypher 和图关系取回相关课程/案例/规则。

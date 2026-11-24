@@ -5,44 +5,45 @@
 ## 当前状态
 
 - Project: symbi/liuyao-learning-app
-- Phase: Phase 1 — Neo4j Knowledge Base + Incremental Importer + Evidence Pack
+- Phase: Phase 1 — Neo4j Knowledge Base + 云端 Importer + 在线分析（2026-11-24 云端优先修订）
 - Status: in_progress
-- Current milestone: M2 — Source Adapters（M2-A/M2-B 已合并；M2-C 规划 PR #6 已合并；M2-C1 已合并（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）；M2-C2 已合并（PR #8，merge commit `e963bf3f378cb3787a8ce27bb121eed193c7c3a5`）；M2-C3 进行中（Draft PR #10 已提交，awaiting_chatgpt_review）；PDF Adapter/OCR 已暂缓）
+- Current milestone: M2 已完成（M2-A/M2-B、M2-C1/C2/C3 全部合并）；M3 未开始，等待用户明确授权（云端版任务书，2026-11-24）；PDF Adapter/OCR 已暂缓
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2-C1 approved_merged（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）; M2-C2 approved_merged（PR #8，merge commit `e963bf3f378cb3787a8ce27bb121eed193c7c3a5`）; M2 整体 in_progress（剩 M2-C3）
-- Active implementation branch: `phase1/m2c3-classroom-case-markdown-adapter`（M2-C3，基于最新 main `e963bf3` 创建，见 Draft PR #10）
-- Active PR: [Draft PR #10](https://github.com/symbi/liuyao-learning-app/pull/10)（M2-C3，awaiting_chatgpt_review；head 以 GitHub 为准）；PR #8（M2-C2）已合并，merge commit `e963bf3f378cb3787a8ce27bb121eed193c7c3a5`；PR #7（M2-C1）已合并，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
-- Last completed milestone: M2-C2（经 PR #8 合并，merge commit `e963bf3f378cb3787a8ce27bb121eed193c7c3a5`）；M2-C1 已合并（PR #7）；M2-A/M2-B 已合并（PR #3）；M1 已合并
-- Next action: M2-C3 已提交 Draft PR #10，正在等待 ChatGPT 最终复审和用户合并决定；M3 未启动，不得顺手启动。第一轮路线（用户 2026-11-23 决定）：先用现有课程笔记、课堂案例与每日记录完成 M2-C、M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后，不作为第一轮验收前置条件（M6 不取消）。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
+- Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2-C1 approved_merged（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）; M2-C2 approved_merged（PR #8，merge commit `e963bf3f378cb3787a8ce27bb121eed193c7c3a5`）; M2-C3 approved_merged（PR #10，merge commit `673a5815c29a23ee9768407851610af528532d40`）；M2 整体 approved_merged；M3 not_started（本地另有未提交草稿，未推送、无 PR，不属于正式实施）
+- Active implementation branch: 无（M3 未开始）；当前分支 `docs/cloud-first-phase1-architecture` 为 docs-only 架构同步分支，基于 main `673a581`
+- Active PR: 本次 docs-only 架构同步 PR（Draft，编号以 GitHub 为准）；PR #10（M2-C3）已合并，merge commit `673a5815c29a23ee9768407851610af528532d40`；PR #8（M2-C2）已合并，merge commit `e963bf3f378cb3787a8ce27bb121eed193c7c3a5`；PR #7（M2-C1）已合并，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
+- Last completed milestone: M2-C3（经 PR #10 合并，merge commit `673a5815c29a23ee9768407851610af528532d40`）；M2 整体完成；M2-C2 已合并（PR #8）；M2-C1 已合并（PR #7）；M2-A/M2-B 已合并（PR #3）；M1 已合并
+- Next action: 等待用户明确授权 M3（云端版：Neo4j Schema + 最小云端执行基础）；M3 前置条件：AuraDB Instance01 凭据恢复（用户在 Aura Console 操作，保留实例不删除）、GCP Project/Billing 确认。第一轮路线（用户 2026-11-23 决定，2026-11-24 按云端架构更新）：先用现有课程笔记、课堂案例与每日记录完成 M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后，不作为第一轮验收前置条件（M6 不取消）。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
 - Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
 - Merged M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3（merge commit `9505ce7`）
-- Last updated: 2026-11-23
+- Last updated: 2026-11-24
 
 ## 已冻结的架构决定
 
 1. Neo4j AuraDB Free 是 Phase 1 的云端知识图谱主数据库；Neo4j Desktop 可选用于本地学习，但不建立两份不同步的主库。
-2. Phase 1 的 Importer 和 Query Tool 运行在用户 Mac；Python virtualenv 即可，不用 Docker。
-3. Phase 1 不部署 Cloud Run Backend，不接 Supabase/PostgreSQL，不做 HTML 一键分析。
-4. Phase 2 才把 Query / Evidence Pack / Rule Engine / LLM Orchestrator 整合为 Cloud Run FastAPI 服务；继续使用同一个 AuraDB，不重新导入。
+2. Phase 1 的 Importer 和 Query Tool 运行在用户 Mac；Python virtualenv 即可，不用 Docker。（执行位置已被决定 15 取代，2026-11-24：改为 Cloud Run 云端执行，本地仅作开发便利；本条保留为历史。）
+3. Phase 1 不部署 Cloud Run Backend，不接 Supabase/PostgreSQL，不做 HTML 一键分析。（已被决定 15 取代，2026-11-24：Cloud Run 与 HTML 在线分析进入 Phase 1 的 M3/M7/M8；仍不接 Supabase/PostgreSQL。）
+4. Phase 2 才把 Query / Evidence Pack / Rule Engine / LLM Orchestrator 整合为 Cloud Run FastAPI 服务；继续使用同一个 AuraDB，不重新导入。（已被决定 15 取代，2026-11-24：该整合提前到 Phase 1 的 M7；Phase 2 改为扩展项。）
 5. Source A Raw：Private raw 中的录音和低准确率 ASR 默认只登记来源/版本，不进入主要 Chunk、Embedding 或规则抽取。
 6. Source B Curated：Learning 中经过 ChatGPT 整理的课堂笔记，是主要课程 Chunk 来源。
 7. 外部 GitHub README/docs 等外部参考资料进入外部参考轨道；保留 URL、版本、License，不与课程来源混淆。源码按文件/类/函数边界处理，属于后续子阶段。外部资料统一经独立仓库 Source Collector 采集并输出 Reference Package 后再导入（见决定 13）。PDF 已暂缓：当前没有明确准备导入的 PDF 文件，不为 PDF 增加开发依赖；将来选定具体 PDF 后再单独评估（2026-11-21 决定，取代早期“用户明确选择的 PDF 可进入参考轨道”的表述）。
 8. Chunk 之后并行执行 Embedding 和 Generative LLM 候选知识抽取。Generative LLM 是大语言模型；抽取结果永远是 candidate，不自动成为老师确认规则。
 9. Neo4j 保存 Document、Revision、Chunk、Case、Concept、RuleCandidate、关系和向量。同步 Manifest 放在 Neo4j，不另建 SQLite 数据库。
 10. HTML 的每日 JSON 继续由现有 Cloudflare Pages Functions 保存到 GitHub；Phase 1 Importer 另行增量同步，不做浏览器实时双写。
-11. Phase 1 Query Tool 从 AuraDB 检索并输出带出处的 Evidence Pack；最终报告由 ChatGPT Web 完成，用户手动交接。
+11. Phase 1 Query Tool 从 AuraDB 检索并输出带出处的 Evidence Pack；最终报告由 ChatGPT Web 完成，用户手动交接。（交付形态已被决定 15 取代，2026-11-24：Evidence Pack 改为云端内部 Evidence Context，最终报告由 Cloud Run Service 生成并直接显示在 HTML；检索与出处要求不变。）
 12. 用户不需要逐条审核节点；系统自动保留来源、课程、页码/段落、版本、模型和不确定性。
 13. 系统拆分为两个独立 Repository（2026-11-21 决定）：`symbi/liuyao-source-collector`（独立新仓库，由单独窗口负责；远端尚未创建）负责外部古籍网站/GitHub 资料的合规采集并输出标准化 Reference Package；本仓库 `symbi/liuyao-learning-app` 负责课程 Markdown/TXT、课堂案例 JSON、Reference Package 的接收与验证、解析、Chunk、Embedding、Neo4j 与 Evidence Pack。两边只通过 Reference Package 文件交接；本仓库不实现爬虫或网站采集器。来源登记见 [reference-source-catalog.md](reference-source-catalog.md)。（状态更新 2026-11-22：`symbi/liuyao-source-collector` 已创建且为 Private，由独立窗口维护；本仓库只记录这一事实，不接管其工作。）
 14. 课堂案例身份原则（2026-11-22 决定）：课堂案例是老师在实际课程中讲解过的教学案例（classroom_case），不是用户个人练习数据，不得归类为 personal_practice。每个课堂案例保留稳定案例 ID，并尽可能连接老师 ASR/录音讲解位置、课程整理笔记、用户核对的卦盘结构、HTML JSON 记录、与案例 JSON 配对的 MD 表示；课程笔记/ASR 对同一案例的提及建立引用关系并保留定位。同一案例的 JSON 与 MD 是同一案例的两种表示，不产生重复 Case 节点或重复计数。ClassCase 与 CastRecord 保留独立身份和唯一 ID，仅当 `dailyRecord.recordId` 明确匹配时建立 BASED_ON_RECORD；案例 JSON 与课堂案例 MD 以 HAS_REPRESENTATION 关联到同一个 ClassCase（MD 不是独立分析来源）；daily-records 的自动生成 MD 以 RENDERS 关联 CastRecord，与课堂案例 MD 分属两类。老师 ASR 的来源定位不依赖 Chunk：ClassCase 可直接关联 ASR 的 SourceDocument/DocumentRevision，保留 Locator（仓库/路径、课程、段落序号、可选时间范围）与置信度/校正状态；不得为建引用而把全部 Raw ASR 自动 Chunk/Embedding。老师讲解、用户补充、AI 推算必须分开标记；ASR 未经音频校正时保留低置信度说明，不得称为已验证的逐字原话。（设计修正 2026-11-22：JSON 与配对 MD 是同一 ClassCase 的两份不同资料，不要求内容一致；C1 只识别 MD 的路径/存在/关联，C3 解析正文；链接只登记不抓取；内容冲突保留双源并标记待核对。详见 M2-C1 checkpoint。）
+15. 云端优先与完整在线分析（2026-11-24 决定，取代决定 2、3、4、11 的执行位置与交付形态）：Phase 1 不依赖用户的固定 Mac。前端保留现有 HTML + Cloudflare Pages；在线分析 API 由 Google Cloud Run Service 承载（M7），Schema/Importer/Embedding 等批处理由 Cloud Run Jobs 承载（M3/M4/M5）；Neo4j AuraDB Free（Instance01，保留不删除）为唯一图库；凭据存 Google Secret Manager，GitHub Actions 以 OIDC + Workload Identity Federation 部署（不保存长期 Service Account JSON Key）；部署身份、API runtime identity、Job runtime identity 分离；开发环境不持有生产数据库密码。Evidence Pack 改为后端内部 Evidence Context，最终报告在云端生成并直接显示在 HTML（M8 端到端验收）。生成模型优先评估 Vertex AI Gemini，最终模型、Embedding 模型与生产向量维度未定。尚未确定（不得写成已完成）：GCP Project ID、Billing、最终 Region、AuraDB 凭据恢复结果、Secret Manager 实际 Secret、WIF 与服务身份配置、在线 API 的认证方式与 OAuth 流程、Pages Function 的 BFF/session 职责范围。
 
 ## 里程碑状态
 
 | Milestone | 目标 | 状态 | Review PR / Merge commit | 备注 |
 |---|---|---|---|---|
-| M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit |
+| M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit；凭据现待恢复、云端 Secret 接入在 M3 处理（见决定 15） |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
-| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | in_progress | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已合并（PR #7，merge commit `51a0476`）；C2 已合并（PR #8，merge commit `e963bf3`）；C3 进行中（Draft PR #10，awaiting_chatgpt_review）；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
-| M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs | not_started | — | 真实 AuraDB smoke test |
+| M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | approved_merged | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已合并（PR #7，merge commit `51a0476`）；C2 已合并（PR #8，merge commit `e963bf3`）；C3 已合并（PR #10，merge commit `673a581`）；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
+| M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs + 最小云端执行基础 | not_started | — | 尚未开始；须用户明确授权；前置：AuraDB 凭据恢复、GCP Project/Billing 确认；真实验证走 Cloud Run Schema Job |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
 | M6 | 经 Source Catalog 批准、由 Source Collector 输出 Reference Package 的外部文档与代码参考 | not_started | — | 用户先确认来源与 License；本仓库不直接爬取网站；PDF 不在当前范围 |
@@ -402,3 +403,11 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 新增 2 个 synthetic 回归测试：exists=False 与 exists=None 时直接调用 `parse_class_case_markdown_bytes()` 必须失败（修正前两测试确实失败，修正后通过）；既有 `test_parse_bytes_with_revision_ref`（exists=True 路径）继续通过。
 - 修正后验证：pytest 241 passed（原 239 + 新增 2；`test_case_markdown.py` 共 16 个）；Ruff check 通过、format 通过；Mypy strict 通过（13 个源文件）；git diff --check 退出码 0。测试均在实现方 Linux Python 3.12.3 venv 中运行，不是用户 Mac，也不是 CI。
 - 本检查点之后停下：PR #10 保持 Draft，等待 ChatGPT 最后复审与用户合并决定；不合并、不标记 Ready；M3 不启动。
+
+## Phase 1 云端优先架构决策与文档同步检查点（2026-11-24，docs-only）
+
+- 用户正式决定（决策文档日期 2026-11-24）：Phase 1 改为 Cloud-first、完整在线分析（方案 B），已记录为冻结决定 15。最终产品：用户在 HTML 录入/选择卦例并点击“分析”，云端（Cloud Run Service）检索 Neo4j、构建内部 Evidence Context、调用生成模型，网页直接显示完整分析报告与出处；Evidence Pack 不再是交给用户手工复制的最终交付物。
+- 路线图更新：旧 Phase 2 的在线 API 提前到 Phase 1 的 M7/M8；Phase 2 改为多用户、分析历史、异步任务、监控与扩展。M6 继续延期，不取消。
+- 状态同步：M2-C3 已合并（PR #10，merge commit `673a581`），M2 整体完成；本文件此前若干过期状态文字（C3 awaiting review、M2 in_progress、决定 2/3/4/11 的旧表述）已在本 PR 中修正或标注取代关系，历史检查点原文保留。
+- M3 状态：尚未开始。本 PR 只同步文档，不实施 M3、不创建任何云端资源。已知前置待办：AuraDB Instance01（用户截图时为 PAUSED、0 节点，非实时查询）凭据待用户在 Aura Console 恢复/重置（保留实例，不删除）；GCP Project/Billing/Region 未确认；Secret Manager、WIF 与服务身份均未创建。本地存在一份未提交的 M3 草稿（独立工作区，未推送、无 PR），是否沿用留待 M3 实施轮决定。
+- 本 PR 同步的文档：phase1-implementation-plan.md（v1.2）、master-plan.md、phase1-operating-model.md、workspace-handoff.md、CLAUDE.md、AGENTS.md、tools/liuyao-kb/README.md、claude-code-phase1-execution-prompt.md 与本文件。

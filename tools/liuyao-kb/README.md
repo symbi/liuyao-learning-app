@@ -1,18 +1,19 @@
 # liuyao-kb
 
-Phase 1 knowledge-base tooling for the Liuyao learning project: a local
-incremental importer and a query tool that produce an evidence pack for
-ChatGPT to analyse.
+Phase 1 knowledge-base tooling for the Liuyao learning project: an
+incremental importer and retrieval tooling for a Neo4j knowledge base.
+From M7, a Cloud Run analysis service turns retrieval results into the
+sourced report shown in the HTML app.
 
-Runs on the user's Mac. Talks to a single Neo4j AuraDB Free database.
-No Docker, no server to deploy, no second database.
+Production execution runs in the cloud (Google Cloud Run: Jobs for imports and batch work, a Service for the online analysis API); local runs are for development only. Talks to a single Neo4j AuraDB Free database.
+One graph database, one cloud runtime (Cloud Run).
 
 ## Status
 
-M1 — project skeleton. The commands exist and are tested; ingestion,
+M1 and M2 are complete (project skeleton, source adapters, classroom-case mapping). Schema management (M3), cloud ingestion (M4), embedding (M5) and the online analysis API (M7) arrive in later milestones; none of them has started yet. The commands below exist and are tested; ingestion,
 embedding and querying arrive in later milestones.
 
-| Command | M1 behaviour |
+| Command | Behaviour |
 |---|---|
 | `liuyao-kb doctor` | Checks configuration, credentials and database access. Runs with no credentials. |
 | `liuyao-kb sources list` | Lists the allowlisted sources and whether each is enabled. |
@@ -36,7 +37,7 @@ cp sources.example.yaml sources.yaml
 ```
 
 Fill in real credentials only in `~/.config/liuyao-kb/m0.env` on the
-local Mac. Do not ask a coding agent to read or print that file.
+local machine (development only). Production credentials live in Google Secret Manager and are bound to Cloud Run at runtime; they are never stored in this repository. Do not ask a coding agent to read or print that file.
 
 Both `sources.yaml` and local env files are gitignored. Only `.example`
 templates are committed.
