@@ -25,6 +25,7 @@
 - 不得把固定 Mac 或本地环境描述成最终产品运行的必要条件；本地工具只用于开发和验证，不能替代目标云端运行环境。
 - 不把 Neo4j 换成本地数据库；目标主库是 AuraDB Free。
 - 不修改现有 index.html、functions/api/[[path]].js、Cloudflare OAuth、排盘逻辑或每日记录保存格式。若发现必要兼容问题，先报告，不自行扩大改动。
+- M7 的目标代理链路（HTML → Cloudflare Pages Function（同源代理/BFF）→ Cloud Run Service → Neo4j）如确实需要修改上述受保护文件或功能，必须先向用户报告：(1) 具体涉及的文件；(2) 当前实现与目标代理链路之间的差异；(3) 为什么必须修改；(4) 最小必要修改范围；(5) 对现有 OAuth、每日记录保存及其他 API 的影响。未经用户针对该文件或功能单独授权，不得修改；不得通过创建其他路由、改变路由匹配顺序等方式绕过本条保护，新增路由也必须先确认不会影响现有路由和 OAuth。M7 的认证架构与 Pages Function 的 BFF/session 具体职责仍待 M7 设计确认，不提前冻结。
 - 不默认读取 Private raw 的 ASR 内容；Raw ASR 只作为来源/版本轨道，默认不切主 Chunk、不做主 Embedding、不抽取课程规则。
 - Curated Lesson Notes 才是主要课程 Chunk 来源。
 - HTML Case JSON 必须由结构化 Case Mapper 导入，不可让 LLM 重算或猜测六爻。
@@ -127,14 +128,16 @@ M3 定义节点/关系目录、稳定 ID 公式、唯一约束与 Vector Index �
 
 ### M4 补充：Importer CLI 与运行报告
 
+M4 只负责 Importer 的 CLI、增量导入控制和运行报告：不实现 Embedding 或 AI 知识抽取，不在 M4 调用任何生成模型或 Embedding 模型。
+
 提供：
 - liuyao-kb ingest --dry-run
 - liuyao-kb ingest
-- 可选 --source / --lesson / --extract-knowledge 等有限参数。
+- 可选 --source / --lesson 等来源筛选参数。（--extract-knowledge 是 M5 阶段才启用的预留参数，不属于 M4 验收范围。）
 
-每次报告扫描、跳过、新建/复用 Chunk、Embedding 请求、LLM 抽取、失败数量。对模型 API 使用合理超时、重试、速率限制；日志不泄露 Secret。
+每次报告扫描、跳过、新建/复用 Chunk、写入及失败数量；M4 的 Embedding 与 LLM 调用数量应为 0。日志不泄露 Secret。
 
-第二次重复执行相同来源必须跳过所有不变内容，不产生重复节点，不再次请求 Embedding/LLM。文档有修改时仅重处理变化 Chunk。写入失败重试后不能产生重复数据。
+第二次重复执行相同来源必须跳过所有不变内容，不产生重复节点、Revision 或 Chunk。文档有修改时仅重新处理变化 Chunk。写入失败重试后不能产生重复数据。
 
 ### M5：云端 Embedding 与 AI 知识抽取（Cloud Run Job）
 
@@ -156,6 +159,8 @@ B. Generative LLM：
 不同 Embedding 模型的向量空间互不兼容。请先用小样本比较中文检索效果，再冻结一个 embedding profile；切换模型要使用新 profile/index 并重生成向量，不可混用。Provider、模型与生产向量维度在 M5 实施时确定（优先评估 Vertex AI Gemini），不得提前写死。
 
 调用前检查所选 Provider 当时的 API 条款与数据使用政策；默认只发送用户允许发送的整理笔记/测试材料。Private raw 和私人记录不得默认发送。
+
+对模型 API 使用合理超时、重试与速率限制，并统计调用失败数量；Embedding 与 LLM 的调用纪律和失败统计归 M5，不属于 M4。
 
 ### M6：外部参考源启用（第一轮延期、非阻塞；M8 验收后再恢复，不作为 M7/M8 的前置条件）
 
