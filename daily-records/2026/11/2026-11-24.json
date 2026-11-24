@@ -476,7 +476,7 @@
     {
       "schemaVersion": 16,
       "id": "96cf2f2d-f0a6-4c70-b8ec-38c1bdb21b70",
-      "savedAt": "2026-11-24T06:40:26.502Z",
+      "savedAt": "2026-11-24T06:54:56.882Z",
       "date": "2026-11-24",
       "timezone": "Asia/Tokyo",
       "question": {
@@ -488,7 +488,7 @@
       },
       "isCase": true,
       "caseSource": "classroom",
-      "caseMemo": "父母爻持世，如果是休囚则主幸苦，如果是旺则短期没钱赚但长期可以行的通\n世爻动化官鬼回头生，说明世爻有力量，且是做公家的生意，可做\n应爻克世爻\n日建财爻，说明小钱不断，虽然是世爻克日建，但是没有冲，还好\n月见兄弟，因为是合伙开公司，可以不怕兄弟爻",
+      "caseMemo": "父母爻持世，如果是休囚则主幸苦，如果是旺则短期没钱赚但长期可以行的通\n世爻动化官鬼回头生，说明世爻有力量，且是做公家的生意，可做\n应爻克世爻\n日建财爻，说明小钱不断，虽然是日建克世爻，但是没有冲，还好\n月见兄弟，因为是合伙开公司，可以不怕兄弟爻",
       "caseConclusion": "可以，赚公家钱，幸苦，赚长期的钱",
       "pillars": {
         "year": "",
@@ -585,7 +585,7 @@
       "twentyEight": null,
       "analysisSnapshot": {
         "schemaVersion": 5,
-        "calculatedAt": "2026-11-24T06:40:26.502Z",
+        "calculatedAt": "2026-11-24T06:54:56.881Z",
         "calculationSource": "saved-pillars-and-line-inputs",
         "calendar": {
           "yearPillar": null,
@@ -801,11 +801,11 @@
         }
       },
       "createdAt": "2026-11-24T06:40:26.502Z",
-      "updatedAt": "2026-11-24T06:40:26.502Z",
+      "updatedAt": "2026-11-24T06:54:56.882Z",
       "recordType": "additionalQuestion"
     }
   ],
   "dailyMemo": "兄弟爻持世，兄弟爻动了，化退\n世爻生应爻\n日月不帮",
   "createdAt": "2026-11-24T05:19:39.583Z",
-  "updatedAt": "2026-11-24T06:40:26.502Z"
+  "updatedAt": "2026-11-24T06:54:56.882Z"
 }
