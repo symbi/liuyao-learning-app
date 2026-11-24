@@ -59,6 +59,8 @@
 
 ## 实施阶段
 
+> **注意**：M1、M2 是已完成里程碑的历史实施定义，不得重新实施或覆盖现有成果。后续工作以 docs/phase1-progress.md 为准；当前下一里程碑是 M3，但仍须获得用户明确授权后才可启动。
+
 ### M1：Python 项目骨架与配置
 
 创建 CLI、配置 schema、日志、.env.example、sources.example.yaml、.gitignore 规则和单元测试。
@@ -123,6 +125,17 @@ M3 定义节点/关系目录、稳定 ID 公式、唯一约束与 Vector Index �
 
 此阶段可把 embedding 标记为待生成，但不能伪造向量或将无向量 Chunk 放入语义检索结果。
 
+### M4 补充：Importer CLI 与运行报告
+
+提供：
+- liuyao-kb ingest --dry-run
+- liuyao-kb ingest
+- 可选 --source / --lesson / --extract-knowledge 等有限参数。
+
+每次报告扫描、跳过、新建/复用 Chunk、Embedding 请求、LLM 抽取、失败数量。对模型 API 使用合理超时、重试、速率限制；日志不泄露 Secret。
+
+第二次重复执行相同来源必须跳过所有不变内容，不产生重复节点，不再次请求 Embedding/LLM。文档有修改时仅重处理变化 Chunk。写入失败重试后不能产生重复数据。
+
 ### M5：云端 Embedding 与 AI 知识抽取（Cloud Run Job）
 
 对允许处理的 Curated Chunk 并行执行：
@@ -152,23 +165,12 @@ B. Generative LLM：
 - 后续再为选定的 Python / JavaScript / TypeScript 源码实现按 AST / 符号边界切分；
 - PDF 继续 deferred，不在当前范围；未来用户选定具体文件并单独授权后再评估，不能伪造用户资料。
 
-### M4 补充：Importer CLI 与运行报告
-
-提供：
-- liuyao-kb ingest --dry-run
-- liuyao-kb ingest
-- 可选 --source / --lesson / --extract-knowledge 等有限参数。
-
-每次报告扫描、跳过、新建/复用 Chunk、Embedding 请求、LLM 抽取、失败数量。对模型 API 使用合理超时、重试、速率限制；日志不泄露 Secret。
-
-第二次重复执行相同来源必须跳过所有不变内容，不产生重复节点，不再次请求 Embedding/LLM。文档有修改时仅重处理变化 Chunk。写入失败重试后不能产生重复数据。
-
 ### M7：在线分析 API 与 HTML 集成（Cloud Run Service）
 
 提供：
-- Cloud Run Service 上的分析端点：接收经认证的分析请求（卦盘快照 + 用户问题），HTML 不直接连接 Neo4j；接口的认证方式与 Pages Function 的 BFF/session 职责在 M7 设计时确认，不在本文预设。
+- Cloud Run Service 上的分析端点：请求链路固定为 HTML → Cloudflare Pages Function（同源代理/BFF）→ Cloud Run Service → Neo4j；浏览器不得直接调用 Cloud Run API，HTML 不直接连接 Neo4j。Pages Function 的具体 BFF/session 职责与服务间认证机制留待 M7 设计确认，不在本文预设。
 - Vector Search + 必要的关键词/全文检索 + 一至两跳图关系扩展。
-- 对来源分层：Curated Lesson Notes / Classroom Case 优先；Personal Practice / External Reference 分开显示；Raw ASR 默认只使用来源元数据。
+- 对来源分层：Curated Lesson Notes / Classroom Case 优先；Personal Practice / External Reference 分开显示。Raw ASR 按实施计划第 11 节的三档规则处理：默认只返回来源元数据与定位（仓库/路径、DocumentRevision、Locator、置信度与音频校正状态）；默认不返回 Raw ASR 正文；只有用户明确启用正文时，才可放入独立的低置信度区域，并明确标注未经音频校正、不是已验证的逐字原话。
 - 在后端构建内部 Evidence Context（含问题/卦盘事实、课程号、路径、标题/页码、原文短摘录、课堂案例 Memo、外部项目 URL/commit/license 与不确定性），调用生成模型生成完整分析报告，返回 HTML 页面展示。
 
 本地 CLI 的 evidence 输出（Markdown Evidence Pack）只作开发与验收验证，不是最终产品形态。
@@ -183,7 +185,7 @@ M8 的验收对象是完整在线流程：从浏览器提交卦例、点击分�
 5. 相同文件第二次导入零重复写入/零模型调用。
 6. 修改一个段落，变化 Chunk 新建，未变化 Chunk 复用。
 7. 同一案例 ID 更新，不重复 Case。
-8. 外部资料保留 repo、commit、license，来源分类为 external。
+8. 仅当已经存在且获准使用的 Reference Package 时，才检查外部资料保留 repo、commit、license 且来源分类为 external；没有获准的外部资料时跳过本项，且不得因此阻塞 M8 验收（M6 延期、非阻塞）。
 9. 从 HTML 发起分析，云端返回带真实来源出处的完整报告并在页面正确展示；未授权请求被拒绝。
 10. 测试和 lint 通过；无任何 Secret 被跟踪。
 
