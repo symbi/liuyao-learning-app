@@ -11,8 +11,8 @@ For Phase 1, follow:
 Important:
 - This Claude Code workstream is Phase 1 only. Do not modify `index.html`, front-end UI, or HTML maintenance progress unless the user explicitly reassigns that work to you.
 - Work on only the milestone explicitly requested by the user.
-- Current state: M0 is waiting for the user to create AuraDB Free in Aura Console. Do not create an implementation branch, modify code, or start M1 before the user confirms the instance is ready.
-- After confirmation, run only the M0 smoke tests and record real results, including tier, Neo4j version, connection, basic read/write, and Vector Index behavior / dimensions.
+- Current state (2026-11-24): M0, M1 and M2 are complete and merged (M2-C3 merged via PR #10, merge commit 673a581). Phase 1 is cloud-first: production execution runs on Google Cloud Run (Jobs for imports, Service for the M7 online analysis API), not on the user's Mac; see docs/phase1-implementation-plan.md v1.2. M3 has NOT started — do not start any milestone without the user's explicit authorization for that milestone.
+- AuraDB Instance01 (Free) exists and must not be deleted; its credentials are pending recovery by the user in the Aura Console, and production secrets belong in Google Secret Manager — never in this repository, a PR, or any chat.
 - If Vector Index is unavailable, report the evidence and stop for a ChatGPT/user decision. Do not upgrade a paid tier or change architecture on your own.
 - Use a separate `phase1/mX-...` branch and Draft PR for each implementation milestone. Never commit implementation changes directly to main.
 - After the Draft PR is ready, stop for ChatGPT review. Do not merge it or continue to the next milestone automatically.

@@ -1,6 +1,6 @@
 # Claude Code 主执行 Prompt：Liuyao Learning App Phase 1
 
-你是本项目的本地代码执行者。你的工作不是重新设计架构，而是严格按 GitHub 中已批准的 Phase 1 计划逐个里程碑实现。用户可能在不同任务之间切换 Claude 模型、Codex 或其他模型，因此必须把所有重要状态写入 GitHub 文档，不依赖你自己的会话记忆。
+你是本项目的代码执行者（在与用户 Mac 独立的开发环境中工作；生产执行在 Google Cloud Run）。你的工作不是重新设计架构，而是严格按 GitHub 中已批准的 Phase 1 计划逐个里程碑实现。用户可能在不同任务之间切换 Claude 模型、Codex 或其他模型，因此必须把所有重要状态写入 GitHub 文档，不依赖你自己的会话记忆。
 
 ## A. 开始每一次会话前（必须执行）
 
@@ -13,14 +13,14 @@
 
 ## B. 项目目标与固定架构
 
-Phase 1 最终目标：本机 Python Importer 将获准资料增量导入 Neo4j AuraDB Free；本机 Query Tool 查询 AuraDB，产生带来源的 Markdown Evidence Pack；用户将卦盘 + Evidence Pack 交给 ChatGPT Web 做最终分析。
+Phase 1 最终目标（2026-11-24 云端优先决策）：Cloud Run Jobs 上的 Python Importer 将获准资料增量导入 Neo4j AuraDB Free；M7 的 Cloud Run Service 在线检索、构建内部 Evidence Context 并生成完整分析报告，HTML 页面直接展示报告与出处；Evidence Pack 是后端内部证据结构，不再手工交给 ChatGPT。
 
 - 数据库：Neo4j AuraDB Free，云端主库。
-- 本地：Mac Python 3.12 + virtualenv，运行 Importer 和 Query Tool；不需要 Docker。
-- Embedding：Gemini Embedding API，只产生向量。
-- Generative LLM：Gemini 生成模型，用于抽取候选知识；Phase 1 不负责最终报告。
-- Final analysis：Phase 1 仍由 ChatGPT Web 生成最终分析。
-- Phase 2 才把 Query / Evidence Pack / Rule Engine / LLM Orchestrator 部署到一个 Google Cloud Run FastAPI Service；复用同一个 AuraDB。
+- 云端运行：Google Cloud Run（Jobs 跑 Schema/导入/Embedding 等批处理，Service 跑在线分析 API）；本地 Python 3.12 + virtualenv 只作开发便利，不依赖用户的固定 Mac。
+- Embedding：向量模型，只产生向量；优先评估 Vertex AI Gemini，最终 Provider、模型与生产维度在 M5 确定。
+- Generative LLM：生成模型（优先评估 Vertex AI Gemini，最终模型在 M5/M7 确定），用于抽取候选知识与生成最终报告。
+- Final analysis：Phase 1 由 Cloud Run Service 调用生成模型在线生成，并直接显示在 HTML 页面（M7/M8）。
+- 在线分析在 Phase 1 的 M7/M8 完成（Cloud Run FastAPI Service，复用同一个 AuraDB）；Phase 2 只做多用户、历史、异步、监控等扩展。
 - 不使用 Supabase/PostgreSQL；不是 Phase 1 必需品。
 - Knowledge Graph Builder 是可选工具，不是 Neo4j 本身，也不是必须依赖。
 - Raw ASR 与 Curated Lesson Notes 两条轨道必须分开。
@@ -43,7 +43,7 @@ Phase 1 最终目标：本机 Python Importer 将获准资料增量导入 Neo4j 
 - 不扫描整个用户 Home，不自动读取私人文件。不将任何私人资料发送给 Gemini。
 - Gemini free tier 对内容的数据使用条款需要用户先明确接受；只发送用户允许送到云服务的资料。
 - 日志不能输出 token、password、完整私密内容。
-- 不部署 Cloud Run，不创建 online Backend，不接 Supabase，不使用 Docker。
+- 不接 Supabase；Cloud Run 是唯一云端运行环境，按里程碑（M3 最小基础、M7 Service）部署，不提前部署未授权的在线服务。
 - 不修改现有 index.html、Cloudflare Functions、OAuth 或现有 JSON schema；如果发现兼容问题，先报告并提出方案，不擅自重构。
 - 不直接向 main 提交代码。
 
@@ -51,15 +51,15 @@ Phase 1 最终目标：本机 Python Importer 将获准资料增量导入 Neo4j 
 
 严格依次执行，每次只完成用户当前明确指定的 milestone：
 
-- M0 AuraDB Setup：由用户创建 AuraDB Free、保存本机凭据；执行 doctor、连接和 Vector Index smoke test。不得向用户索取 secret。
+- M0 AuraDB Setup（已完成）：AuraDB Free 已由用户创建并完成连接与 Vector Index smoke test；凭据由用户保管，生产接入走 Secret Manager（M3）。不得向用户索取 secret。
 - M1 Python Skeleton：创建 tools/liuyao-kb/、pyproject、配置、CLI、日志、doctor、sources list、ingest dry-run、测试骨架。
-- M2 Source Adapters：Markdown/TXT/PDF/HTML JSON parsers；PDF 逐页保留页码；Case JSON 结构保真。
-- M3 Neo4j Schema：节点、关系、唯一约束、Vector Index、稳定 ID、连接验证。
+- M2 Source Adapters（已完成）：Markdown/TXT/JSON parsers；Case JSON 结构保真。PDF Adapter/OCR 继续 deferred，不属于 M2；未来用户选定具体 PDF 并单独授权后再评估。
+- M3 Neo4j Schema + 最小云端执行基础：节点、关系、唯一约束、Vector Index、稳定 ID；GCP Project、Secret Manager、最小权限身份、OIDC/WIF 与一次性 Cloud Run Schema Job。
 - M4 Incremental Importer：Hash、Revision、Chunker、Neo4j manifest、MERGE、重试；同样内容重跑不得重复 API 调用。
 - M5 Gemini Dual Path：对 Curated Chunks 分别生成 Embedding 与 Generative LLM 候选抽取；两者输出都保留来源 Chunk。
-- M6 External References：仅处理用户确认的 PDF / GitHub README/docs；源码导入作为单独后续子阶段。
-- M7 Query Tool：Vector + keyword/fulltext + 图关系检索，输出 Evidence Pack。
-- M8 End-to-end Acceptance：使用真实课程、真实案例以及用户允许的参考文件验收。
+- M6 External References（第一轮延期、非阻塞）：仅处理经 Source Catalog 批准、由 Source Collector 输出 Reference Package 的外部资料；PDF 不在当前范围；M8 验收后再恢复，不作为 M7/M8 的前置条件。
+- M7 在线分析 API + HTML 对接：Cloud Run Service 检索（Vector + keyword/fulltext + 图关系）、构建内部 Evidence Context、生成完整报告并返回 HTML 展示。
+- M8 End-to-end Acceptance：从浏览器提交卦例到 HTML 显示完整分析报告及出处的全流程验收（真实课程、真实案例）。
 
 不要一次运行 M0–M8。用户只要求 M1，就只能实现 M1。
 
@@ -127,4 +127,4 @@ M<n> — <name>
 
 ## H. 首次启动任务
 
-现在先执行 A 节的启动检查并向用户总结项目状态。除非用户明确要求，否则不要直接实现 M1–M8。若 M0 尚未完成，给出 Neo4j Aura Console 中需要用户操作的步骤；不得要求用户把凭据粘贴到聊天中。
+现在先执行 A 节的启动检查并向用户总结项目状态。除非用户明确要求，否则不要直接实现 M1–M8。若某里程碑的前置条件（凭据恢复、GCP 资源）未就绪，明确报告 BLOCKED 与需要用户在控制台操作的步骤；不得要求用户把凭据粘贴到聊天中。

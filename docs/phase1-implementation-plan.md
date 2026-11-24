@@ -1,25 +1,25 @@
-# Phase 1 实施计划：Neo4j 知识库、增量 Importer 与 Evidence Pack
+# Phase 1 实施计划：Neo4j 知识库、云端 Importer 与在线分析
 
-> 版本：1.1
-> 规划日期：2026-11-21
-> 状态：按用户确认调整来源边界；M2-A/M2-B 已合并（PR #3，merge commit `9505ce7`）；双仓库架构与来源目录规划已合并（PR #4，merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构；M2-C 已按真实文件拆为 C1/C2/C3（见第 4、12 节），前置条件（PR #4 合并）已满足，但实现仍须用户明确授权后才启动；PDF Adapter/OCR 继续 deferred
+> 版本：1.2
+> 规划日期：2026-11-21；云端优先修订：2026-11-24
+> 状态：按用户确认调整来源边界；M2-A/M2-B 已合并（PR #3，merge commit `9505ce7`）；双仓库架构与来源目录规划已合并（PR #4，merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构；M2 已全部完成（M2-A/B 合并于 PR #3；M2-C1/C2/C3 分别合并于 PR #7/#8/#10，见第 12 节）；2026-11-24 用户决策 Phase 1 改为云端优先与完整在线分析（方案 B），M3 起按云端版任务书执行，M3 尚未开始；PDF Adapter/OCR 继续 deferred
 > 如果本文与早期概念文档有差异，以本文的实施范围和验收标准为准。概念解释见 [Phase 1 实际运行架构](phase1-operating-model.md)。
 
 ## 1. 目标与最终交付
 
-Phase 1 不是上线自动断卦网站，而是先建成可实际使用的“知识库辅助分析工作流”：
+Phase 1 的最终产品是完整在线分析（2026-11-24 用户决策，方案 B）：用户在现有 HTML 页面录入或选择卦例并点击“分析”，云端自动检索知识库、构建证据上下文、调用生成模型，最后直接在 HTML 页面显示完整六爻分析报告和出处。
 
 1. 用户继续在现有 HTML App 排卦、录入课堂案例、保存每日记录；Cloudflare Pages + Pages Functions + GitHub 流程保持不变。
-2. 在用户 Mac 上运行 Python Importer，把经过选择的课程笔记、案例 JSON，以及独立 Source Collector 输出的标准 Reference Package 增量同步到 Neo4j AuraDB Free 云端图数据库。
+2. 资料导入由运行在 Google Cloud Run Jobs 上的 Python Importer 执行（本地运行仅作开发便利，不依赖用户的固定 Mac），把经过选择的课程笔记、案例 JSON，以及独立 Source Collector 输出的标准 Reference Package 增量同步到 Neo4j AuraDB Free 云端图数据库。
 3. Importer 对主要课程资料执行 Chunk、Embedding 和候选知识抽取；案例 JSON 由确定性的 Case Mapper 读取，不让 LLM 重新猜测卦盘。
-4. 提供本地 Query Tool：输入问题或已保存卦例，搜索 Neo4j，组合向量检索和图关系扩展，产生带出处的 Evidence Pack。
-5. 用户把卦盘 + Evidence Pack 交给 ChatGPT 网页版，由 ChatGPT 完成最终分析报告。
+4. 在线分析由 Google Cloud Run Service 承载：接收经认证的分析请求，搜索 Neo4j，组合向量检索、关键词检索和图关系扩展，构建内部 Evidence Context（即 Evidence Pack 的内部结构，不再要求用户手工复制给 ChatGPT）。
+5. 生成模型在云端生成完整分析报告（结论、推理依据、相关课程与老师案例、原始来源出处、不确定性说明），返回 HTML 页面展示。
 
-**Phase 1 完成时的可见成果：** 一条可重复运行的本地命令，可以把指定来源增量同步进 AuraDB；另一条命令可以针对某个卦例/问题检索课程、案例和外部参考，并输出可直接交给 ChatGPT 的 Markdown Evidence Pack。
+**Phase 1 完成时的可见成果：** 用户从浏览器发起分析，云端完成检索和生成，网页显示有来源依据的分析报告（M8 端到端验收）。
 
 ## 2. Phase 1 不做什么
 
-- 不部署 Cloud Run / 自建在线 Backend Container。
+- 云端运行环境只使用 Google Cloud Run（Service 承载在线分析 API、Jobs 承载批处理）；不自建其他在线 Backend、不自托管 Neo4j。Cloud Run 的实际部署分别在 M3（最小基础与 Schema Job）与 M7（分析 Service）完成；本文档描述的是目标架构，不代表已经部署。
 - 不接入 Supabase / PostgreSQL；Neo4j AuraDB 是知识库唯一主数据库。
 - 不修改现有排盘规则、HTML 页面布局、Cloudflare OAuth 或每日 JSON 存储结构（除非另有明确需求）。
 - 不把 Gemini Embedding 当成最终分析模型；Embedding 只负责向量。
@@ -41,24 +41,24 @@ flowchart TB
     D["独立 Collector 输出的获准 Reference Package"]
   end
 
-  subgraph MAC["Mac 本地：Phase 1"]
+  subgraph MAC["Google Cloud Run：Phase 1 执行（Jobs 导入 / Service 分析）"]
     I["Python Importer"]
     S["Source Scanner + Parser"]
     H["Hash / Revision / Chunker"]
-    E["Evidence Query CLI"]
-    P["Evidence Pack.md"]
+    E["检索层（M7 起位于 Cloud Run Service）"]
+    P["内部 Evidence Context"]
   end
 
-  subgraph MODELS["Gemini API"]
+  subgraph MODELS["模型服务（Vertex AI Gemini 优先评估，M5/M7 确定）"]
     EM["Embedding Model"]
     GL["Generative LLM：候选知识抽取"]
   end
 
   N[("Neo4j AuraDB Free：Document / Revision / Chunk / Case / Concept / RuleCandidate / Relationships / Vector Index")]
 
-  subgraph HUMAN["最终分析"]
-    CHAT["ChatGPT Web：卦盘 + Evidence Pack"]
-    REPORT["分析报告"]
+  subgraph HUMAN["最终分析（Cloud Run Service，M7）"]
+    GEN["生成模型：Evidence Context + 卦盘事实"]
+    REPORT["完整分析报告 → 返回 HTML 展示"]
   end
 
   B --> I
@@ -73,7 +73,7 @@ flowchart TB
   I -->|"Neo4j Driver / Cypher MERGE"| N
   E -->|"问题向量 + Vector / Full-text Search"| N
   N -->|"图关系扩展 + 来源证据"| E
-  E --> P --> CHAT --> REPORT
+  E --> P --> GEN --> REPORT
 ~~~
 
 **部署位置：**
@@ -83,11 +83,13 @@ flowchart TB
 | HTML App | Cloudflare Pages | 保持现状 |
 | Pages Functions | Cloudflare Workers Runtime | 保持现状 |
 | GitHub 代码、整理笔记、每日记录 | GitHub | 保持现状 |
-| Python Importer / Query Tool | 用户 Mac | Python 3.12 + virtualenv；不需要 Docker |
-| Gemini Embedding / Generative API | Google 托管 API | 本地 Python 发起 HTTPS 请求 |
+| Python Importer（批处理） | Google Cloud Run Jobs | M4 起部署；本地运行仅作开发便利 |
+| 在线分析 API（检索 + 生成） | Google Cloud Run Service | M7 部署（FastAPI）；Evidence Pack 为其内部 Evidence Context |
+| Embedding / 生成模型 | Google 托管（Vertex AI Gemini 优先评估） | 模型与生产维度在 M5/M7 确定；由 Cloud Run 运行时身份调用 |
 | Neo4j AuraDB Free | Neo4j 托管云服务 | 本项目唯一知识图谱主库 |
 | LLM Knowledge Graph Builder | Neo4j Labs 在线工具 | 可选试验，不依赖它运行 |
-| Cloud Run Backend | Phase 2 | 本阶段不部署 |
+| Secret Manager | Google Cloud | 保存 Neo4j 凭据等秘密；M3 接入，尚未创建 |
+| GitHub Actions + OIDC/WIF | GitHub / Google Cloud | 部署认证；不保存长期 Service Account JSON Key；尚未配置 |
 
 ### Neo4j 免费层注意事项
 
@@ -312,7 +314,7 @@ tools/liuyao-kb/
 - 按严格 JSON Schema 抽取候选 Concept、Entity、Relationship、RuleCandidate、摘要。
 - 每个候选输出必须带 source_chunk_id、短证据引文、来源类型和不确定性。
 - 输出不是已确认规则，不直接改写 docs/rules-status.md。
-- Phase 1 不调用它生成最终卦象报告；最终报告仍由 ChatGPT 网页版完成。
+- M5 阶段它只做候选知识抽取，不生成最终报告；最终报告由 M7 的在线分析流程调用生成模型完成（同一模型层、不同用途，见第 11、12 节）。
 
 使用 Google 官方 Python SDK google-genai，不要用旧版 google-generativeai SDK。模型 ID 放在环境变量/配置中，不要写死在业务逻辑。
 
@@ -340,7 +342,7 @@ liuyao-kb evidence --question "老师在第十一课如何讲暗动？"
 
 ## 11. Evidence Pack 格式
 
-输出为本地 Markdown 文件，默认不自动提交到 Public GitHub。至少包含：
+Evidence Pack 是检索证据的结构定义。M7 起它作为 Cloud Run Service 内部的 Evidence Context 使用：由后端生成、供生成模型消费，最终以“分析报告 + 来源出处”的形式呈现给用户，不再要求用户手工复制给 ChatGPT；在此之前，本地 CLI 输出 Markdown 的形式可用于开发验证，默认不自动提交到 Public GitHub。其内容至少包含：
 
 1. 当前卦盘事实（如果通过 record_id 查询）和用户问题；不能凭模型重新计算或改写事实。
 2. 主要课程笔记证据：课次、文件路径、标题/段落位置、短摘录。
@@ -353,17 +355,17 @@ liuyao-kb evidence --question "老师在第十一课如何讲暗动？"
    - **仅当用户明确启用 Raw ASR 正文时**：才返回正文或摘录，且必须放在独立的低置信度区域，并明确说明其未经音频校正，不得当成经过验证的老师逐字原话。
    此规则只管 Evidence Pack 的返回内容，不改变 Raw ASR 默认不进入主要 Chunk / Embedding / 规则抽取流程的原则。
 7. 来源冲突、缺少依据和模型不确定性。
-8. 提供一段可直接交给 ChatGPT 网页版的分析任务说明。
+8. 附带生成指令要素（用户问题、卦盘事实引用、来源分区与不确定性标注要求），供 M7 的生成步骤直接消费；不再以“交给 ChatGPT 网页版”为交付形态。
 
 Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”。涉及课堂案例时按 case_id 归并同一案例的多种表示与来源（课程笔记提及、ASR 定位、案例 JSON 与其 MD 表示、关联的每日记录），并分开标示老师讲解、用户补充与 AI 推算；同时按上面第 6 项的三档规则返回 ASR 来源元数据（文件定位、DocumentRevision、置信度与音频校正状态）——即使该 ASR 没有 Chunk，也不得丢失它作为课堂来源的引用；正文默认不返回，须用户明确启用后才可放入低置信度区域。
 
 ## 12. 里程碑与用户验收
 
-> **第一轮执行顺序（用户 2026-11-23 决定）**：第一轮先用现有知识完成端到端验收——优先完成 M2-C、M3、M4、M5、M7、M8，资料范围只用现有课程笔记、课堂案例及每日记录。M6（外部参考资料）延期到现有知识验收之后再启动，不作为第一轮验收的前置条件；M6 不取消，其来源、版本与版权要求不变。
+> **第一轮执行顺序（用户 2026-11-23 决定，2026-11-24 按云端架构更新）**：第一轮主路径为 M3 → M4 → M5 → M7 → M8，只用现有课程笔记、课堂案例及每日记录完成端到端验收（M2-C 已完成）。M6（外部参考资料）是延期的非阻塞工作：M8 验收后再恢复，不作为 M7/M8 的前置条件或依赖；M6 不取消，其来源、版本与版权要求不变。
 
 | Milestone | 交付物 | 用户验收标准 |
 |---|---|---|
-| M0：Aura 准备 | AuraDB Free 实例、凭据放本机 .env | Aura Console 显示实例运行；本机 doctor 能连通；秘密不提交 |
+| M0：Aura 准备 | AuraDB Free 实例创建、连接与 Vector Index 验证（已完成，见 phase1-m0-validation.md）；凭据恢复与 Secret Manager 接入待处理 | Instance01 保留不删除；凭据恢复结果与云端接入在 M3 验收；秘密不提交 |
 | M1：项目骨架 | Python CLI、配置、日志、单元测试 | doctor、sources list、ingest --dry-run 正常 |
 | M2-A：来源模型 | 统一 ParsedDocument/Section、Locator、source identity | `approved_merged`；PR #3，merge commit `9505ce7` |
 | M2-B：Markdown/TXT | Markdown 与 TXT Adapter | `approved_merged`；PR #3，merge commit `9505ce7`（验收：144 tests / 38 adapter tests 通过，用户接受等价复跑作为验收依据） |
@@ -372,13 +374,13 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 | M2-C3：课堂案例 MD 表示 | Classroom Case Markdown Representation | 处理与案例 JSON 配对的课堂案例 MD（如 `case-xxx-analysis.md`）：它是同一 ClassCase 的可读表示，以 HAS_REPRESENTATION（format=markdown）关联到同一 case_id，不建第二个 Case、不另立分析来源；内容中的老师讲解、用户补充、AI 计算仍分别标明来源 |
 | M2-D：PDF | PDF 文本解析 / 页码 Locator | **deferred**；没有当前 PDF 输入，不纳入本轮 M2 |
 | 外部参考包接收 | Reference Package Validator / Adapter | 首批采集验证后实施；知识库不负责爬网站 |
-| M3：Neo4j Schema | 唯一约束、关系、Vector Index、测试节点 | 可创建/查询节点；向量索引 smoke test 成功 |
-| M4：增量 Importer | Manifest、Hash、Chunk、MERGE、版本管理 | 第一次导入新增；第二次重复运行 0 个新 Chunk/Embedding；修改一个段落只处理变化部分 |
-| M5：Gemini 双路径 | Embedding + 结构化候选抽取 | Chunk 有向量；候选知识能回到来源 Chunk；没有自动确认规则 |
+| M3：Neo4j Schema + 最小云端执行基础 | 节点/关系目录、唯一约束、Vector Index 管理；GCP Project、Secret Manager、最小权限身份、GitHub OIDC/WIF 与一次性 Cloud Run Schema Job 的最小基础 | Schema 可在云端受控执行与验证；五项唯一约束建立且幂等；临时向量索引 smoke 通过并清理；**尚未开始** |
+| M4：云端增量 Importer（Cloud Run Job） | Manifest、Hash、Chunk、MERGE、版本管理 | 第一次导入新增；第二次重复运行 0 个新 Chunk/Embedding；修改一个段落只处理变化部分 |
+| M5：云端 Embedding 与 AI 知识抽取（Cloud Run Job） | Embedding + 结构化候选抽取 | Chunk 有向量；候选知识能回到来源 Chunk；没有自动确认规则；Embedding/生成模型与生产向量维度在此确定（优先评估 Vertex AI Gemini） |
 | M6：外部参考资料 | 从 Source Catalog 选择并导入获准 Reference Package 中的古籍章节、网页文本、README/docs 或源码文件 | 来源/版本/版权/commit 完整；不混入老师课程来源；不在本仓库内爬取 |
 | PDF 扩展 | 仅在将来用户明确指定 PDF 后单独立项 | 不属于当前 Phase 1 必需交付 |
-| M7：Evidence Pack | 本地 Query Tool、向量检索 + 图关系扩展 | 输入已知问题时找到相关课堂段落/案例；输出可读、可追溯的 Markdown；同一课堂案例无论出现在课程笔记、ASR、案例 JSON 还是案例 MD 中，都按同一 case_id 归并呈现，不重复计数；Raw ASR 按第 11 节三档规则返回（默认只返回来源元数据） |
-| M8：端到端验收 | 真实课程 + 真实课堂案例 + 至少一份获准的外部 Reference Package（若已完成采集） | 你能把 Evidence Pack 交给 ChatGPT，且引用来源正确、分类明确；PDF 不是验收前提 |
+| M7：在线分析 API + HTML 对接 | Cloud Run FastAPI 分析端点；向量 + 关键词 + 图关系检索；内部 Evidence Context；生成完整报告；Pages Function 同源代理（BFF 形态与服务间认证方式待设计确认） | 登录用户可从 HTML 触发分析并看到带出处的完整报告；未授权请求被拒绝；同一课堂案例无论出现在课程笔记、ASR、案例 JSON 还是案例 MD 中，都按同一 case_id 归并，不重复计数；Raw ASR 按第 11 节三档规则处理（默认只用来源元数据） |
+| M8：端到端验收 | 浏览器到报告的完整在线流程（真实课程 + 真实课堂案例） | 从 HTML 登录、选择/录入卦例、点击分析，到云端检索/生成并在网页显示报告及出处全程通过；引用来源正确、分类明确；M6 外部资料与 PDF 均不是验收前提 |
 
 ### 最低验收测试矩阵
 
@@ -395,27 +397,21 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 - 生成 Evidence Pack 时，课堂、个人练习、外部资料、Raw ASR 分区清楚。
 - Neo4j/Google 请求失败时保留来源文件，不把同步状态标记为成功。
 
-## 13. Phase 2 连接原则
+## 13. Phase 2 边界（2026-11-24 修订）
 
-Phase 2 不是把 Phase 1 数据库搬上云。AuraDB 从 Phase 1 开始就是云端主库。
+在线分析已提前到 Phase 1（M7 在线分析 API、M8 端到端验收），不再属于 Phase 2。AuraDB 从 M0 起就是云端主库，Phase 2 不做数据库迁移，也不再负责第一次实现 Cloud Run 在线分析。
 
-未来如需 HTML 一键分析：
-
-- 在 Google Cloud Run 部署一个 Python FastAPI Service（初期一个 Container）。
-- 把 Phase 1 的 Query / Evidence Pack 逻辑迁入同一个 Service。
-- 后端增加 LLM Orchestrator，调用 Gemini 或 OpenAI 的生成模型，生成分析报告并返回 HTML。
-- 继续使用同一个 AuraDB；不重新导入、不重建 Chunk/Embedding。
-- 当前 GitHub 每日记录流程可以继续保留；只有明确需要多用户隔离时，才重新评估 Supabase。
+Phase 2 留给真正的扩展项：多用户与租户隔离、私人资料存储、分析报告历史与权限管理、异步任务/队列、通知、复杂工作流、生产级监控/备份/灾备、更多模型 Provider、规则引擎扩展，以及 AuraDB 付费层的容量与可用性优化。Phase 1 不提前引入这些复杂度。
 
 ## 14. 谁来实现、阶段审核与跨模型记忆
 
-采用“Claude Code 本地执行 + ChatGPT 阶段审核 + 用户验收”的协作方式；用户也可以在不同阶段切换 Claude 模型、Codex 或其他 coding agent。**模型可以切换，项目状态不能只留在某个聊天窗口。**
+采用“Coding Agent 云端开发执行 + ChatGPT 阶段审核 + 用户验收”的协作方式；用户也可以在不同阶段切换 Claude 模型、Codex 或其他 coding agent。**模型可以切换，项目状态不能只留在某个聊天窗口。**
 
 ### 角色分工
 
-- **Claude Code（Mac 本机主执行者）**：在本地 checkout 中实现当前 milestone、运行测试、建立 virtualenv、连接用户在本机配置的 AuraDB/Gemini API、提交分支并创建 Draft PR。
+- **Coding Agent（云端开发环境执行者）**：在与用户 Mac 独立的开发环境中实现当前 milestone、运行离线测试、提交分支并创建 Draft PR；开发环境不持有生产数据库密码。需要真实数据库或云端资源的验证步骤，由 Cloud Run Job 以其 runtime identity 执行，或由用户在控制台/本机执行并回传结果。
 - **ChatGPT（架构审查与验收者）**：维护实施计划、检查 GitHub PR diff、审查数据模型/安全/来源追溯/增量逻辑、解释错误、给出修改要求；审核通过后由用户决定合并，或明确授权 ChatGPT 合并。
-- **用户**：创建 AuraDB Free、在本机安全保存凭据、选择获准导入的外部来源/章节或文件、逐个验收里程碑。PDF 只有未来明确选定后才考虑。不要把数据库密码或 API Key 发给 ChatGPT。
+- **用户**：管理 AuraDB 与 Google Cloud 账户（凭据恢复、Project/Billing、把凭据录入 Secret Manager 等控制台操作由用户完成）、选择获准导入的外部来源/章节或文件、逐个验收里程碑。PDF 只有未来明确选定后才考虑。不要把数据库密码或 API Key 发给 ChatGPT 或任何 AI 对话；生产凭据只进入 Secret Manager，本机 m0.env 仅作开发便利。
 
 ### 强制 GitHub checkpoint 流程
 

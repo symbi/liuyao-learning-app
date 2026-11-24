@@ -32,40 +32,40 @@ Phase 1 分为现有 App 记录系统与新建知识库两部分，彼此保持�
 ### 3.2 Neo4j 知识库与检索（新增 Phase 1 工作）
 
 - **主知识库：Neo4j AuraDB Free 云端图数据库**；不另建 Supabase/PostgreSQL，不需要 Docker 或 VPS。
-- **Mac 本地 Python Importer**：按 allowlist 读取 Learning 整理课程笔记（Markdown/TXT）和明确选择的课堂案例 JSON；外部资料只通过独立 Source Collector 输出、经批准的 Reference Package 进入知识库，Importer 不直接爬取或下载外部网站/GitHub 资料。PDF Adapter 与 OCR 当前 deferred，不是 Phase 1 必须功能；将来用户明确选定具体 PDF 并确认使用权后，再单独评估（与 [Phase 1 实施计划](phase1-implementation-plan.md) 一致）。
+- **云端 Python Importer（Google Cloud Run Jobs）**：按 allowlist 读取 Learning 整理课程笔记（Markdown/TXT）和明确选择的课堂案例 JSON；外部资料只通过独立 Source Collector 输出、经批准的 Reference Package 进入知识库，Importer 不直接爬取或下载外部网站/GitHub 资料。本地运行仅作开发便利，不依赖用户的固定 Mac。PDF Adapter 与 OCR 当前 deferred，不是 Phase 1 必须功能；将来用户明确选定具体 PDF 并确认使用权后，再单独评估（与 [Phase 1 实施计划](phase1-implementation-plan.md) 一致）。
 - Source A Raw ASR 默认只保留来源和版本，不进入主要 Chunk / Embedding / Rule Candidate 流程；Source B Curated Lesson Notes 是主要课程知识来源。
 - Chunk 之后并行运行 Embedding 和 Generative LLM 候选知识抽取；案例 JSON 由 Case Mapper 结构化写入。
 - Importer 使用 content hash、revision ID、chunk ID 和 Neo4j MERGE 实现增量、幂等更新；不变资料不重复请求模型。
-- Mac 本地 Query Tool 使用向量检索 + 图关系扩展，生成带课次、文件、页码/段落、案例来源的 Evidence Pack。
-- **Phase 1 最终分析仍由 ChatGPT 网页版完成**：用户把卦盘和 Evidence Pack 交给 ChatGPT。ChatGPT Web 不会自动直连 AuraDB。
+- 检索层（M7 起位于 Cloud Run Service）使用向量检索 + 图关系扩展，生成带课次、文件、页码/段落、案例来源的内部 Evidence Context（Evidence Pack 的内部结构）。
+- **Phase 1 最终分析在云端完成（2026-11-24 决策，方案 B：完整在线分析）**：Cloud Run Service 调用生成模型产出完整分析报告并返回 HTML 展示；Evidence Pack 是后端内部证据结构，用户不再手工复制给 ChatGPT。
 - 不要求用户逐条人工审核 AI 节点；必须自动保留来源类别、出处、版本和不确定性。LLM 抽取的规则始终是 candidate，不能自动成为课程已确认规则。
 
 详细目录、数据模型、执行顺序和验收标准见 [Phase 1 实施计划](phase1-implementation-plan.md)。
 
-## 4. Phase 2：把知识辅助分析在线化
+## 4. 在线分析（Phase 1 的 M7/M8）与 Phase 2 边界
 
-Phase 2 的主要目的不是迁移 Phase 1 数据库，而是把 Mac 本地已经验证过的 Query / Evidence Pack 流程部署成在线服务，让 HTML 可以一键分析。
+2026-11-24 决策：在线分析提前到 Phase 1，不再等 Phase 2。Phase 1 的完成标志是“用户从浏览器发起分析，云端完成检索和生成，网页显示有来源依据的分析报告”。
 
-- 在 Google Cloud Run 部署一个 Python FastAPI Service（初期一个 Service / 一个 Container）。
+- M7 在 Google Cloud Run 部署一个 Python FastAPI Service（初期一个 Service / 一个 Container）作为在线分析 API；M8 做浏览器到报告的端到端验收。
 - 内部模块包括 Case/Record 读取适配、GraphRAG Retriever、确定性 Rule Engine、LLM Orchestrator。
 - Backend 连接 **同一个 Neo4j AuraDB**，继续使用 Phase 1 已有 Document、Chunk、Embedding、Case 和关系；不重新 Chunk、不重新 Embedding、不重建知识库。
-- 后端以 Gemini 或 OpenAI API 的 Generative LLM 生成最终分析报告，再返回 HTML。
+- 后端调用生成模型（优先评估 Vertex AI Gemini，最终模型在 M5/M7 确定）生成最终分析报告，再返回 HTML。
 - 当前 HTML 的每日 JSON 仍可继续保存在 GitHub；不因为上 Cloud Run 就必须迁移记录数据。
-- Supabase/PostgreSQL 仅在未来真正需要多用户身份、私人数据隔离或关系型业务数据时重新评估；不是 Phase 2 的必需组件。
+- Phase 2 留给扩展项：多用户与租户隔离、私人资料存储、分析报告历史与权限管理、异步任务/队列、通知、复杂工作流、生产级监控/备份/灾备、更多模型 Provider 与 AuraDB 付费层优化。Supabase/PostgreSQL 仅在未来真正需要多用户身份、私人数据隔离或关系型业务数据时重新评估。
 
 ## 5. 分阶段分析工作流
 
-### Phase 1：半自动、知识库辅助分析
+### Phase 1：云端完整在线分析（M7/M8 交付）
 
-1. 用户在 HTML 保存卦例到 GitHub。
-2. 用户在 Mac 运行 Query Tool，按 record ID / 问题查询 Neo4j AuraDB。
-3. Query Tool 结合向量检索和图关系，返回课程笔记、课堂案例和外部参考的 Evidence Pack。
-4. 用户把卦盘 + Evidence Pack 交给 ChatGPT 网页版。
-5. ChatGPT 输出最终分析；必须区分课堂课程、老师案例、个人练习、外部参考和 AI 推理，并引用 Evidence Pack 来源。
+1. 用户在 HTML 录入或选择卦例，点击“分析”。
+2. 请求经同源 Pages Function 代理（BFF 形态与服务间认证方式待 M7 设计确认）到达 Cloud Run 分析 Service。
+3. Service 校验请求与卦盘快照，检索 Neo4j（向量 + 关键词 + 图关系扩展），构建内部 Evidence Context。
+4. Service 调用生成模型生成完整分析报告，附真实来源出处与不确定性说明。
+5. 报告直接显示在 HTML 页面；必须区分课堂课程、老师案例、个人练习、外部参考和 AI 推理。在 M7 落地之前，开发阶段仍可用本地 CLI 做检索验证，但那不是 Phase 1 的最终产品形态。
 
-### Phase 2：HTML 一键分析
+### Phase 2：扩展能力
 
-HTML 把卦盘和问题发给 Cloud Run Backend；Backend 执行规则计算和 AuraDB 检索，再调用 Generative LLM 返回分析报告。除非用户明确要求，Phase 2 不改变当前 GitHub 记录保存方案。
+多用户、分析历史、异步任务、监控运营等扩展（见第 4 节），不改变当前 GitHub 记录保存方案，除非用户明确要求。
 
 ## 6. 通用工程原则
 
