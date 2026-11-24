@@ -3,7 +3,7 @@
 > 本文件是不同 ChatGPT 窗口、Claude Code、Codex、Muse 之间的总入口。GitHub main 是已确认项目状态的共同来源；尚未合并的 Draft PR 不自动成为 main 的共同状态。
 
 - Repository: symbi/liuyao-learning-app
-- Last updated: 2026-11-23
+- Last updated: 2026-11-24
 - Shared memory rule: 每个工作流维护自己的进度文件；重要状态变化合并到 main 后，其他窗口才把它视为共同确认的最新状态。
 - Security: 不在本文件或其他文档中保存密码、Token、私密录音、私密 Memo 或本机敏感路径。
 
@@ -32,7 +32,7 @@
 - M0 已完成实际 AuraDB Free 验证；M1 已合并到 main。
 - M2-A（来源模型）与 M2-B（Markdown/TXT）已通过复审并合并：PR #3 以 Merge Commit 合并，merge commit 为 `9505ce70e38b729bfb4d7dd36924a25229389194`。验收依据为执行 Agent 在与 PR head `e09ae71` 逐字一致的代码上复跑的 144 passed、38 adapter tests 及 Ruff/Mypy 全通过；用户已豁免手动 Mac 复跑并确认接受该验收依据（详见 phase1-progress.md 的合并记录）。
 - PR #4（双仓库架构、Reference Catalog 与 Reference Package 契约）已合并（merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构。PR #6（M2-C 规划更新，docs-only）已合并（merge commit `dbc2c19`）；PR #7（M2-C1）已合并（merge commit `51a0476`），M2-C1 完成；PR #8（M2-C2）已合并（merge commit `e963bf3`），M2-C2 完成。M2-C3 已合并（PR #10，merge commit `673a581`），M2-C 与 M2 整体完成。用户 2026-11-23 决定第一轮先用现有知识完成端到端验收（M3、M4、M5、M7、M8），M6 外部参考资料延期到现有知识验收之后，不作为第一轮前置条件（不取消）。用户 2026-11-24 决定 Phase 1 改为云端优先与完整在线分析（方案 B，见 phase1-progress.md 决定 15 与 2026-11-24 检查点）；M3 尚未开始。
-- M2-C 已拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1、C2 均已完成并合并（PR #7、PR #8）；C3 已获用户明确授权并正在实施（Draft PR #10 已创建，等待 ChatGPT 复审）；M3 及后续里程碑尚未启动，仍须用户单独明确授权。不开发 PDF Adapter/OCR。
+- M2-C 已拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1、C2 均已完成并合并（PR #7、PR #8）；C3 已完成并合并（PR #10，merge commit `673a581`）；M2-C1/C2/C3 全部完成。M3 及后续里程碑尚未启动，仍须用户单独明确授权。不开发 PDF Adapter/OCR。
 - Knowledge Base 只读取显式批准的本地资料或 Reference Package，不负责爬网站。
 - 维护 docs/phase1-progress.md；不修改 HTML 页面或 Cloudflare Functions。
 

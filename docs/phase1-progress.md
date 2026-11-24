@@ -46,9 +46,9 @@
 | M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs + 最小云端执行基础 | not_started | — | 尚未开始；须用户明确授权；前置：AuraDB 凭据恢复、GCP Project/Billing 确认；真实验证走 Cloud Run Schema Job |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
-| M6 | 经 Source Catalog 批准、由 Source Collector 输出 Reference Package 的外部文档与代码参考 | not_started | — | 用户先确认来源与 License；本仓库不直接爬取网站；PDF 不在当前范围 |
-| M7 | Query Tool、向量/图关系检索、Evidence Pack | not_started | — | 不生成最终占卜报告 |
-| M8 | 端到端验收 | not_started | — | 真实课程、真实案例、获准参考材料 |
+| M6 | 经 Source Catalog 批准、由 Source Collector 输出 Reference Package 的外部文档与代码参考 | not_started | — | 用户先确认来源与 License；本仓库不直接爬取网站；PDF 不在当前范围；第一轮延期、非阻塞，M8 验收后再恢复，不作为 M7/M8 前置条件 |
+| M7 | Cloud Run 在线分析 API + HTML 对接：向量/图关系检索、内部 Evidence Context、生成完整报告并在页面展示 | not_started | — | 报告须带来源出处与不确定性说明；承接 M5 的检索与模型能力 |
+| M8 | 端到端验收：从浏览器提交卦例到 HTML 显示完整分析报告及出处 | not_started | — | 真实课程、真实案例；M6 外部资料不是验收前提 |
 
 允许状态值：not_started、in_progress、awaiting_chatgpt_review、changes_requested、completed、approved_merged、blocked。
 
@@ -411,3 +411,4 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 状态同步：M2-C3 已合并（PR #10，merge commit `673a581`），M2 整体完成；本文件此前若干过期状态文字（C3 awaiting review、M2 in_progress、决定 2/3/4/11 的旧表述）已在本 PR 中修正或标注取代关系，历史检查点原文保留。
 - M3 状态：尚未开始。本 PR 只同步文档，不实施 M3、不创建任何云端资源。已知前置待办：AuraDB Instance01（用户截图时为 PAUSED、0 节点，非实时查询）凭据待用户在 Aura Console 恢复/重置（保留实例，不删除）；GCP Project/Billing/Region 未确认；Secret Manager、WIF 与服务身份均未创建。本地存在一份未提交的 M3 草稿（独立工作区，未推送、无 PR），是否沿用留待 M3 实施轮决定。
 - 本 PR 同步的文档：phase1-implementation-plan.md（v1.2）、master-plan.md、phase1-operating-model.md、workspace-handoff.md、CLAUDE.md、AGENTS.md、tools/liuyao-kb/README.md、claude-code-phase1-execution-prompt.md 与本文件。
+- 修订轮（ChatGPT 首轮审查后）：按审查意见补修残留旧表述——AGENTS.md 的 Cloud Run 禁令改为“目标运行时 + 须授权才部署”；operating-model 的 §1 结论、组件表与 §11 实施顺序（M7/M8 定义、Phase 2 句）整体统一；实施计划的架构图最终分析流向、§9 生成模型说明、§11 第 8 项与 §12 第一轮主路径（M3→M4→M5→M7→M8，M6 非阻塞）修正；本文件里程碑表 M6/M7/M8 行按新定义更新；handoff 的 C3 进行中残留与 Last updated 修正；执行 Prompt 的 Embedding 表述与 M2/M6 的 PDF 范围统一。范围外的 codex-phase1-implementation-prompt.md 仍未修改，留待单独授权同步。

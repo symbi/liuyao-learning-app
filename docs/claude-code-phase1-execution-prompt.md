@@ -17,7 +17,7 @@ Phase 1 最终目标（2026-11-24 云端优先决策）：Cloud Run Jobs 上的 
 
 - 数据库：Neo4j AuraDB Free，云端主库。
 - 云端运行：Google Cloud Run（Jobs 跑 Schema/导入/Embedding 等批处理，Service 跑在线分析 API）；本地 Python 3.12 + virtualenv 只作开发便利，不依赖用户的固定 Mac。
-- Embedding：Gemini Embedding API，只产生向量。
+- Embedding：向量模型，只产生向量；优先评估 Vertex AI Gemini，最终 Provider、模型与生产维度在 M5 确定。
 - Generative LLM：生成模型（优先评估 Vertex AI Gemini，最终模型在 M5/M7 确定），用于抽取候选知识与生成最终报告。
 - Final analysis：Phase 1 由 Cloud Run Service 调用生成模型在线生成，并直接显示在 HTML 页面（M7/M8）。
 - 在线分析在 Phase 1 的 M7/M8 完成（Cloud Run FastAPI Service，复用同一个 AuraDB）；Phase 2 只做多用户、历史、异步、监控等扩展。
@@ -53,11 +53,11 @@ Phase 1 最终目标（2026-11-24 云端优先决策）：Cloud Run Jobs 上的 
 
 - M0 AuraDB Setup（已完成）：AuraDB Free 已由用户创建并完成连接与 Vector Index smoke test；凭据由用户保管，生产接入走 Secret Manager（M3）。不得向用户索取 secret。
 - M1 Python Skeleton：创建 tools/liuyao-kb/、pyproject、配置、CLI、日志、doctor、sources list、ingest dry-run、测试骨架。
-- M2 Source Adapters：Markdown/TXT/PDF/HTML JSON parsers；PDF 逐页保留页码；Case JSON 结构保真。
+- M2 Source Adapters（已完成）：Markdown/TXT/JSON parsers；Case JSON 结构保真。PDF Adapter/OCR 继续 deferred，不属于 M2；未来用户选定具体 PDF 并单独授权后再评估。
 - M3 Neo4j Schema + 最小云端执行基础：节点、关系、唯一约束、Vector Index、稳定 ID；GCP Project、Secret Manager、最小权限身份、OIDC/WIF 与一次性 Cloud Run Schema Job。
 - M4 Incremental Importer：Hash、Revision、Chunker、Neo4j manifest、MERGE、重试；同样内容重跑不得重复 API 调用。
 - M5 Gemini Dual Path：对 Curated Chunks 分别生成 Embedding 与 Generative LLM 候选抽取；两者输出都保留来源 Chunk。
-- M6 External References：仅处理用户确认的 PDF / GitHub README/docs；源码导入作为单独后续子阶段。
+- M6 External References（第一轮延期、非阻塞）：仅处理经 Source Catalog 批准、由 Source Collector 输出 Reference Package 的外部资料；PDF 不在当前范围；M8 验收后再恢复，不作为 M7/M8 的前置条件。
 - M7 在线分析 API + HTML 对接：Cloud Run Service 检索（Vector + keyword/fulltext + 图关系）、构建内部 Evidence Context、生成完整报告并返回 HTML 展示。
 - M8 End-to-end Acceptance：从浏览器提交卦例到 HTML 显示完整分析报告及出处的全流程验收（真实课程、真实案例）。
 

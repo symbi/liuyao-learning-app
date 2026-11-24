@@ -49,16 +49,16 @@ flowchart TB
     P["内部 Evidence Context"]
   end
 
-  subgraph MODELS["Gemini API"]
+  subgraph MODELS["模型服务（Vertex AI Gemini 优先评估，M5/M7 确定）"]
     EM["Embedding Model"]
     GL["Generative LLM：候选知识抽取"]
   end
 
   N[("Neo4j AuraDB Free：Document / Revision / Chunk / Case / Concept / RuleCandidate / Relationships / Vector Index")]
 
-  subgraph HUMAN["最终分析"]
-    CHAT["ChatGPT Web：卦盘 + Evidence Pack"]
-    REPORT["分析报告"]
+  subgraph HUMAN["最终分析（Cloud Run Service，M7）"]
+    GEN["生成模型：Evidence Context + 卦盘事实"]
+    REPORT["完整分析报告 → 返回 HTML 展示"]
   end
 
   B --> I
@@ -73,7 +73,7 @@ flowchart TB
   I -->|"Neo4j Driver / Cypher MERGE"| N
   E -->|"问题向量 + Vector / Full-text Search"| N
   N -->|"图关系扩展 + 来源证据"| E
-  E --> P --> CHAT --> REPORT
+  E --> P --> GEN --> REPORT
 ~~~
 
 **部署位置：**
@@ -314,7 +314,7 @@ tools/liuyao-kb/
 - 按严格 JSON Schema 抽取候选 Concept、Entity、Relationship、RuleCandidate、摘要。
 - 每个候选输出必须带 source_chunk_id、短证据引文、来源类型和不确定性。
 - 输出不是已确认规则，不直接改写 docs/rules-status.md。
-- Phase 1 不调用它生成最终卦象报告；最终报告仍由 ChatGPT 网页版完成。
+- M5 阶段它只做候选知识抽取，不生成最终报告；最终报告由 M7 的在线分析流程调用生成模型完成（同一模型层、不同用途，见第 11、12 节）。
 
 使用 Google 官方 Python SDK google-genai，不要用旧版 google-generativeai SDK。模型 ID 放在环境变量/配置中，不要写死在业务逻辑。
 
@@ -355,13 +355,13 @@ Evidence Pack 是检索证据的结构定义。M7 起它作为 Cloud Run Service
    - **仅当用户明确启用 Raw ASR 正文时**：才返回正文或摘录，且必须放在独立的低置信度区域，并明确说明其未经音频校正，不得当成经过验证的老师逐字原话。
    此规则只管 Evidence Pack 的返回内容，不改变 Raw ASR 默认不进入主要 Chunk / Embedding / 规则抽取流程的原则。
 7. 来源冲突、缺少依据和模型不确定性。
-8. 提供一段可直接交给 ChatGPT 网页版的分析任务说明。
+8. 附带生成指令要素（用户问题、卦盘事实引用、来源分区与不确定性标注要求），供 M7 的生成步骤直接消费；不再以“交给 ChatGPT 网页版”为交付形态。
 
 Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”。涉及课堂案例时按 case_id 归并同一案例的多种表示与来源（课程笔记提及、ASR 定位、案例 JSON 与其 MD 表示、关联的每日记录），并分开标示老师讲解、用户补充与 AI 推算；同时按上面第 6 项的三档规则返回 ASR 来源元数据（文件定位、DocumentRevision、置信度与音频校正状态）——即使该 ASR 没有 Chunk，也不得丢失它作为课堂来源的引用；正文默认不返回，须用户明确启用后才可放入低置信度区域。
 
 ## 12. 里程碑与用户验收
 
-> **第一轮执行顺序（用户 2026-11-23 决定）**：第一轮先用现有知识完成端到端验收——优先完成 M2-C、M3、M4、M5、M7、M8，资料范围只用现有课程笔记、课堂案例及每日记录。M6（外部参考资料）延期到现有知识验收之后再启动，不作为第一轮验收的前置条件；M6 不取消，其来源、版本与版权要求不变。
+> **第一轮执行顺序（用户 2026-11-23 决定，2026-11-24 按云端架构更新）**：第一轮主路径为 M3 → M4 → M5 → M7 → M8，只用现有课程笔记、课堂案例及每日记录完成端到端验收（M2-C 已完成）。M6（外部参考资料）是延期的非阻塞工作：M8 验收后再恢复，不作为 M7/M8 的前置条件或依赖；M6 不取消，其来源、版本与版权要求不变。
 
 | Milestone | 交付物 | 用户验收标准 |
 |---|---|---|

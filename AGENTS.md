@@ -29,7 +29,7 @@ These instructions apply to Claude Code, Codex, ChatGPT-assisted edits, and any 
 - Do one explicitly requested task or milestone at a time.
 - Phase 1 must follow `docs/phase1-implementation-plan.md`; do not broaden scope or rewrite the HTML app unless explicitly requested.
 - HTML maintenance must follow `docs/html-maintenance-progress.md`; make only the requested front-end changes. Do not modify Cloudflare Pages Functions, GitHub save APIs, daily-record schema, or Phase 1 Python / Neo4j architecture unless explicitly requested.
-- Do not deploy Cloud Run, add Supabase/PostgreSQL, or introduce Docker in Phase 1.
+- Cloud Run is the Phase 1 target runtime (Jobs for batch work; a Service for the M7 online analysis API). Create or deploy Cloud Run resources only when the user has explicitly authorized the corresponding milestone. Do not add Supabase/PostgreSQL in Phase 1.
 - Neo4j AuraDB Free is the Phase 1 knowledge database. Since the 2026-11-24 cloud-first decision, the Python Importer runs as Google Cloud Run Jobs and the online analysis API runs as a Cloud Run Service (M7); local runs are development convenience only, and Phase 1 does not depend on the user's Mac.
 - Keep Raw ASR separate from Curated Lesson Notes. Raw ASR is disabled by default and must not silently enter the main chunk/vector/rule extraction pipeline.
 - LLM-extracted knowledge remains candidate; never promote it to confirmed classroom rules.
