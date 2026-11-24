@@ -14,7 +14,7 @@
 | [HTML 每日记录 JSON](https://github.com/symbi/liuyao-learning-app/blob/main/daily-records/2026/11/2026-11-24.json) | 完整卦盘、年月日柱、六亲、世应、动变及分析快照 | 盘面来源；不是 ASR 自动识别出的完整卦盘 |
 | [HTML 保存 Markdown](https://github.com/symbi/liuyao-learning-app/blob/main/daily-records/2026/11/markdown/2026-11-24--518d525a-838e-479d-8d2c-815296358b5e.md) | 用户保存的问事背景、课堂 Memo 和结论 | Memo/结论按用户原文保留，不直接当作老师逐字原话 |
 | [第十九课整理稿](https://github.com/symbi/liuyao-learning-app/blob/main/docs/lessons/lesson-19-notes-v0.1.md) | 课程结构与案例目录 | 基于 ASR 的整理稿，不是逐字稿 |
-| [第十九课原始 ASR](https://github.com/symbi/liuyao-learning-raw/blob/main/lessons/lesson-19/transcript-asr-raw.txt) | 第 4 段，约 30 分钟起；投资讨论后转入女性婚姻案例 | ASR 未经人工校订，关键术语有明显误识；没有 WAV/M4A 原音可校正 |
+| [第十九课原始 ASR](https://github.com/symbi/liuyao-learning-raw/blob/main/lessons/lesson-19/transcript-asr-raw.txt) | 第 4 段，约 30 分钟起；投资讨论后转入女性婚姻案例 | ASR 未经人工校订，关键术语有明显误识；全文检索未找到“午年／午火／结婚在午年”；没有 WAV/M4A 原音可校正 |
 
 **为什么匹配：** 用户已明确确认，这条「雷山小过、女性自问婚姻」的 HTML 记录就是第十九课后段老师讲的女性婚姻案例，也就是课堂讨论多重官鬼线索的案例。第十九课原始 ASR 第 4 段（约 30 分钟起）在投资讨论后，确实转入一位女性的婚姻问题，可辨认“一个女生的婚姻”等上下文，并出现官鬼与婚姻次数相关的讨论。因此案例身份标为 `verified`。这里的 verified 只表示案例身份已匹配，不代表 ASR 已逐字校正。
 
@@ -88,7 +88,7 @@
 
 1. ASR 疑似「官鬼有动」的语句与当前盘面中两处官鬼静爻、兄弟爻发动的结构不一致；需原音或清晰课件确认。
 2. ASR 对「两重官鬼」及婚姻次数相关语句的具体识别不可靠；案例身份已由用户确认，但老师原话仍未逐字验证。
-3. 「午火的官鬼，结婚在午年」目前来自用户保存的课堂 Memo，当前 ASR 片段不足以独立确认其应期依据。
+3. 「午火的官鬼，结婚在午年」目前来自用户保存的课堂 Memo。对第十九课原始 ASR 全文检索，“午年”“午火”“结婚在午年”均无命中；“五年”共出现 3 次，但都在其他求财、健康或课程总结语境，未明确关联本婚姻案例。因此该应期继续保留为用户课堂 Memo，暂不能说已由 ASR 独立确认。
 4. 「已经有男朋友」及「多个婚姻」作为本案例的用户保存结论原样保留，不由 AI 推广成普遍断法。
 5. Private raw 当前没有归档可用 WAV/M4A 原音；后续若补入原音，再校正老师讲解和 ASR 冲突。
 
