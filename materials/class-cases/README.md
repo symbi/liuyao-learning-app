@@ -13,7 +13,11 @@ materials/class-cases/
 │   └── ...
 ├── lesson-19/
 │   ├── case-001.json
-│   └── case-002.json
+│   ├── case-001-analysis.md
+│   ├── case-002.json
+│   ├── case-002-analysis.md
+│   ├── case-003.json
+│   └── case-003-analysis.md
 ├── lesson-18/
 │   ├── case-001.json
 │   └── case-002.json

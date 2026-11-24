@@ -1,0 +1,633 @@
+{
+  "recordType": "class-case",
+  "schemaVersion": 1,
+  "id": "L19-C03-female-marriage-multiple-guangui",
+  "lessonId": "lesson-19",
+  "category": "female-marriage",
+  "tagOrRealQuestion": "女性自问婚姻：婚姻如何",
+  "matchStatus": "verified",
+  "matchConfidence": "high_for_case_identity_user_confirmed_chart_is_user_supplied",
+  "verificationBasis": [
+    "用户于 2026-11-24 明确确认：这条雷山小过记录就是第十九课后段的女性婚姻案例，即课堂讨论多重官鬼线索的案例。",
+    "第十九课原始 ASR 第 4 段（约 30 分钟起）在投资讨论后转入一位女性的婚姻问题，可辨认出“一个女生的婚姻”等语境，并涉及官鬼和婚姻次数等线索；关键术语有明显 ASR 错识，不能作为逐字依据。",
+    "HTML 保存记录的问事背景为“女性自问婚姻／婚姻如何”，本卦为雷山小过；盘面中第二、第四爻各有一处午火官鬼，第四爻为世爻。该完整盘面来自用户保存的 HTML 记录，不是 ASR 独立识别所得。",
+    "用户明确确认案例身份，且问事背景与第十九课第 4 段的婚姻讨论吻合，因此案例身份标记为 verified；这不代表老师讲解已通过原音逐字核实。",
+    "原始 WAV/M4A 音频未归档；ASR 中疑似“官鬼有动”的语句与保存盘面（两处官鬼静爻，唯一明动爻为三爻兄弟申金）存在表面差异，单独保留待核，不静默改写。"
+  ],
+  "dailyRecord": {
+    "repository": "symbi/liuyao-learning-app",
+    "jsonPath": "daily-records/2026/11/2026-11-24.json",
+    "markdownPath": "daily-records/2026/11/markdown/2026-11-24--518d525a-838e-479d-8d2c-815296358b5e.md",
+    "recordId": "518d525a-838e-479d-8d2c-815296358b5e",
+    "savedAt": "2026-11-24T07:23:37.215Z",
+    "savedAtLocal": "2026-11-24 16:23:37 Asia/Tokyo",
+    "jsonUrl": "https://github.com/symbi/liuyao-learning-app/blob/main/daily-records/2026/11/2026-11-24.json",
+    "markdownUrl": "https://github.com/symbi/liuyao-learning-app/blob/main/daily-records/2026/11/markdown/2026-11-24--518d525a-838e-479d-8d2c-815296358b5e.md",
+    "note": "2026-11-24 是记录归档日期；实际课堂起卦干支采用手动指定的乙卯月、丁巳日，年柱未提供。"
+  },
+  "sources": {
+    "lessonNotes": {
+      "repository": "symbi/liuyao-learning-app",
+      "path": "docs/lessons/lesson-19-notes-v0.1.md",
+      "url": "https://github.com/symbi/liuyao-learning-app/blob/main/docs/lessons/lesson-19-notes-v0.1.md"
+    },
+    "rawTranscript": {
+      "repository": "symbi/liuyao-learning-raw",
+      "path": "lessons/lesson-19/transcript-asr-raw.txt",
+      "url": "https://github.com/symbi/liuyao-learning-raw/blob/main/lessons/lesson-19/transcript-asr-raw.txt",
+      "location": "第 4 段，约 30 分钟起；在投资案例之后转入女性婚姻讨论。ASR 文件没有可供确认的逐句时间戳。",
+      "limitation": "未经人工校订的 ASR，官鬼及多重信息等关键术语存在明显错识；当前未归档可供逐字复核的 WAV/M4A 原音。"
+    },
+    "userClassMemo": {
+      "source": "HTML 保存记录 caseMemo 字段",
+      "content": "官鬼持世，世爻生应爻，已经有男朋友\n两重官鬼，多个婚姻，官鬼很旺\n午火的官鬼，结婚在午年",
+      "authority": "用户保存的课堂 Memo；用于识别案例并保留用户记录的老师讲解重点，不等同于可逐字核实的老师原话。"
+    },
+    "userClassConclusion": {
+      "source": "HTML 保存记录 caseConclusion 字段",
+      "content": "已经有男朋友，有多个婚姻",
+      "authority": "用户保存的案例结论，按原文保留；与 ASR 可辨认的老师讲解分别标注。"
+    },
+    "chartSource": {
+      "repository": "symbi/liuyao-learning-app",
+      "path": "daily-records/2026/11/2026-11-24.json",
+      "authority": "完整卦盘、六亲、世应、六神、动变、月令状态和六合关系来自用户保存的 HTML JSON 及其 analysisSnapshot；不是老师讲解来源。"
+    }
+  },
+  "casting": {
+    "question": "婚姻如何",
+    "topic": "女性自问婚姻",
+    "mainUseGod": "官鬼",
+    "useGodHints": "官鬼代表所问的男方／丈夫。",
+    "yearPillar": null,
+    "monthPillar": "乙卯",
+    "dayPillar": "丁巳",
+    "xunkong": [
+      "子",
+      "丑"
+    ],
+    "originalHexagram": {
+      "displayName": "雷山小过",
+      "upperTrigram": "震",
+      "lowerTrigram": "艮",
+      "palace": "兑",
+      "palaceElement": "金",
+      "stage": "游魂",
+      "shiLineNumber": 4,
+      "yingLineNumber": 1
+    },
+    "transformedHexagram": {
+      "displayName": "雷地豫",
+      "derivation": "根据 HTML 保存记录中第三爻老阳明动、变爻变阴，并按雷山小过的上下卦结构复算；每日记录本身未单独保存完整变卦名。",
+      "upperTrigram": "震",
+      "lowerTrigram": "坤",
+      "changedLineNumbers": [
+        3
+      ]
+    },
+    "shiYing": {
+      "shi": "四爻官鬼午火",
+      "ying": "初爻父母辰土",
+      "relation": "世生应（午火生辰土）"
+    },
+    "linesBottomToTop": [
+      {
+        "lineNumber": 1,
+        "position": "初爻",
+        "flowers": 2,
+        "yinYang": "阴",
+        "branch": "辰",
+        "relation": "父母",
+        "hiddenRelation": null,
+        "hiddenBranch": null,
+        "sixGod": "朱雀",
+        "movement": null,
+        "transformedBranch": null,
+        "transformedRelation": null,
+        "transformedEffect": null,
+        "shi": false,
+        "ying": true,
+        "monthStatus": "死",
+        "xunkong": false,
+        "monthBreak": false,
+        "transformedXunkong": false
+      },
+      {
+        "lineNumber": 2,
+        "position": "二爻",
+        "flowers": 2,
+        "yinYang": "阴",
+        "branch": "午",
+        "relation": "官鬼",
+        "hiddenRelation": null,
+        "hiddenBranch": null,
+        "sixGod": "勾陈",
+        "movement": null,
+        "transformedBranch": null,
+        "transformedRelation": null,
+        "transformedEffect": null,
+        "shi": false,
+        "ying": false,
+        "monthStatus": "相",
+        "xunkong": false,
+        "monthBreak": false,
+        "transformedXunkong": false
+      },
+      {
+        "lineNumber": 3,
+        "position": "三爻",
+        "flowers": 0,
+        "yinYang": "阳",
+        "branch": "申",
+        "relation": "兄弟",
+        "hiddenRelation": null,
+        "hiddenBranch": null,
+        "sixGod": "螣蛇",
+        "movement": "明动",
+        "transformedBranch": "酉",
+        "transformedRelation": "兄弟",
+        "transformedEffect": "化进",
+        "shi": false,
+        "ying": false,
+        "monthStatus": "囚",
+        "xunkong": false,
+        "monthBreak": false,
+        "transformedXunkong": false,
+        "transformedMonthStatus": "囚",
+        "transformedMonthBreak": true
+      },
+      {
+        "lineNumber": 4,
+        "position": "四爻",
+        "flowers": 1,
+        "yinYang": "阳",
+        "branch": "午",
+        "relation": "官鬼",
+        "hiddenRelation": null,
+        "hiddenBranch": null,
+        "sixGod": "白虎",
+        "movement": null,
+        "transformedBranch": null,
+        "transformedRelation": null,
+        "transformedEffect": null,
+        "shi": true,
+        "ying": false,
+        "monthStatus": "相",
+        "xunkong": false,
+        "monthBreak": false,
+        "transformedXunkong": false
+      },
+      {
+        "lineNumber": 5,
+        "position": "五爻",
+        "flowers": 2,
+        "yinYang": "阴",
+        "branch": "申",
+        "relation": "兄弟",
+        "hiddenRelation": null,
+        "hiddenBranch": null,
+        "sixGod": "玄武",
+        "movement": null,
+        "transformedBranch": null,
+        "transformedRelation": null,
+        "transformedEffect": null,
+        "shi": false,
+        "ying": false,
+        "monthStatus": "囚",
+        "xunkong": false,
+        "monthBreak": false,
+        "transformedXunkong": false
+      },
+      {
+        "lineNumber": 6,
+        "position": "上爻",
+        "flowers": 2,
+        "yinYang": "阴",
+        "branch": "戌",
+        "relation": "父母",
+        "hiddenRelation": null,
+        "hiddenBranch": null,
+        "sixGod": "青龙",
+        "movement": null,
+        "transformedBranch": null,
+        "transformedRelation": null,
+        "transformedEffect": null,
+        "shi": false,
+        "ying": false,
+        "monthStatus": "死",
+        "xunkong": false,
+        "monthBreak": false,
+        "transformedXunkong": false
+      }
+    ],
+    "chartObservations": [
+      "本卦第二爻、第四爻均为午火官鬼；第四爻为世爻，第二爻为另一处官鬼。两处官鬼在保存快照中的月令状态均为“相”，均为静爻。",
+      "世爻为四爻午火官鬼，应爻为初爻辰土父母，世生应（午火生辰土）。",
+      "唯一明动爻为三爻申金兄弟，化酉金兄弟，保存记录标注“化进”；变爻酉金受卯月冲，保存快照标记月破。",
+      "日支巳与三爻申金构成巳申六合；按五行，巳火克申金，属于合中带克的结构。此为保存记录中的日辰关系与五行关系，不等于老师 ASR 已清楚讲出。",
+      "初爻辰土与三爻变爻酉金构成辰酉六合；辰土生酉金。保存快照将其列为跨爻六合关系，力量判断仍需结合全卦。",
+      "变卦雷地豫由本卦雷山小过的第三爻老阳明动变阴复算得出；原始每日记录未单独保存完整变卦名称。",
+      "年柱未提供；实际课堂起卦月柱为乙卯、日柱为丁巳，旬空子、丑。记录日期仅用于归档。"
+    ],
+    "savedRecord": {
+      "schemaVersion": 16,
+      "id": "518d525a-838e-479d-8d2c-815296358b5e",
+      "savedAt": "2026-11-24T07:23:37.215Z",
+      "date": "2026-11-24",
+      "timezone": "Asia/Tokyo",
+      "question": {
+        "category": "female-marriage",
+        "categoryLabel": "女性自问婚姻",
+        "mainUseGod": "官鬼",
+        "hint": "官鬼代表所问的男方／丈夫。",
+        "text": "婚姻如何"
+      },
+      "isCase": true,
+      "caseSource": "classroom",
+      "caseMemo": "官鬼持世，世爻生应爻，已经有男朋友\n两重官鬼，多个婚姻，官鬼很旺\n午火的官鬼，结婚在午年",
+      "caseConclusion": "已经有男朋友，有多个婚姻",
+      "pillars": {
+        "year": "",
+        "month": "乙卯",
+        "day": "丁巳"
+      },
+      "pillarSource": "manual-case",
+      "pillarOverride": {
+        "enabled": true,
+        "year": {
+          "stem": "",
+          "branch": ""
+        },
+        "month": {
+          "stem": "乙",
+          "branch": "卯"
+        },
+        "day": {
+          "stem": "丁",
+          "branch": "巳"
+        }
+      },
+      "lines": [
+        {
+          "flowers": 2,
+          "branch": "辰",
+          "relation": "父母",
+          "hiddenRelation": null,
+          "shen": "朱雀",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 2,
+          "branch": "午",
+          "relation": "官鬼",
+          "hiddenRelation": null,
+          "shen": "勾陈",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 0,
+          "branch": "申",
+          "relation": "兄弟",
+          "hiddenRelation": null,
+          "shen": "螣蛇",
+          "changeBranch": "酉",
+          "changeRelation": "兄弟",
+          "effect": "化进"
+        },
+        {
+          "flowers": 1,
+          "branch": "午",
+          "relation": "官鬼",
+          "hiddenRelation": null,
+          "shen": "白虎",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 2,
+          "branch": "申",
+          "relation": "兄弟",
+          "hiddenRelation": null,
+          "shen": "玄武",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        },
+        {
+          "flowers": 2,
+          "branch": "戌",
+          "relation": "父母",
+          "hiddenRelation": null,
+          "shen": "青龙",
+          "changeBranch": null,
+          "changeRelation": null,
+          "effect": ""
+        }
+      ],
+      "calendarAssignments": {
+        "yearRelation": null,
+        "monthRelation": "妻财",
+        "dayRelation": "官鬼",
+        "dayGod": "朱雀",
+        "xunkong1": "子",
+        "xunkong2": "丑"
+      },
+      "jianchu": null,
+      "twentyEight": null,
+      "analysisSnapshot": {
+        "schemaVersion": 5,
+        "calculatedAt": "2026-11-24T07:23:37.215Z",
+        "calculationSource": "saved-pillars-and-line-inputs",
+        "calendar": {
+          "yearPillar": null,
+          "monthPillar": "乙卯",
+          "dayPillar": "丁巳",
+          "pillarSource": "manual-case",
+          "monthBranch": "卯",
+          "dayBranch": "巳",
+          "monthWangXiangRule": "木旺、火相",
+          "xunkongBranches": [
+            "子",
+            "丑"
+          ],
+          "xunkongKnown": true
+        },
+        "pillarOverride": {
+          "enabled": true,
+          "year": {
+            "stem": "",
+            "branch": ""
+          },
+          "month": {
+            "stem": "乙",
+            "branch": "卯"
+          },
+          "day": {
+            "stem": "丁",
+            "branch": "巳"
+          }
+        },
+        "hexagram": {
+          "name": "雷山小过",
+          "palace": "兑",
+          "element": "metal",
+          "elementName": "金",
+          "stage": "游魂",
+          "shiLineNumber": 4,
+          "yingLineNumber": 1
+        },
+        "lines": [
+          {
+            "lineNumber": 1,
+            "position": "初爻",
+            "role": "应爻",
+            "flowers": 2,
+            "relation": "父母",
+            "hiddenRelation": null,
+            "sixGod": "朱雀",
+            "movement": null,
+            "original": {
+              "branch": "辰",
+              "element": "earth",
+              "elementName": "土",
+              "monthStatus": "死",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": ""
+          },
+          {
+            "lineNumber": 2,
+            "position": "二爻",
+            "role": null,
+            "flowers": 2,
+            "relation": "官鬼",
+            "hiddenRelation": null,
+            "sixGod": "勾陈",
+            "movement": null,
+            "original": {
+              "branch": "午",
+              "element": "fire",
+              "elementName": "火",
+              "monthStatus": "相",
+              "monthStatusGroup": "wangxiang",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": ""
+          },
+          {
+            "lineNumber": 3,
+            "position": "三爻",
+            "role": null,
+            "flowers": 0,
+            "relation": "兄弟",
+            "hiddenRelation": null,
+            "sixGod": "螣蛇",
+            "movement": "明动",
+            "original": {
+              "branch": "申",
+              "element": "metal",
+              "elementName": "金",
+              "monthStatus": "囚",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": {
+              "branch": "酉",
+              "element": "metal",
+              "elementName": "金",
+              "monthStatus": "囚",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": true,
+              "xunkong": false
+            },
+            "changeRelation": "兄弟",
+            "effect": "化进"
+          },
+          {
+            "lineNumber": 4,
+            "position": "四爻",
+            "role": "世爻",
+            "flowers": 1,
+            "relation": "官鬼",
+            "hiddenRelation": null,
+            "sixGod": "白虎",
+            "movement": null,
+            "original": {
+              "branch": "午",
+              "element": "fire",
+              "elementName": "火",
+              "monthStatus": "相",
+              "monthStatusGroup": "wangxiang",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": ""
+          },
+          {
+            "lineNumber": 5,
+            "position": "五爻",
+            "role": null,
+            "flowers": 2,
+            "relation": "兄弟",
+            "hiddenRelation": null,
+            "sixGod": "玄武",
+            "movement": null,
+            "original": {
+              "branch": "申",
+              "element": "metal",
+              "elementName": "金",
+              "monthStatus": "囚",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": ""
+          },
+          {
+            "lineNumber": 6,
+            "position": "上爻",
+            "role": null,
+            "flowers": 2,
+            "relation": "父母",
+            "hiddenRelation": null,
+            "sixGod": "青龙",
+            "movement": null,
+            "original": {
+              "branch": "戌",
+              "element": "earth",
+              "elementName": "土",
+              "monthStatus": "死",
+              "monthStatusGroup": "xiuqiu",
+              "monthRule": "木旺、火相",
+              "monthBreak": false,
+              "xunkong": false
+            },
+            "transformed": null,
+            "changeRelation": null,
+            "effect": ""
+          }
+        ],
+        "shiYing": {
+          "kind": "世生应",
+          "shiLineNumber": 4,
+          "yingLineNumber": 1,
+          "shiBranch": "午",
+          "yingBranch": "辰",
+          "shiElement": "fire",
+          "yingElement": "earth"
+        },
+        "trines": {
+          "dateBased": [],
+          "withinHexagram": []
+        },
+        "branchRelations": {
+          "sameLineLiuHe": [],
+          "betweenLinesLiuHe": [
+            {
+              "pair": "辰酉",
+              "mode": "between-lines",
+              "first": {
+                "lineNumber": 1,
+                "position": "初爻",
+                "side": "本卦",
+                "branch": "辰",
+                "element": "earth",
+                "elementName": "土",
+                "monthStatus": "死",
+                "monthStatusGroup": "xiuqiu",
+                "monthRule": "木旺、火相",
+                "monthBreak": false,
+                "xunkong": false
+              },
+              "second": {
+                "lineNumber": 3,
+                "position": "三爻",
+                "side": "变卦",
+                "branch": "酉",
+                "element": "metal",
+                "elementName": "金",
+                "monthStatus": "囚",
+                "monthStatusGroup": "xiuqiu",
+                "monthRule": "木旺、火相",
+                "monthBreak": true,
+                "xunkong": false
+              },
+              "fiveElementRelation": "generation",
+              "controlText": null,
+              "generationText": "辰土生酉金",
+              "interpretation": "六合：仍需结合问事与全卦判断",
+              "forceJudgement": "not-automatically-determined"
+            }
+          ],
+          "lessonRule": {
+            "source": "第十二课",
+            "title": "合中带克、克中带合与贪合忘克",
+            "principle": "六合与五行生克可能同时存在；不能见合就一概判断不克，也不能只见相克就忽略合。",
+            "forceComparison": "力量接近时可考虑贪合忘克、以合为主；若克制一方力量明显强于被克一方，仍须论克。",
+            "assessmentFactors": "结合月令旺衰、日辰生扶克制、卦中其他动爻及整体卦局比较双方力量。",
+            "automation": "页面只识别六合配对并保存五行生克与旺衰背景，不自动判定贪合忘克是否成立。"
+          }
+        }
+      },
+      "createdAt": "2026-11-24T07:23:15.037Z",
+      "updatedAt": "2026-11-24T07:23:37.215Z",
+      "recordType": "additionalQuestion"
+    }
+  },
+  "teacherAnalysis": {
+    "sourceType": "第十九课原始 ASR 第 4 段，约 30 分钟起；以下只作谨慎归纳，不是逐字稿。",
+    "points": [
+      "老师在投资案例之后转入一位女性的婚姻问题；ASR 可辨认“一个女生的婚姻”等上下文。",
+      "后续内容围绕男方／官鬼及多重信息展开，转录似乎涉及婚姻次数的可能性；但“官鬼”“两重官鬼”等关键词存在明显误识，故这里只记录主题，不恢复成老师逐字原话。",
+      "ASR 中有一句似乎识别为“官鬼有动”一类表述；但 HTML 保存盘面中第二、第四爻的午火官鬼均为静爻，唯一明动的是第三爻兄弟申金化酉金。原音缺失，当前不能判断这是 ASR 错识、语境串接还是老师另有所指。",
+      "用户保存 Memo 还记录“午火的官鬼，结婚在午年”；目前 ASR 片段不足以独立确认这条应期是否为老师的明确结论。"
+    ],
+    "conclusion": "现有 ASR 可支持第十九课后段确有女性婚姻案例，讲解涉及官鬼及多重婚姻信息；无法可靠恢复老师完整判断和应期。具体老师结论应与用户保存的课堂 Memo 分开保留。",
+    "limitations": [
+      "原始转录未经人工校订，相关关键词存在同音错识、断句错误，不能当作老师逐字原话。",
+      "Private raw 当前没有可供核对的 WAV/M4A 原音。",
+      "完整盘面以用户保存的 HTML JSON 为准；ASR 没有逐爻报出完整纳甲、世应和六亲。",
+      "ASR 疑似“官鬼有动”的说法与保存盘面中官鬼静、兄弟爻动的情况不一致，必须保留该差异。"
+    ]
+  },
+  "userMemoAnalysis": {
+    "source": "HTML caseMemo 原样保存",
+    "points": [
+      "官鬼持世，世爻生应爻，已经有男朋友",
+      "两重官鬼，多个婚姻，官鬼很旺",
+      "午火的官鬼，结婚在午年"
+    ],
+    "conclusion": "已经有男朋友，有多个婚姻"
+  },
+  "caseStatus": "case_identity_verified_by_user_as_lesson_19_female_marriage_case_teacher_asr_not_audio_verified_chart_from_saved_html",
+  "sourceAuthority": {
+    "teacherExplanation": "以第十九课原始 ASR 中可辨认的老师讲解为当前首要可用来源；无原音时不得称逐字准确。有关官鬼动静和婚姻次数的关键词保留 ASR 不确定性。",
+    "chart": "完整卦盘、六亲、世应、动变、日月关系等以用户保存的 HTML JSON 为准；不可把 ASR 不能辨认的盘面内容写成老师原话。",
+    "userMemo": "课堂 Memo 和结论按用户保存内容原样保留，独立于老师 ASR 归纳。",
+    "assistantCalculation": "仅可标为结构复算，例如由第三爻老阳明动复算变卦雷地豫；不得写成老师原话。",
+    "conflictHandling": "各来源独立标注；ASR 与 HTML 盘面存在表面冲突时保留差异，等待更可靠原音/课件补充，不静默合并。"
+  }
+}
