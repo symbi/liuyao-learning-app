@@ -87,12 +87,27 @@ jobs:
           gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
           docker build -t ${{ env.IMAGE }}:${{ github.sha }} tools/liuyao-kb
           docker push ${{ env.IMAGE }}:${{ github.sha }}
-      - name: Point the schema Job at the new image
+      # `jobs deploy` creates the Job on the first run and updates it
+      # afterwards, always with the full configuration below, so no
+      # manual bootstrap step is needed (the image already exists:
+      # it was built and pushed in the previous step). Do NOT add
+      # --wait here: for `jobs deploy`, --wait implies --execute-now
+      # and would run the Job inside the deploy step, duplicating
+      # the separate execution step below. --set-env-vars and
+      # --set-secrets are replace-style: this Job's environment and
+      # secret configuration are fully managed by this workflow.
+      - name: Deploy the schema Job (create or update, full configuration)
         run: |
-          gcloud run jobs update liuyao-kb-schema \
+          gcloud run jobs deploy liuyao-kb-schema \
             --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} \
-            --image ${{ env.IMAGE }}:${{ github.sha }}
-      - name: Execute the Job once with its configured read-only arguments
+            --image ${{ env.IMAGE }}:${{ github.sha }} \
+            --service-account liuyao-kb-job-runtime@${{ env.PROJECT_ID }}.iam.gserviceaccount.com \
+            --set-env-vars LIUYAO_KB_CONFIG_DIR=/secrets \
+            --set-secrets /secrets/m0.env=neo4j-aura-credentials:4 \
+            --args "schema,check" \
+            --max-retries 0 --task-timeout 300s
+      - name: Execute the Job once (read-only schema check) and wait
         run: |
           gcloud run jobs execute liuyao-kb-schema \
-            --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --wait
+            --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} \
+            --args "schema,check" --wait

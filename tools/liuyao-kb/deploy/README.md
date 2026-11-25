@@ -16,7 +16,7 @@ GitHub Actions (this repo)
   -- OIDC token --> Workload Identity Federation (pool: github-actions)
   -- short-lived credentials --> Deployment SA (liuyao-kb-deployer)
       * builds the liuyao-kb image and pushes it to Artifact Registry
-      * updates the Cloud Run Job definition (image reference)
+      * deploys the Cloud Run Job (create or update, full configuration)
 Cloud Run Job: liuyao-kb-schema (asia-southeast1)
   -- runs as --> Job Runtime SA (liuyao-kb-job-runtime)
       * Secret Manager mounts neo4j-aura-credentials (pinned version)
@@ -95,7 +95,7 @@ overstate:
 | Job runtime service account | `liuyao-kb-job-runtime@liuyao-learning.iam.gserviceaccount.com` | — | Stable M3+ job runtime identity (schema job now; importer jobs later milestones may reuse it only after their own review). |
 | Workload Identity Pool | `github-actions` | global | One pool for this project's GitHub Actions. |
 | Workload Identity Provider | `github-actions` (inside the pool) | global | OIDC issuer `https://token.actions.githubusercontent.com`. The attribute condition pins token exchange to ALL of: repository ID `1434453178` and owner ID `7766664` (numeric, not reusable names), repository `symbi/liuyao-learning-app`, ref `refs/heads/main`, environment `production`, the single workflow file `.github/workflows/deploy-schema-job.yml` on main (`assertion.workflow_ref`), and the `workflow_dispatch` event. Any other workflow, branch, environment, or trigger in this repository gets no credentials. |
-| Cloud Run Job | `liuyao-kb-schema` | asia-southeast1 | Runs the image with the secret mount below. Default arguments `schema check` (read-only); `schema init` is passed explicitly for an authorized schema run. |
+| Cloud Run Job | `liuyao-kb-schema` | asia-southeast1 | Created or updated by the deploy workflow's `gcloud run jobs deploy` step with the full configuration (section 5); there is no manual creation step. Default arguments `schema check` (read-only); `schema init` is passed explicitly for an authorized schema run. |
 | Secret (already exists) | `neo4j-aura-credentials` | — | **Pinned to version 4** for M3 (the version verified on 2026-11-25). Changing the pin is a deliberate config change after re-verification, never a silent `latest`. |
 
 APIs, in two groups that must not be conflated:
@@ -126,7 +126,7 @@ for it: GitHub Actions builds the image itself.
 | Principal | Role | Scope | Why |
 |---|---|---|---|
 | `liuyao-kb-deployer` | `roles/artifactregistry.writer` | repository `liuyao-kb` only | push built images |
-| `liuyao-kb-deployer` | `roles/run.developer` | project | create/update/execute Cloud Run Jobs (job definitions carry no secret values, only the secret's name and pinned version) |
+| `liuyao-kb-deployer` | `roles/run.developer` | project | create/update/execute Cloud Run Jobs (job definitions carry no secret values, only the secret's name and pinned version). Verified against Google's role reference: this role includes `run.jobs.runWithOverrides`, so executing a job with `--args` overrides needs no additional role |
 | `liuyao-kb-deployer` | `roles/iam.serviceAccountUser` (actAs) | the `liuyao-kb-job-runtime` SA only | a job must name its runtime SA; this is the indirect-privilege path (see section 1.1), so it is scoped to that one SA |
 | WIF principal set for `attribute.repository_id/1434453178` | `roles/iam.workloadIdentityUser` | the `liuyao-kb-deployer` SA | lets tokens that pass the provider's attribute condition (repo ID + owner ID + `refs/heads/main` + `production` environment + the one named deploy workflow file + `workflow_dispatch` event, section 4.5) impersonate the deployment SA |
 | `liuyao-kb-job-runtime` | `roles/secretmanager.secretAccessor` | secret `neo4j-aura-credentials` only | read the mounted credentials file at job runtime |
@@ -154,7 +154,7 @@ Placeholders: `PROJECT=liuyao-learning`, `PROJECT_NUMBER=169252699444`,
 #     enabled; the other APIs this design needs were verified
 #     enabled on 2026-11-25).
 gcloud services list --enabled --project $PROJECT \
-  --filter="name:(sts.googleapis.com OR iamcredentials.googleapis.com OR cloudresourcemanager.googleapis.com)"
+  --format="value(config.name)" | grep -E "^(sts|iamcredentials|cloudresourcemanager)\.googleapis\.com$"
 gcloud services enable sts.googleapis.com iamcredentials.googleapis.com \
   cloudresourcemanager.googleapis.com --project $PROJECT
 
@@ -211,25 +211,41 @@ gcloud iam service-accounts add-iam-policy-binding \
   --member="principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/github-actions/attribute.repository_id/1434453178" \
   --role="roles/iam.workloadIdentityUser"
 
-# 4.6 The schema Job (secret mounted as a file, version pinned to 4;
-#     only LIUYAO_KB_CONFIG_DIR is set — never any NEO4J_* env vars)
-gcloud run jobs create liuyao-kb-schema \
-  --project $PROJECT --region $REGION \
-  --image $REGION-docker.pkg.dev/$PROJECT/liuyao-kb/liuyao-kb:<git-sha> \
-  --service-account liuyao-kb-job-runtime@$PROJECT.iam.gserviceaccount.com \
-  --set-env-vars LIUYAO_KB_CONFIG_DIR=/secrets \
-  --set-secrets /secrets/m0.env=neo4j-aura-credentials:4 \
-  --args "schema,check" \
-  --max-retries 0 --task-timeout 300s
+# 4.6 The schema Job is NOT created by hand, and there is no
+#     bootstrap step with a placeholder image tag. The deploy
+#     workflow creates or updates it via `gcloud run jobs deploy`
+#     with the full configuration — the just-built image, the job
+#     runtime SA, the secret mounted as the file /secrets/m0.env
+#     pinned to version 4, only LIUYAO_KB_CONFIG_DIR=/secrets set
+#     (never any NEO4J_* env vars), default args "schema,check",
+#     --max-retries 0, --task-timeout 300s — because the image is
+#     built and pushed first, it always exists by deploy time
+#     (section 5).
 ```
 
-Run an authorized schema initialization by executing the job with an
-argument override (`--args "schema,init"`), then a read-only
-verification execution (`--args "schema,check"`); read the sanitized
-CLI output from Cloud Logging. `schema verify-vector` runs the same
-way with an explicit `--dimensions` chosen for that smoke run; its
-temporary index is run-scoped and self-cleaning (see
-`liuyao_kb/neo4j/schema.py`).
+Manual executions, when separately authorized, are run by the user
+from Cloud Shell **under the user's own Google identity** — not the
+GitHub Actions deployment identity; the two are authorized and
+audited separately. Always pass `--wait`, so the command returns
+only when the execution has finished, and read the sanitized CLI
+output from Cloud Logging:
+
+```bash
+# 1. Schema initialization (write; needs its own authorization)
+gcloud run jobs execute liuyao-kb-schema --project $PROJECT --region $REGION \
+  --args "schema,init" --wait
+# 2. Read-only verification (expected to exit 0 after step 1)
+gcloud run jobs execute liuyao-kb-schema --project $PROJECT --region $REGION \
+  --args "schema,check" --wait
+# 3. Optional vector smoke (explicit dimension for this run only)
+gcloud run jobs execute liuyao-kb-schema --project $PROJECT --region $REGION \
+  --args "schema,verify-vector,--dimensions,128" --wait
+```
+
+`schema verify-vector`'s temporary index is run-scoped and
+self-cleaning (see `liuyao_kb/neo4j/schema.py`). Never add `--wait`
+to `gcloud run jobs deploy` itself: there it implies
+`--execute-now` and would run the job inside the deploy step.
 
 ### 4.7 GitHub-side prerequisite: the `production` Environment
 
@@ -246,6 +262,47 @@ Without this environment the workflow's `environment: production`
 reference fails, and without the WIF condition in 4.5 requiring the
 `production` environment claim, an approval here would be the only
 gate — the design requires both.
+
+### 4.8 Read-only verification commands (Phase 0)
+
+Run by the user in Cloud Shell before any setup phase, and again
+afterwards to read back what was actually created. All of these are
+read-only; the Secret commands return metadata and IAM bindings
+only, never payload content.
+
+```bash
+# Baseline: project, APIs (all enabled services, one per line)
+gcloud config get-value project
+gcloud services list --enabled --project $PROJECT --format="value(config.name)"
+
+# Existence: repositories, service accounts, WIF pools, jobs
+gcloud artifacts repositories list --location=$REGION --project $PROJECT
+gcloud iam service-accounts list --project $PROJECT
+gcloud iam workload-identity-pools list --location=global --project $PROJECT
+gcloud run jobs list --region=$REGION --project $PROJECT
+
+# Secret metadata and bindings (no payload access)
+gcloud secrets versions list neo4j-aura-credentials --project $PROJECT
+gcloud secrets get-iam-policy neo4j-aura-credentials --project $PROJECT
+
+# Project-level bindings
+gcloud projects get-iam-policy $PROJECT
+
+# Resource-level bindings and actual configuration (once they exist)
+gcloud artifacts repositories get-iam-policy liuyao-kb \
+  --location=$REGION --project $PROJECT
+gcloud iam service-accounts get-iam-policy \
+  liuyao-kb-deployer@$PROJECT.iam.gserviceaccount.com --project $PROJECT
+gcloud iam service-accounts get-iam-policy \
+  liuyao-kb-job-runtime@$PROJECT.iam.gserviceaccount.com --project $PROJECT
+gcloud iam workload-identity-pools providers describe github-actions \
+  --location=global --workload-identity-pool=github-actions --project $PROJECT
+gcloud run jobs describe liuyao-kb-schema --region=$REGION --project $PROJECT
+```
+
+The provider `describe` output is the readback for section 4.5:
+check its attribute mapping and attribute condition against the
+seven pinned conditions before trusting the first deploy.
 
 ## 5. GitHub Actions workflow
 
@@ -265,25 +322,32 @@ Workflow behavior:
   configured with required reviewers and main-only deployment
   branches, section 4.7): authenticates via WIF as
   `liuyao-kb-deployer`, builds and pushes the image tagged with
-  the commit SHA, updates the `liuyao-kb-schema` job's image, and
-  executes it once with the job's configured (read-only) arguments.
-  Running `schema init` stays a separate, deliberate execution with
-  an argument override, not part of the default deploy.
+  the commit SHA, then deploys the `liuyao-kb-schema` Job with
+  `gcloud run jobs deploy` — creating it on the first run and
+  updating it afterwards, always with the full configuration of
+  section 4.6 (no `--wait` on the deploy step: there it would imply
+  `--execute-now`) — and finally executes it once with
+  `--args "schema,check" --wait`. Because `--set-env-vars` and
+  `--set-secrets` are replace-style, this Job's environment-variable
+  and secret configuration is fully managed by this workflow; manual
+  edits to it are overwritten by the next deploy. Running
+  `schema init` stays a separate, deliberate execution with an
+  argument override, not part of the default deploy.
 
 **First-run expectation (read before the first deploy):** the
-workflow's built-in execution runs the job's default arguments,
-`schema check`. Against the current AuraDB instance, where
-`schema init` has never run, all five unique constraints are
-missing, and the CLI exits non-zero for an incomplete schema — so
-on the first deploy run the final execution step is *expected to
-fail*, even though the image build/push and the Job update before
-it succeeded. That specific failure is the pre-init state reporting
-itself, not a deployment fault. The authorized order is: (1) deploy
-/ update the Job, (2) execute it once with `--args "schema,init"`
-under the separate cloud-execution authorization, (3) execute the
-default `schema check` again — only then is a zero exit expected —
-and (4) optionally run `schema verify-vector` with an explicit
-dimension.
+workflow's built-in execution runs `schema check`. Against the
+current AuraDB instance, where `schema init` has never run, all
+five unique constraints are missing, and the CLI exits non-zero
+for an incomplete schema — so on the first deploy run the final
+execution step is *expected to fail*, even though the image
+build/push and the Job deploy (which creates the Job on that run)
+before it succeeded. That specific failure is the pre-init state
+reporting itself, not a deployment fault. The authorized order
+is: (1) deploy the Job via the workflow, (2) execute it once with
+`--args "schema,init"` under the separate cloud-execution
+authorization, (3) execute `schema check` again — only then is a
+zero exit expected — and (4) optionally run
+`schema verify-vector` with an explicit dimension.
 
 ## 6. Costs
 
