@@ -1,0 +1,98 @@
+# Deploy the liuyao-kb image and refresh the Cloud Run schema Job.
+#
+# PLACEMENT: this file is delivered under tools/liuyao-kb/deploy/
+# because Muse's GitHub connector cannot push .github/workflows/
+# files (missing `workflow` scope). To activate it, copy it — via the
+# GitHub web interface — to:
+#
+#     .github/workflows/deploy-schema-job.yml
+#
+# PREREQUISITES (deploy/README.md section 4, each separately
+# authorized by the user): the Artifact Registry repository
+# `liuyao-kb`, the `liuyao-kb-deployer` and `liuyao-kb-job-runtime`
+# service accounts, the WIF pool/provider `github-actions`, and the
+# Cloud Run Job `liuyao-kb-schema` must already exist.
+#
+# SECURITY SHAPE:
+# * The test job runs on pull requests and has NO GCP credentials.
+# * The deploy job runs only on manual dispatch from refs/heads/main,
+#   behind the `production` environment, and authenticates with
+#   short-lived OIDC credentials via Workload Identity Federation.
+#   No service-account JSON key exists anywhere.
+# * The WIF provider's attribute condition — not this file's `if:`
+#   conditions — is the trust boundary: it pins token exchange to
+#   this repository's numeric IDs (repository 1434453178, owner
+#   7766664), refs/heads/main, the `production` environment, THIS
+#   workflow file (assertion.workflow_ref), and the workflow_dispatch
+#   event, so other workflows/refs/triggers in this repo receive no
+#   credentials. The `production` environment must also be configured
+#   with required reviewers and main-only deployment branches
+#   (deploy/README.md sections 4.5 and 4.7).
+# * The deployment identity has no direct Secret Manager access;
+#   only the Job's runtime identity holds secretAccessor, inside
+#   Cloud Run, at runtime. Its indirect capability via deploying and
+#   running Jobs is recorded in deploy/README.md section 1.1.
+
+name: deploy-schema-job
+
+on:
+  pull_request:
+    paths:
+      - "tools/liuyao-kb/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PROJECT_ID: liuyao-learning
+  REGION: asia-southeast1
+  IMAGE: asia-southeast1-docker.pkg.dev/liuyao-learning/liuyao-kb/liuyao-kb
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/liuyao-kb
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e ".[dev]"
+      - run: pytest
+      - run: ruff check src tests
+      - run: ruff format --check src tests
+      - run: mypy
+
+  deploy:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/169252699444/locations/global/workloadIdentityPools/github-actions/providers/github-actions
+          service_account: liuyao-kb-deployer@liuyao-learning.iam.gserviceaccount.com
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Build and push the image (tagged with the commit SHA)
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+          docker build -t ${{ env.IMAGE }}:${{ github.sha }} tools/liuyao-kb
+          docker push ${{ env.IMAGE }}:${{ github.sha }}
+      - name: Point the schema Job at the new image
+        run: |
+          gcloud run jobs update liuyao-kb-schema \
+            --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} \
+            --image ${{ env.IMAGE }}:${{ github.sha }}
+      - name: Execute the Job once with its configured read-only arguments
+        run: |
+          gcloud run jobs execute liuyao-kb-schema \
+            --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --wait

@@ -1,15 +1,16 @@
 """Command line interface for liuyao-kb.
 
 M1 scope: the skeleton commands only -- ``doctor``, ``sources list`` and
-``ingest --dry-run``. Ingestion, embedding and querying arrive in later
-milestones.
+``ingest --dry-run``. M3 adds the ``schema`` commands. Ingestion,
+embedding and querying arrive in later milestones.
 """
 
 from __future__ import annotations
 
 import json
+from contextlib import AbstractContextManager
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Any
 
 import typer
 from rich.console import Console
@@ -30,8 +31,10 @@ app = typer.Typer(
 
 sources_app = typer.Typer(help="Inspect the configured source allowlist.")
 ingest_app = typer.Typer(help="Import sources into Neo4j.")
+schema_app = typer.Typer(help="Manage the Neo4j schema (M3): constraints and vector indexes.")
 app.add_typer(sources_app, name="sources")
 app.add_typer(ingest_app, name="ingest")
+app.add_typer(schema_app, name="schema")
 
 
 @app.callback()
@@ -267,6 +270,207 @@ def ingest_run(
         console.print(
             f"[dim]Target: {redact_uri(config.neo4j.uri)} (database {config.neo4j.database})[/dim]"
         )
+
+
+def _schema_session() -> AbstractContextManager[Any]:
+    """Return a Neo4j session context manager, or exit with guidance.
+
+    Schema commands need a real database; without credentials there is
+    nothing honest to report, so this exits instead of pretending.
+    """
+    from liuyao_kb.neo4j.driver import build_session
+
+    config = load_config()
+    if config.neo4j is None:
+        console.print(
+            "[red]Neo4j credentials are not configured.[/red]\n"
+            "Set NEO4J_URI, NEO4J_USERNAME, NEO4J_PASSWORD and NEO4J_DATABASE "
+            "in the credentials env file under LIUYAO_KB_CONFIG_DIR "
+            "(in Cloud Run: the Secret Manager mount /secrets/m0.env; "
+            "local default: ~/.config/liuyao-kb/m0.env). Never commit them."
+        )
+        raise typer.Exit(code=1)
+    return build_session(config.neo4j)
+
+
+@schema_app.command("init")
+def schema_init(
+    dry_run: Annotated[
+        bool,
+        typer.Option(
+            "--dry-run",
+            help="Print the DDL that would run without touching the database.",
+        ),
+    ] = False,
+) -> None:
+    """Create the missing core uniqueness constraints (idempotent).
+
+    Existing constraints are left untouched; a conflicting existing
+    constraint aborts the run with an explicit report.
+    """
+    from typing import cast
+
+    from liuyao_kb.neo4j.schema import (
+        CORE_CONSTRAINTS,
+        SessionLike,
+        apply_schema,
+    )
+
+    if dry_run:
+        console.print("[bold]Dry run[/bold]: DDL that schema init would execute if missing:")
+        for constraint in CORE_CONSTRAINTS:
+            console.print(f"  {constraint.ddl()}")
+        console.print(
+            "[dim]Nothing was executed. Whether each constraint already "
+            "exists is only known with database access.[/dim]"
+        )
+        return
+
+    session_context = _schema_session()
+    from liuyao_kb.neo4j.schema import SchemaConflictError
+
+    try:
+        with session_context as session:
+            result = apply_schema(cast("SessionLike", session))
+    except SchemaConflictError as exc:
+        console.print(f"[red]Schema conflict:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+    for name in result.already_present:
+        console.print(f"  [dim]exists[/dim]  {name}")
+    for statement in result.executed:
+        console.print(f"  [green]created[/green]  {statement}")
+    console.print(
+        f"[green]Schema init complete[/green] "
+        f"({len(result.executed)} created, {len(result.already_present)} already present)."
+    )
+
+
+@schema_app.command("check")
+def schema_check(
+    json_output: Annotated[bool, typer.Option("--json", help="Print the result as JSON.")] = False,
+) -> None:
+    """Compare the database's constraints with the expected M3 schema."""
+    from typing import cast
+
+    from liuyao_kb.neo4j.schema import SessionLike, schema_status
+
+    session_context = _schema_session()
+    with session_context as session:
+        status = schema_status(cast("SessionLike", session))
+    payload = {
+        "ok": status.ok,
+        "present": [c.name for c in status.present],
+        "missing": [c.name for c in status.missing],
+        "conflicts": status.conflicts,
+        "indexes": [
+            {
+                "name": index.name,
+                "type": index.type,
+                "state": index.state,
+                "labels": list(index.labels),
+                "properties": list(index.properties),
+                "dimensions": index.dimensions,
+                "similarity": index.similarity,
+            }
+            for index in status.indexes
+        ],
+    }
+    if json_output:
+        console.print_json(json.dumps(payload, ensure_ascii=False))
+    else:
+        for constraint in status.present:
+            console.print(f"  [green]present[/green]  {constraint.name}")
+        for constraint in status.missing:
+            console.print(f"  [yellow]missing[/yellow]  {constraint.name}")
+        for conflict in status.conflicts:
+            console.print(f"  [red]conflict[/red]  {conflict}")
+        for index in status.indexes:
+            console.print(f"  [dim]index[/dim]  {index.name} ({index.type}, {index.state})")
+        console.print(
+            "[dim]M3 requires no persistent vector index; the production "
+            "embedding index is an M5 decision.[/dim]"
+        )
+        console.print(
+            "[green]Schema matches the expected M3 definition.[/green]"
+            if status.ok
+            else "[yellow]Schema is incomplete or conflicting; run `schema init` "
+            "or resolve the conflicts above.[/yellow]"
+        )
+    if not status.ok:
+        raise typer.Exit(code=1)
+
+
+@schema_app.command("verify-vector")
+def schema_verify_vector(
+    dimensions: Annotated[
+        int,
+        typer.Option(
+            "--dimensions",
+            help="Vector dimensions for the temporary test index (explicit; "
+            "no production dimension is chosen by M3).",
+        ),
+    ],
+    run_id: Annotated[
+        str | None,
+        typer.Option(
+            "--run-id",
+            help="Run ID for this verification (8-32 lowercase letters/digits). "
+            "Generated when omitted. The temporary index name and the "
+            "synthetic chunk id are derived from it.",
+        ),
+    ] = None,
+) -> None:
+    """Verify vector-index create/ONLINE/query on a temporary index.
+
+    Each run is scoped by a Run ID: it creates a temporary index
+    named after the run, inserts one synthetic Chunk node, queries it
+    back through the index, then deletes exactly that node and drops
+    exactly that index. A pre-existing index with the run's name
+    aborts the run; production indexes are never touched.
+    """
+    from typing import cast
+
+    from liuyao_kb.neo4j.schema import (
+        SchemaError,
+        SessionLike,
+        validate_run_id,
+        verify_vector_index,
+    )
+
+    if run_id is not None:
+        try:
+            validate_run_id(run_id)
+        except SchemaError as exc:
+            console.print(f"[red]Refusing:[/red] {exc}")
+            raise typer.Exit(code=1) from exc
+
+    session_context = _schema_session()
+    try:
+        with session_context as session:
+            result = verify_vector_index(
+                cast("SessionLike", session),
+                dimensions=dimensions,
+                run_id=run_id,
+            )
+    except SchemaError as exc:
+        console.print(f"[red]Vector verification failed:[/red] {exc}")
+        raise typer.Exit(code=1) from exc
+    console.print(
+        f"  run {result.run_id}: index {result.index_name} "
+        f"({result.index_action}, state {result.index_state})"
+    )
+    console.print(
+        f"  synthetic chunk {result.test_chunk_id}: found={result.found_chunk_id is not None} score={result.score}"
+    )
+    console.print(
+        f"  cleanup: node deleted={result.cleaned_node}, index dropped={result.cleaned_index}"
+    )
+    for error in result.cleanup_errors:
+        console.print(f"  [red]cleanup error[/red]  {error}")
+    if not result.ok:
+        console.print("[red]Vector verification did not complete cleanly.[/red]")
+        raise typer.Exit(code=1)
+    console.print("[green]Vector index verification passed and test data was cleaned up.[/green]")
 
 
 def main() -> None:
