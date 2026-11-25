@@ -2,7 +2,7 @@
 
 > 版本：1.2
 > 规划日期：2026-11-21；云端优先修订：2026-11-24
-> 状态：按用户确认调整来源边界；M2-A/M2-B 已合并（PR #3，merge commit `9505ce7`）；双仓库架构与来源目录规划已合并（PR #4，merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构；M2 已全部完成（M2-A/B 合并于 PR #3；M2-C1/C2/C3 分别合并于 PR #7/#8/#10，见第 12 节）；2026-11-24 用户决策 Phase 1 改为云端优先与完整在线分析（方案 B），M3 起按云端版任务书执行，M3 尚未开始；PDF Adapter/OCR 继续 deferred
+> 状态：按用户确认调整来源边界；M2-A/M2-B 已合并（PR #3，merge commit `9505ce7`）；双仓库架构与来源目录规划已合并（PR #4，merge commit `65fb501`），main 已包含 Reference Source Catalog、Reference Package Schema 与双仓库架构；M2 已全部完成（M2-A/B 合并于 PR #3；M2-C1/C2/C3 分别合并于 PR #7/#8/#10，见第 12 节）；2026-11-24 用户决策 Phase 1 改为云端优先与完整在线分析（方案 B），M3 代码与云端部署配置已合并（PR #15，merge commit `a1829941`；部署文档修订 PR #16，merge commit `c1b918b`），但真实云端 Schema 尚未执行——云端资源创建按用户 2026-11-25 决定暂停于部署 Phase 2（创建 Artifact Registry）之前；第一份真实资料试点已选定（见第 4 节），下一项工程任务为 M4a Chunker；PDF Adapter/OCR 继续 deferred
 > 如果本文与早期概念文档有差异，以本文的实施范围和验收标准为准。概念解释见 [Phase 1 实际运行架构](phase1-operating-model.md)。
 
 ## 1. 目标与最终交付
@@ -88,8 +88,8 @@ flowchart TB
 | Embedding / 生成模型 | Google 托管（Vertex AI Gemini 优先评估） | 模型与生产维度在 M5/M7 确定；由 Cloud Run 运行时身份调用 |
 | Neo4j AuraDB Free | Neo4j 托管云服务 | 本项目唯一知识图谱主库 |
 | LLM Knowledge Graph Builder | Neo4j Labs 在线工具 | 可选试验，不依赖它运行 |
-| Secret Manager | Google Cloud | 保存 Neo4j 凭据等秘密；M3 接入，尚未创建 |
-| GitHub Actions + OIDC/WIF | GitHub / Google Cloud | 部署认证；不保存长期 Service Account JSON Key；尚未配置 |
+| Secret Manager | Google Cloud | 保存 Neo4j 凭据等秘密；Secret `neo4j-aura-credentials` 已创建，Version 4 已由临时 Cloud Run Job 实测读取并连接成功（2026-11-25）；只有 Cloud Run 运行时经文件挂载读取 |
+| GitHub Actions + OIDC/WIF | GitHub / Google Cloud | 部署认证；不保存长期 Service Account JSON Key；WIF 所需三个 API（STS、IAM Service Account Credentials、Cloud Resource Manager）已于 2026-11-25 启用并回读确认；WIF Pool/Provider 与部署身份尚未创建（云端资源创建暂停中） |
 
 ### Neo4j 免费层注意事项
 
@@ -128,7 +128,7 @@ flowchart TB
 5. 外部古籍/网页/GitHub 资料先由独立 Source Collector 采集并输出标准 Reference Package；知识库只读取经批准的包，不直接访问网站。
 6. PDF 目前不是已确认输入：当前两个仓库最近扫描均未发现 PDF；当前也没有指定要导入的 PDF 版本。因此 PDF Adapter 与 OCR 均 deferred。
 
-### 当前资料状态（最近核对：2026-11-22，已含第十九课 case-002）
+### 当前资料状态（最近核对：2026-11-25，已含第十九课 case-003）
 
 - liuyao-learning-app 有第 5～20 课整理笔记、外部参考文档和案例目录说明；正式课程笔记以 Markdown 为主。
 - liuyao-learning-raw 有部分课程原始 ASR TXT；Raw ASR 默认不进入主要索引。
@@ -140,6 +140,8 @@ flowchart TB
   4. **自动生成的记录 MD**：`daily-records/2026/11/markdown/2026-11-21--7e0a6b19-92f2-4f8c-b7b0-8771955ad45b.md` 是 HTML 按每日记录 JSON 与确定性排盘规则生成的可读呈现，对应子记录 `7e0a6b19-...`（与 case-001 关联的 `9f89...` 是两条不同记录，不得混淆）；其 `## 原始记录 JSON` 一节内嵌完整 JSON。它是该记录的另一种表示，不是第二个独立案例，不得重复创建 Case 节点或重复计数。
 - **课堂案例身份原则（核心）**：Learning App 中的课堂案例是老师在实际课程中讲解过的教学案例（`classroom_case`），不是用户新创建的个人练习数据，不得归类为 `personal_practice`；个人练习是独立类别。每个课堂案例应尽可能连接五类来源：（1）老师原始课堂录音 / ASR 转录中的案例讲解位置；（2）对应课程整理笔记中的案例内容；（3）用户补充并核对的完整卦盘结构；（4）HTML 保存的 JSON 记录及其生成 MD 表达；（5）与案例 JSON 配对的课堂案例 MD 表示。课程笔记或 ASR 提到同一案例时，建立引用/提及关系并保留课程、文件、段落或时间定位；同一案例在笔记、ASR、案例 JSON、案例 MD 中重复出现，不产生多个案例。案例 JSON 与课堂案例 MD 都只是该案例的表示形式：在图模型中以 `ClassCase -[:HAS_REPRESENTATION]-> SourceDocument` 表达（关系上标明 format=json/markdown），不为 MD 另建案例身份。老师 ASR 的来源定位不依赖 Chunk：Raw ASR 默认不 Chunk，ClassCase 可以直接关联 ASR 的 SourceDocument / DocumentRevision，并在关系上保留 Locator（原始仓库与文件路径、课程 ID、转录段落序号、有可靠时间戳时的时间范围）与置信度/校正状态；未经音频校正的 ASR 只能标为当前可用的老师讲解线索，不得称为经音频验证的逐字原话。案例身份规则：保留稳定案例 ID；课程归属用 `lessonId` 与来源定位表达；HTML 原始记录 ID 只通过明确的 `dailyRecord.recordId` 关联；JSON 与课堂案例 MD 通过同一个稳定 `case_id` 关联到同一个 ClassCase；两者是同一案例的两份不同资料，不要求内容一致，关联依据是同目录文件约定与 case_id，而不是内容比对；两者内容冲突时保留各自来源并标记待核对，不静默合并；`matchStatus` / `verificationBasis` 说明与课堂原始教学资料的匹配程度；ASR 未经音频校正时保留低置信度说明；用户补充的卦盘结构、老师原话、AI 推算必须分开标记，不得混为一谈。此原则同时适用于 M2-C 的 Mapper、M3 的 Neo4j 数据模型与 M7 的 Evidence Pack 检索逻辑。
 - **案例核对生命周期样本（2026-11-22，真实数据）**：`daily-records/2026/11/2026-11-22.json` 的子记录 `13e9c29a-cdbc-41e0-912d-5e02fa7c54d3` 最初只有 `isCase=true`、`caseSource=classroom` 标记，其生成 MD 标注“案例核对状态：待核对”，记录本身没有 case_id 或 matchStatus——按上列身份原则，它当时只是待核对的 CastRecord 候选：不创建已验证的 ClassCase、不建 BASED_ON_RECORD、不计入课堂案例数量。其后它被显式核对并配对为第十九课案例：`materials/class-cases/lesson-19/case-002.json`（稳定 case_id `L19-C02-shop-operation-transfer`，`matchStatus=matched`，附 `verificationBasis`）通过 `dailyRecord.recordId` 显式关联该子记录，ClassCase 身份自此才成立。注意：关联信息保存在案例 JSON 一侧，每日记录本身没有被回填 case_id；从待核对到成立案例，走的是显式核对与显式关联，不是分类标记的自动升级。
+- **case-003（2026-11-24 新增，第十九课第三个已建档案例）**：`materials/class-cases/lesson-19/case-003.json`（稳定 case_id `L19-C03-female-marriage-multiple-guangui`，`matchStatus=verified`，案例身份由用户明确确认）通过 `dailyRecord.recordId` 关联 `daily-records/2026/11/2026-11-24.json` 的子记录 `518d525a-838e-479d-8d2c-815296358b5e`；该子记录有自动生成 MD（`daily-records/2026/11/markdown/2026-11-24--518d525a-838e-479d-8d2c-815296358b5e.md`），配对课堂案例 MD 为 `materials/class-cases/lesson-19/case-003-analysis.md`；第十九课整理稿第 7 节为其专节、第 10 节记录了完整关联链。至此第十九课共有三个已建档课堂案例（case-001 / case-002 / case-003）。
+- **第一份真实资料试点（2026-11-25 选定）**：第十九课整理笔记（`docs/lessons/lesson-19-notes-v0.1.md`）+ case-003 为主案例 + case-002 为辅助案例（辅助目的是覆盖 `matched → verified` 归一化路径）。试点口径：每日记录容器 JSON 不单独建立 SourceDocument，容器路径与 recordId 作为 CastRecord 的来源信息保存；每日生成 MD 可作为 SourceDocument 并以 RENDERS 关联 CastRecord，但默认不作为课程 Embedding 输入。case-002 在课程笔记中的引用定位：以第 3 节解释段落为主要 REFERENCES 定位、第 10 节汇总表行为第二定位，均指向同一个 case_id、不重复创建 ClassCase；表格定位无法可靠解析时不得伪造 offset。**目前尚无任何真实课程 Chunk、Embedding、Neo4j 导入或检索的业务验收记录**——M2 的合并是解析/映射代码交付，不等于资料已进入知识库。
 - **matchStatus 规范语义（2026-11-22 回读全部真实案例 JSON 后确定）**：规范状态为 `verified`——案例身份已与课堂来源（课程笔记 / ASR 定位）显式核对一致，且来源位置与 `verificationBasis` 已记录。case-002 使用的 `matched` 是同一状态的历史写法：其 verificationBasis 与 case-001（`verified`）同为“ASR 内容核对 + 用户提供卦盘 + 明确限定”，证据结构与严格程度相同，不构成更低一级的状态。M2-C Mapper 读取时须把 `matched` 归一化为 `verified` 并保留原始值；新案例统一写 `verified`；`needs_review` / `not_found` / `disputed` 及任何未知值不得静默丢弃或误判，未知值保留原始值并标记待核对。注意 `verified` 只证明案例身份已核对，不代表老师讲解已通过音频逐字验证——ASR 校正状态、卦盘来源等限定以 `verificationBasis` / `matchConfidence` 等字段为准，Evidence Pack 须一并呈现。
 - 每日记录仍默认不全量导入：只有显式允许的记录 ID 才进入知识库。
 - M2-C 实施准备要求（本计划只记录要求，不在本 PR 实现）：（1）实施前先检查真实的 `case-001.json` 与每日记录 JSON，了解实际字段结构；（2）检查 HTML 导出 JSON 与课堂案例 JSON 的字段关系；（3）自动化测试使用合成 fixtures 独立进行，不把真实案例、私人 ASR 全文或个人每日记录复制进 fixtures；（4）映射时保留原始字段、来源链和案例身份，不随意丢弃数据；（5）不要因为已有一个案例就假定所有历史案例都符合相同结构，字段差异必须显式处理。
@@ -277,6 +279,13 @@ tools/liuyao-kb/
 - record_id = HTML 每日记录 JSON 中子记录的现有稳定 id（CastRecord 的身份）；不能只用日期或卦名当 ID。
 - case_id = 课堂案例的稳定身份（ClassCase 的身份，如 `L19-C01-work-transfer`）。case_id 与 record_id 是两套 ID，不得混用；只有 `dailyRecord.recordId` 明确匹配时，才在 ClassCase 与 CastRecord 之间建立 BASED_ON_RECORD。
 
+Chunker 首版规则（用户 2026-11-25 决定；本计划只记录，M4a 实现）：
+
+- 一个非空 Markdown 正文段落原则上一个 Chunk；Heading 层级、标题、段落序号与字符 offset 全部保留（沿用 M2 的 MarkdownLocator）。
+- 正文上限暂定 1,200 个 Unicode 字符；超长段落优先按句子边界拆分，仍过长时确定性地按字符边界拆分。
+- 首版不使用 overlap；首版不合并短段落。
+- `chunker_version` 必须明确记录（进入 chunk_id 公式与 DocumentRevision 属性）；此为首版工程配置，后续根据 M5 的真实检索效果评估调整。
+
 同步行为：
 
 | 情况 | 必须行为 |
@@ -365,7 +374,7 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 
 | Milestone | 交付物 | 用户验收标准 |
 |---|---|---|
-| M0：Aura 准备 | AuraDB Free 实例创建、连接与 Vector Index 验证（已完成，见 phase1-m0-validation.md）；凭据恢复与 Secret Manager 接入待处理 | Instance01 保留不删除；凭据恢复结果与云端接入在 M3 验收；秘密不提交 |
+| M0：Aura 准备 | AuraDB Free 实例创建、连接与 Vector Index 验证（已完成，见 phase1-m0-validation.md）；现行实例为 `97d17d42`（Instance01 已被取代）；Secret Manager `neo4j-aura-credentials` Version 4 已接入并经临时 Cloud Run Job 实测（2026-11-25） | 已完成（连接性与凭据接入）；秘密不提交；真实 Schema 执行属于 M3 云端执行，不在本行范围 |
 | M1：项目骨架 | Python CLI、配置、日志、单元测试 | doctor、sources list、ingest --dry-run 正常 |
 | M2-A：来源模型 | 统一 ParsedDocument/Section、Locator、source identity | `approved_merged`；PR #3，merge commit `9505ce7` |
 | M2-B：Markdown/TXT | Markdown 与 TXT Adapter | `approved_merged`；PR #3，merge commit `9505ce7`（验收：144 tests / 38 adapter tests 通过，用户接受等价复跑作为验收依据） |
@@ -374,9 +383,9 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 | M2-C3：课堂案例 MD 表示 | Classroom Case Markdown Representation | 处理与案例 JSON 配对的课堂案例 MD（如 `case-xxx-analysis.md`）：它是同一 ClassCase 的可读表示，以 HAS_REPRESENTATION（format=markdown）关联到同一 case_id，不建第二个 Case、不另立分析来源；内容中的老师讲解、用户补充、AI 计算仍分别标明来源 |
 | M2-D：PDF | PDF 文本解析 / 页码 Locator | **deferred**；没有当前 PDF 输入，不纳入本轮 M2 |
 | 外部参考包接收 | Reference Package Validator / Adapter | 首批采集验证后实施；知识库不负责爬网站 |
-| M3：Neo4j Schema + 最小云端执行基础 | 节点/关系目录、唯一约束、Vector Index 管理；GCP Project、Secret Manager、最小权限身份、GitHub OIDC/WIF 与一次性 Cloud Run Schema Job 的最小基础 | Schema 可在云端受控执行与验证；五项唯一约束建立且幂等；临时向量索引 smoke 通过并清理；**尚未开始** |
-| M4：云端增量 Importer（Cloud Run Job） | Manifest、Hash、Chunk、MERGE、版本管理 | 第一次导入新增；第二次重复运行 0 个新 Chunk/Embedding；修改一个段落只处理变化部分 |
-| M5：云端 Embedding 与 AI 知识抽取（Cloud Run Job） | Embedding + 结构化候选抽取 | Chunk 有向量；候选知识能回到来源 Chunk；没有自动确认规则；Embedding/生成模型与生产向量维度在此确定（优先评估 Vertex AI Gemini） |
+| M3：Neo4j Schema + 最小云端执行基础 | 节点/关系目录、唯一约束、Vector Index 管理；GCP Project、Secret Manager、最小权限身份、GitHub OIDC/WIF 与一次性 Cloud Run Schema Job 的最小基础 | 代码已合并（PR #15 `a1829941`、PR #16 `c1b918b`）；云端执行未开始：AR 仓库、两个 SA、WIF Pool/Provider、Schema Job 均未创建（用户 2026-11-25 决定暂停于部署 Phase 2 之前；三个 WIF API 已启用）；五项唯一约束与临时向量索引 smoke 的云端验收、真实业务验收均未进行 |
+| M4：云端增量 Importer（Cloud Run Job） | Manifest、Hash、Chunk、MERGE、版本管理 | 第一次导入新增；第二次重复运行 0 个新 Chunk/Embedding；修改一个段落只处理变化部分；**未开始：Chunker 与 Importer 均未实现；下一项工程任务为 M4a Chunker（首版规则见第 8 节），其后 M4b Importer 与同步状态（按第 8 节存于 Neo4j 节点）** |
+| M5：云端 Embedding 与 AI 知识抽取（Cloud Run Job） | Embedding + 结构化候选抽取 | Chunk 有向量；候选知识能回到来源 Chunk；没有自动确认规则；Embedding/生成模型与生产向量维度在此确定（优先评估 Vertex AI Gemini）；**未开始：无 Embedding/抽取代码，模型与生产维度未定，无真实业务验收记录** |
 | M6：外部参考资料 | 从 Source Catalog 选择并导入获准 Reference Package 中的古籍章节、网页文本、README/docs 或源码文件 | 来源/版本/版权/commit 完整；不混入老师课程来源；不在本仓库内爬取 |
 | PDF 扩展 | 仅在将来用户明确指定 PDF 后单独立项 | 不属于当前 Phase 1 必需交付 |
 | M7：在线分析 API + HTML 对接 | Cloud Run FastAPI 分析端点；向量 + 关键词 + 图关系检索；内部 Evidence Context；生成完整报告；Pages Function 同源代理（BFF 形态与服务间认证方式待设计确认） | 登录用户可从 HTML 触发分析并看到带出处的完整报告；未授权请求被拒绝；同一课堂案例无论出现在课程笔记、ASR、案例 JSON 还是案例 MD 中，都按同一 case_id 归并，不重复计数；Raw ASR 按第 11 节三档规则处理（默认只用来源元数据） |
