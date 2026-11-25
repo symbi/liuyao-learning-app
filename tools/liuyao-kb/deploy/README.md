@@ -105,18 +105,17 @@ APIs, in two groups that must not be conflated:
   Cloud Run (`run.googleapis.com`), Artifact Registry
   (`artifactregistry.googleapis.com`), IAM (`iam.googleapis.com`),
   Cloud Logging (`logging.googleapis.com`).
-* **Additionally required by Google's WIF deployment guidance, NOT
-  confirmed enabled**: Security Token Service
-  (`sts.googleapis.com`), IAM Service Account Credentials
-  (`iamcredentials.googleapis.com`), and Cloud Resource Manager
-  (`cloudresourcemanager.googleapis.com`). Google's WIF
-  impersonation setup requires IAM, STS, and Service Account
-  Credentials APIs, and its deployment guidance also lists Resource
-  Manager. Resource Manager may already be enabled in this project,
-  but there is no verified record either way. Section 4.0 checks for
-  all three and enables any that are missing; that enablement is
-  part of the separately authorized setup, never assumed to have
-  already happened.
+* **Additionally required by Google's WIF deployment guidance —
+  now enabled**: Security Token Service (`sts.googleapis.com`),
+  IAM Service Account Credentials (`iamcredentials.googleapis.com`),
+  and Cloud Resource Manager (`cloudresourcemanager.googleapis.com`).
+  Google's WIF impersonation setup requires IAM, STS, and Service
+  Account Credentials APIs, and its deployment guidance also lists
+  Resource Manager. The user enabled all three on 2026-11-25 and
+  read back their enabled state in Cloud Shell, so in this project
+  the step is complete. Section 4.0 keeps the check (and a fallback
+  enable command) so a future environment can re-verify instead of
+  assuming.
 
 Cloud Build is **not** used by this design and must not be enabled
 for it: GitHub Actions builds the image itself.
@@ -150,9 +149,11 @@ Placeholders: `PROJECT=liuyao-learning`, `PROJECT_NUMBER=169252699444`,
 ```bash
 # 4.0 API prerequisites: verify what is actually enabled, and enable
 #     the WIF-related APIs if any are missing (STS, Service Account
-#     Credentials, Resource Manager — none of the three is confirmed
-#     enabled; the other APIs this design needs were verified
-#     enabled on 2026-11-25).
+#     Credentials, Resource Manager — COMPLETED in this project: the
+#     user enabled all three on 2026-11-25 and read back their
+#     enabled state; the commands below remain as a re-check /
+#     fallback for a future environment. The other APIs this design
+#     needs were verified enabled on 2026-11-25).
 gcloud services list --enabled --project $PROJECT \
   --format="value(config.name)" | grep -E "^(sts|iamcredentials|cloudresourcemanager)\.googleapis\.com$"
 gcloud services enable sts.googleapis.com iamcredentials.googleapis.com \
