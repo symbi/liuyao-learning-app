@@ -448,3 +448,12 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 修正 4（交接文档）：本文件顶部 Active PR 已改为 PR #15（分支与第一轮 head 均已记录）；里程碑表 M3 行与 workspace-handoff.md 的 Phase 1 PR 链接列均已补 PR #15。
 - 安全语义（准确记录）：Deployment SA 没有直接的 secretAccessor，不能经 Secret Manager API 读取密码；但它持有项目级 `roles/run.developer` 与对 Job Runtime SA 的 actAs，可以部署并运行以 Runtime 身份执行的 Job，因此在有效权限上能经“部署代码”间接接触凭据。真正的防护是 WIF 条件（数字 ID + main + production）、production Environment 审批与仓库写权限控制。deploy/README 新增 §1.1 完整表述此边界，不再暗示完全隔离。
 - 测试（Cooper 的 Linux 克隆与 venv，非用户 Mac、非 CI）：修订后全套 pytest 通过（具体数字见 PR #15 修订评论）、Ruff / Mypy strict / diff --check / Secret 扫描通过。本轮仍未创建任何 GCP 资源、未部署 Job、未对真实 AuraDB 写入 Schema；等待 ChatGPT 第二轮审查与用户决定。
+
+### M3 PR #15 第二轮复审小修检查点（2026-11-25）
+
+- 复审结论：第一轮四项修订中三项通过（API 前置、Run-ID 清理、交接文档）；WIF 信任边界部分通过——数字 ID、仓库名、main、production 已加入，但未限定具体 Workflow。本轮在同一分支做最后一轮小修，未合并、未动云端资源。
+- WIF 再收紧：attribute mapping 与 condition 增加 `assertion.workflow_ref == 'symbi/liuyao-learning-app/.github/workflows/deploy-schema-job.yml@refs/heads/main'` 与 `assertion.event_name == 'workflow_dispatch'`。授权范围自此为指定仓库 + 指定分支 + 指定 Environment + 指定部署工作流文件 + 指定触发事件；同仓库 main 上其他使用 production Environment 的工作流也无法通过条件。deploy/README §2 中原“其他 workflow 一律无凭据”的表述在补此条件后方成立，已同步改写 §1、§1.1、§2、§3、§4.5 与工作流文件头注释。
+- API 清单补全：按 Google 当前 WIF 部署指引，§2 未确认组与 §4.0 检查加入 `cloudresourcemanager.googleapis.com`（可能已启用，但无实测记录，仍按未确认处理）。
+- 首次执行预期：deploy/README §5 新增说明——新 AuraDB 未执行 schema init 前，部署工作流最后一步的默认 `schema check` 会因五项约束缺失而非零退出，这是预期状态而非部署故障；正确顺序为先单独授权执行 `schema init`，再跑 `schema check`（预期零退出），最后可选 verify-vector。
+- PR 描述与评论同步：PR #15 描述的测试数字已由 283 同步为 285（新增 Run-ID 清理回归测试 2 个）；第二轮修订说明评论此前因发布批准超时未发出，本轮与第三轮说明合并为一条评论发布（发布状态以 PR 页面实际可见为准）。
+- 测试（Cooper 的 Linux 克隆与 venv，非用户 Mac、非 CI）：本轮仅改部署文档与工作流注释，无代码变更；全套 pytest 仍为 285 passed（复跑确认见 PR 评论）。等待复审与用户决定；云端执行轮仍未授权。
