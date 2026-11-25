@@ -10,14 +10,23 @@ One graph database, one cloud runtime (Cloud Run).
 
 ## Status
 
-M1 and M2 are complete (project skeleton, source adapters, classroom-case mapping). Schema management (M3), cloud ingestion (M4), embedding (M5) and the online analysis API (M7) arrive in later milestones; none of them has started yet. The commands below exist and are tested; ingestion,
-embedding and querying arrive in later milestones.
+M1 and M2 are complete (project skeleton, source adapters, classroom-case mapping). Schema management (M3) started on 2026-11-25: the schema code, CLI and cloud deployment configuration are delivered for review; creating the GCP resources and running the schema against the real AuraDB remain separately authorized steps (see `deploy/README.md`). Cloud ingestion (M4), embedding (M5) and the online analysis API (M7) arrive in later milestones and have not started.
 
 | Command | Behaviour |
 |---|---|
 | `liuyao-kb doctor` | Checks configuration, credentials and database access. Runs with no credentials. |
 | `liuyao-kb sources list` | Lists the allowlisted sources and whether each is enabled. |
 | `liuyao-kb ingest run --dry-run` | Reports what would be imported. Writes nothing. |
+| `liuyao-kb schema init [--dry-run]` | Creates the five core uniqueness constraints from plan section 7. Idempotent; a conflicting existing constraint aborts the run. `--dry-run` prints the DDL without a database. |
+| `liuyao-kb schema check [--json]` | Reports present/missing/conflicting constraints and lists the database's indexes. M3 requires no persistent vector index. |
+| `liuyao-kb schema verify-vector --dimensions N [--run-id ID]` | Smoke-verifies vector index create/ONLINE/query on a run-scoped temporary index, then deletes exactly what the run created. A cleanup failure is reported as a failure. No production dimension is chosen by M3. |
+
+The stable ID formulas of plan section 8 live in `liuyao_kb/ids.py`;
+the node/relationship catalog and constraint definitions live in
+`liuyao_kb/neo4j/schema.py`. The container image is defined by the
+`Dockerfile` in this directory (code only, never credentials); the
+Cloud Run Job, Secret Manager mount and WIF design are documented in
+`deploy/README.md`.
 
 ## Setup
 

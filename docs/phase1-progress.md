@@ -7,16 +7,16 @@
 - Project: symbi/liuyao-learning-app
 - Phase: Phase 1 — Neo4j Knowledge Base + 云端 Importer + 在线分析（2026-11-24 云端优先修订）
 - Status: in_progress
-- Current milestone: M2 已完成（M2-A/M2-B、M2-C1/C2/C3 全部合并）；M3 未开始，等待用户明确授权（云端版任务书，2026-11-24）；PDF Adapter/OCR 已暂缓
+- Current milestone: M2 已完成（M2-A/M2-B、M2-C1/C2/C3 全部合并）；M3 已于 2026-11-25 经用户明确授权启动，代码实现与云端部署配置以 Draft PR 交付（分支 `phase1/m3-neo4j-schema`，基于 main `82493ca`）；永久 GCP 资源创建、IAM 变更、Cloud Run 部署与真实 AuraDB Schema 写入须在 PR 审查后由用户单独授权；PDF Adapter/OCR 已暂缓
 - Phase 1 plan baseline commit: f5869ad643c94760e72e77f0bc3d747fa3b38652
-- Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2-C1 approved_merged（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）; M2-C2 approved_merged（PR #8，merge commit `e963bf3f378cb3787a8ce27bb121eed193c7c3a5`）; M2-C3 approved_merged（PR #10，merge commit `673a5815c29a23ee9768407851610af528532d40`）；M2 整体 approved_merged；M3 not_started（本地另有未提交草稿，未推送、无 PR，不属于正式实施）
-- Active implementation branch: 无（M3 未开始）；当前分支 `docs/cloud-first-phase1-architecture` 为 docs-only 架构同步分支，基于 main `673a581`
+- Implementation code status: M1 approved_merged; M2-A/M2-B approved_merged（PR #3，merge commit `9505ce70e38b729bfb4d7dd36924a25229389194`）; M2-C1 approved_merged（PR #7，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`）; M2-C2 approved_merged（PR #8，merge commit `e963bf3f378cb3787a8ce27bb121eed193c7c3a5`）; M2-C3 approved_merged（PR #10，merge commit `673a5815c29a23ee9768407851610af528532d40`）；M2 整体 approved_merged；M3 in_progress（2026-11-25 启动：Schema 代码、稳定 ID 公式、CLI、Dockerfile 与云端部署配置已实现并通过本地全套测试，以 Draft PR 提交审查；云端资源创建与真实 Schema 执行未做，待单独授权。此前的未提交本地草稿经评估后继承其核心并按云端版任务书 §4.6 重写了 verify-vector 临时索引生命周期；原草稿工作区保持原状未动）
+- Active implementation branch: `phase1/m3-neo4j-schema`（M3，基于 main `82493ca`，Draft PR 待审查）
 - Active PR: 本次 docs-only 架构同步 PR（Draft，编号以 GitHub 为准）；PR #10（M2-C3）已合并，merge commit `673a5815c29a23ee9768407851610af528532d40`；PR #8（M2-C2）已合并，merge commit `e963bf3f378cb3787a8ce27bb121eed193c7c3a5`；PR #7（M2-C1）已合并，merge commit `51a0476da6b8986e44fbe0d6fa0a5779cf5dbad2`；PR #6 已合并，merge commit `dbc2c19d9bd6bca509c7db1e5e83d478871c35e4`
 - Last completed milestone: M2-C3（经 PR #10 合并，merge commit `673a5815c29a23ee9768407851610af528532d40`）；M2 整体完成；M2-C2 已合并（PR #8）；M2-C1 已合并（PR #7）；M2-A/M2-B 已合并（PR #3）；M1 已合并
-- Next action: 等待用户明确授权 M3（云端版：Neo4j Schema + 最小云端执行基础）；M3 前置条件：AuraDB Instance01 凭据恢复（用户在 Aura Console 操作，保留实例不删除）、GCP Project/Billing 确认。第一轮路线（用户 2026-11-23 决定，2026-11-24 按云端架构更新）：先用现有课程笔记、课堂案例与每日记录完成 M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后，不作为第一轮验收前置条件（M6 不取消）。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
+- Next action: M3 Draft PR 等待 ChatGPT 审查与用户合并决定；合并后仍须用户单独授权才可执行云端步骤（按 `tools/liuyao-kb/deploy/README.md` 创建 Artifact Registry 仓库、两个服务账号、WIF 与 Cloud Run Schema Job，并由 Job Runtime 身份对真实 AuraDB 执行 schema init / check / verify-vector 验收）。M0 云端前置已完成（见 2026-11-25 检查点）：GCP 项目 `liuyao-learning`（Billing 已启用，asia-southeast1）、新 AuraDB 实例 `97d17d42`、Secret Manager `neo4j-aura-credentials` Version 4 已由 Cloud Run Job 实测连接与只读查询成功，临时测试资源已全部清理。第一轮路线（用户 2026-11-23 决定，2026-11-24 按云端架构更新）：先用现有课程笔记、课堂案例与每日记录完成 M3、M4、M5、M7、M8 的端到端验收，M6 外部参考资料延期到现有知识验收之后，不作为第一轮验收前置条件（M6 不取消）。不开发 PDF Adapter/OCR；外部资料经独立仓库 Source Collector 输出 Reference Package 后再由本仓库接收
 - Latest M2 implementation commit: 38b4e09（PR #3 分支 head `e09ae71` 已合并）
 - Merged M2 PR: https://github.com/symbi/liuyao-learning-app/pull/3（merge commit `9505ce7`）
-- Last updated: 2026-11-24
+- Last updated: 2026-11-25
 
 ## 已冻结的架构决定
 
@@ -40,10 +40,10 @@
 
 | Milestone | 目标 | 状态 | Review PR / Merge commit | 备注 |
 |---|---|---|---|---|
-| M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit；凭据现待恢复、云端 Secret 接入在 M3 处理（见决定 15） |
+| M0 | 创建 AuraDB Free、保存本地凭据、连接与 Vector Index smoke test | completed | — | 用户环境验收完成；原始报告保留在用户本地，不虚构独立 PR 或 merge commit；云端 Secret 接入已于 2026-11-25 完成验证：新实例 `97d17d42` + Secret Manager Version 4 经 Cloud Run Job 实测连接与只读查询成功（见 2026-11-25 检查点） |
 | M1 | Python 项目骨架、配置、CLI、日志、doctor、sources list、dry-run | approved_merged | [PR #2](https://github.com/symbi/liuyao-learning-app/pull/2) / `df7bc3fe0a568dc89fe9875d87e653d9eca026fb` | 2026-11-20 已合并；M1 代码审查通过 |
 | M2 | Markdown/TXT/JSON Source Adapters（PDF 已暂缓，不属于当前 M2） | approved_merged | [PR #3](https://github.com/symbi/liuyao-learning-app/pull/3) / merge commit `9505ce7`；M2-C 规划 [PR #6](https://github.com/symbi/liuyao-learning-app/pull/6) / merge commit `dbc2c19` | M2-A/M2-B 已合并；M2-C 拆为 C1（案例 JSON Mapping）、C2（自动生成 MD 伴随文件）、C3（课堂案例 MD 表示）；C1 已合并（PR #7，merge commit `51a0476`）；C2 已合并（PR #8，merge commit `e963bf3`）；C3 已合并（PR #10，merge commit `673a581`）；每日记录默认不全量导入，只有显式允许的记录 ID 才进入 |
-| M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs + 最小云端执行基础 | not_started | — | 尚未开始；须用户明确授权；前置：AuraDB 凭据恢复、GCP Project/Billing 确认；真实验证走 Cloud Run Schema Job |
+| M3 | Neo4j Schema、唯一约束、Vector Index、稳定 IDs + 最小云端执行基础 | in_progress | Draft PR（分支 `phase1/m3-neo4j-schema`，编号以 GitHub 为准） | 2026-11-25 用户授权启动；代码、测试与部署配置已交付 Draft PR；云端资源创建、IAM、Job 部署与真实 Schema 验收待 PR 审查后单独授权；前置（GCP 项目/Billing、Secret Manager 云端连接验证）已完成，见 2026-11-25 检查点 |
 | M4 | 增量 Importer、Hash、Revision、Chunker、MERGE | not_started | — | 第二次相同导入不能触发模型调用 |
 | M5 | Gemini Embedding + Generative LLM 双路径 | not_started | — | 先确认模型、维度、数据条款 |
 | M6 | 经 Source Catalog 批准、由 Source Collector 输出 Reference Package 的外部文档与代码参考 | not_started | — | 用户先确认来源与 License；本仓库不直接爬取网站；PDF 不在当前范围；第一轮延期、非阻塞，M8 验收后再恢复，不作为 M7/M8 前置条件 |
@@ -412,3 +412,29 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - M3 状态：尚未开始。本 PR 只同步文档，不实施 M3、不创建任何云端资源。已知前置待办：AuraDB Instance01（用户截图时为 PAUSED、0 节点，非实时查询）凭据待用户在 Aura Console 恢复/重置（保留实例，不删除）；GCP Project/Billing/Region 未确认；Secret Manager、WIF 与服务身份均未创建。本地存在一份未提交的 M3 草稿（独立工作区，未推送、无 PR），是否沿用留待 M3 实施轮决定。
 - 本 PR 同步的文档：phase1-implementation-plan.md（v1.2）、master-plan.md、phase1-operating-model.md、workspace-handoff.md、CLAUDE.md、AGENTS.md、tools/liuyao-kb/README.md、claude-code-phase1-execution-prompt.md 与本文件。
 - 修订轮（ChatGPT 首轮审查后）：按审查意见补修残留旧表述——AGENTS.md 的 Cloud Run 禁令改为“目标运行时 + 须授权才部署”；operating-model 的 §1 结论、组件表与 §11 实施顺序（M7/M8 定义、Phase 2 句）整体统一；实施计划的架构图最终分析流向、§9 生成模型说明、§11 第 8 项与 §12 第一轮主路径（M3→M4→M5→M7→M8，M6 非阻塞）修正；本文件里程碑表 M6/M7/M8 行按新定义更新；handoff 的 C3 进行中残留与 Last updated 修正；执行 Prompt 的 Embedding 表述与 M2/M6 的 PDF 范围统一。范围外的 codex-phase1-implementation-prompt.md 仍未修改，留待单独授权同步。
+
+## M0 云端连接验证完成与 M3 启动检查点（2026-11-25）
+
+### M0 云端前置验证（用户在 Cloud Shell 执行，Cooper 提供命令包并核对结果）
+
+- GCP 项目：`liuyao-learning`（Project Number `169252699444`，Billing 已启用，区域 asia-southeast1）。已启用 API：Secret Manager、Cloud Run、Artifact Registry、IAM、Cloud Logging。
+- AuraDB：用户已删除旧实例并重建正式实例——名称“六爻”，Instance ID `97d17d42`，URI host `97d17d42.databases.neo4j.io`，Google Cloud / Singapore（asia-southeast1）。（此前 2026-11-24 晚记录的实例 `6630d2c8` 与更早的 Instance01 `df56da89` 均已不再是工作目标。）
+- Secret Manager：正式 Secret `neo4j-aura-credentials`；已验证可用版本为 **Version 4**，内容为用户从 Aura Console 下载的原始凭据文件，含 NEO4J_URI / NEO4J_USERNAME / NEO4J_PASSWORD / NEO4J_DATABASE 四项。任何 AI 对话与本仓库都不保存其内容。
+- 2026-11-25，Cloud Run Job 使用 Version 4 实际执行成功：日志确认 `config_loaded=true`、`connection_ok=true`、`query_ok=true`、`missing_keys=[]`，实际连接目标为 `97d17d42`；执行的只读查询为 `RETURN 1 AS ok`。此次仅验证连接与只读查询，未执行 Schema 创建或任何数据库写入，也未验证生产向量维度。此前的 `RETURN 1` 测试不得冒充 Schema 验收。
+- 临时资源已全部清理：`liuyao-aura-check` Cloud Run Job、`liuyao-aura-check-temp` Artifact Registry 仓库、临时 Service Account `liuyao-aura-check@liuyao-learning.iam.gserviceaccount.com` 及其在 Secret 上的 secretAccessor 绑定、Cloud Shell 内临时凭据文件，均已删除。正式 M3 Runtime Service Account 需重新设计，不得假定临时账号仍存在。
+- 安全原则正式落地：密码只存在于 Secret Manager 与 Cloud Run Runtime 的挂载文件中；GitHub Actions Deployment Identity 不得读取 Secret 内容；不使用长期 Service Account JSON Key；WIF 信任严格限制为 `repo:symbi/liuyao-learning-app`。
+
+### M3 启动（用户 2026-11-25 明确授权）
+
+- 授权范围：M3 代码实现、云端部署配置与测试，并提交独立 Draft PR。永久 GCP 资源创建、IAM 变更、Cloud Run 部署与真实 AuraDB Schema 写入不在本轮授权内，须 PR 审查后单独授权。
+- 分支：`phase1/m3-neo4j-schema`，基于 main `82493ca5408075bfa3bb5d5bb72a780522c042ad`。
+- 旧草稿处置：原停放草稿（主工作区未提交状态）经逐行评估后安全继承——节点/关系目录、五项唯一约束、apply/check 状态机、FakeSession 测试予以保留；按云端版任务书 §4.6 重写 `verify-vector` 临时索引生命周期（每次运行生成 Run ID、临时索引名与测试节点 chunk_id 由 Run ID 派生、创建前确认同名索引不存在且已存在即中止、只删本次创建的索引、清理失败明确报失败）；CLI 的子串名称守卫随之移除；凭据提示改为 LIUYAO_KB_CONFIG_DIR / Secret Manager 挂载口径。原草稿工作区本身未被覆盖、删除或重置。
+- 实现内容：
+  - `tools/liuyao-kb/src/liuyao_kb/neo4j/schema.py`：计划 §7 的 10 个 Label 与关键字段目录、12 条关系规格（11 种类型，REFERENCES 按目标分列）、恰好五项核心唯一约束（命名 `<label>_<property>_unique`，提请审查冻结）、冲突 fail-closed 的幂等 apply、schema 状态读取（约束 + 索引清单）、Vector Index 的创建/配置校验/ONLINE 等待（维度必须显式传入，M3 不冻结生产维度）与 Run-ID 化 smoke 验证。同步状态不另建本地库：按计划 §8，Sync Manifest 即 Neo4j 内的 SourceDocument.current_revision_id 与 DocumentRevision.status（current/superseded），其字段已在目录中定义，实际写入归 M4。
+  - `tools/liuyao-kb/src/liuyao_kb/ids.py`（新增）：计划 §8 稳定 ID 公式的纯函数实现（document_id / revision_id / chunk_id，`|` 分隔并校验组件与 SHA-256 格式）；record_id 与 case_id 是来源数据自带的既有稳定身份，不在此计算、永不混用。
+  - `tools/liuyao-kb/src/liuyao_kb/cli.py`：`schema init [--dry-run]`、`schema check [--json]`（含索引清单报告）、`schema verify-vector --dimensions N [--run-id ID]`。
+  - `tools/liuyao-kb/Dockerfile` 与 `.dockerignore`：镜像只含代码，默认命令为只读的 `schema check`；凭据永不进镜像（.dockerignore 排除 *.env）。
+  - `tools/liuyao-kb/deploy/README.md`：云端资源与权限设计——正式 Artifact Registry 仓库 `liuyao-kb`（asia-southeast1）、Deployment SA `liuyao-kb-deployer`（无 Secret 访问）、Job Runtime SA `liuyao-kb-job-runtime`（仅对 `neo4j-aura-credentials` 一个 Secret 的 secretAccessor）、WIF Pool/Provider `github-actions`（attribute condition 限制 repo）、Cloud Run Job `liuyao-kb-schema`（Secret 以文件挂载 `/secrets/m0.env` 并锁定 Version 4，只设 `LIUYAO_KB_CONFIG_DIR=/secrets`）；含全部创建命令、IAM 矩阵、成本与清理说明，全部标注“未经单独授权不得执行”。`deploy/github-actions/deploy-schema-job.yml` 为待用户经 GitHub 网页放入 `.github/workflows/` 的工作流源文件（Cooper 的连接器无 workflow 推送权限）；deploy job 仅 workflow_dispatch 且限 main，PR 只跑无凭据的 test job。Cloud Build 不是既定路径，未启用、未建 Builder SA。
+- 测试（Cooper 的 Linux 克隆与 venv，非用户 Mac、非 CI；GitHub 无 CI status checks）：pytest **283 passed**（原 241 + 新增 42：schema 测试扩充 Run-ID/清理失败/查询失败仍清理等用例，ids 公式测试新增）；Ruff check 通过；Ruff format --check 通过；Mypy strict 通过（15 个源文件）；`git diff --check` 通过；Secret 扫描通过（变更文件中无密码、Token、.env 或凭据值）。
+- 本轮明确未做：未创建任何 GCP 资源、未改 IAM、未部署 Cloud Run Job、未对真实 AuraDB 执行任何 Schema 或写入、未启用 Cloud Build。真实 AuraDB Schema 验收（五项约束建立且幂等、临时向量索引 smoke 通过并清理）仍待 PR 审查通过与用户单独授权后，由 Job Runtime 身份在云端执行。
+- 本检查点之后停下：M3 以 Draft PR 提交，等待 ChatGPT 审查与用户合并决定；不合并、不标记 Ready；M4 不启动。
