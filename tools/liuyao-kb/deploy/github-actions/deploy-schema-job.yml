@@ -10,8 +10,10 @@
 # PREREQUISITES (deploy/README.md section 4, each separately
 # authorized by the user): the Artifact Registry repository
 # `liuyao-kb`, the `liuyao-kb-deployer` and `liuyao-kb-job-runtime`
-# service accounts, the WIF pool/provider `github-actions`, and the
-# Cloud Run Job `liuyao-kb-schema` must already exist.
+# service accounts, and the WIF pool/provider `github-actions` must
+# already exist. The Cloud Run Job `liuyao-kb-schema` does NOT need
+# to exist: the deploy step below creates it on the first run via
+# `gcloud run jobs deploy` and updates it on later runs.
 #
 # SECURITY SHAPE:
 # * The test job runs on pull requests and has NO GCP credentials.

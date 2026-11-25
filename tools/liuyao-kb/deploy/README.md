@@ -228,9 +228,14 @@ from Cloud Shell **under the user's own Google identity** — not the
 GitHub Actions deployment identity; the two are authorized and
 audited separately. Always pass `--wait`, so the command returns
 only when the execution has finished, and read the sanitized CLI
-output from Cloud Logging:
+output from Cloud Logging. Set the variables first in every new
+Cloud Shell session (the placeholders in the section 4 preamble are
+prose, not shell state):
 
 ```bash
+PROJECT=liuyao-learning
+REGION=asia-southeast1
+
 # 1. Schema initialization (write; needs its own authorization)
 gcloud run jobs execute liuyao-kb-schema --project $PROJECT --region $REGION \
   --args "schema,init" --wait
@@ -265,17 +270,29 @@ gate — the design requires both.
 
 ### 4.8 Read-only verification commands (Phase 0)
 
-Run by the user in Cloud Shell before any setup phase, and again
-afterwards to read back what was actually created. All of these are
-read-only; the Secret commands return metadata and IAM bindings
-only, never payload content.
+Run by the user in Cloud Shell. All of these are read-only; the
+Secret commands return metadata and IAM bindings only, never
+payload content. Set the variables first in every new Cloud Shell
+session (the placeholders in the section 4 preamble are prose, not
+shell state):
 
 ```bash
-# Baseline: project, APIs (all enabled services, one per line)
+PROJECT=liuyao-learning
+PROJECT_NUMBER=169252699444
+REGION=asia-southeast1
+```
+
+**Phase 0A — pre-deployment baseline.** Only what should already
+exist, plus existence lists for everything else. Run this before
+any setup phase:
+
+```bash
+# Project and APIs (all enabled services, one per line)
 gcloud config get-value project
 gcloud services list --enabled --project $PROJECT --format="value(config.name)"
 
-# Existence: repositories, service accounts, WIF pools, jobs
+# Existence lists: repositories, service accounts, WIF pools, jobs
+# (empty results are the expected baseline, not an error)
 gcloud artifacts repositories list --location=$REGION --project $PROJECT
 gcloud iam service-accounts list --project $PROJECT
 gcloud iam workload-identity-pools list --location=global --project $PROJECT
@@ -287,8 +304,14 @@ gcloud secrets get-iam-policy neo4j-aura-credentials --project $PROJECT
 
 # Project-level bindings
 gcloud projects get-iam-policy $PROJECT
+```
 
-# Resource-level bindings and actual configuration (once they exist)
+**Phase 0B — post-creation readback.** Run each command after its
+resource has been created, to read back the bindings and
+configuration actually in effect. Before creation these commands
+return NOT FOUND by design — that is expected, not a failure:
+
+```bash
 gcloud artifacts repositories get-iam-policy liuyao-kb \
   --location=$REGION --project $PROJECT
 gcloud iam service-accounts get-iam-policy \
