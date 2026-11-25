@@ -627,11 +627,27 @@ def _smoke_vector(dimensions: int) -> list[float]:
     return vector
 
 
-def _count_exact_smoke_node(session: SessionLike, chunk_id: str) -> int:
-    """Count leftover copies of one run's synthetic node (must be 0)."""
+def _count_exact_smoke_node(session: SessionLike, chunk_id: str, run_id: str) -> int:
+    """Count leftover copies of one run's synthetic node (must be 0).
+
+    Matches on all three ownership facts together: the exact
+    ``chunk_id``, the smoke marker, and this run's Run ID.
+    """
     rows = session.run(
-        f"MATCH (n:Chunk {{chunk_id: $chunk_id, {SMOKE_MARKER_PROPERTY}: true}}) "
-        "RETURN count(n) AS count",
+        f"MATCH (n:Chunk {{chunk_id: $chunk_id, {SMOKE_MARKER_PROPERTY}: true, "
+        f"{SMOKE_RUN_ID_PROPERTY}: $run_id}}) RETURN count(n) AS count",
+        chunk_id=chunk_id,
+        run_id=run_id,
+    )
+    for record in rows:
+        return int(record.data()["count"])
+    return 0
+
+
+def _count_nodes_with_chunk_id(session: SessionLike, chunk_id: str) -> int:
+    """Count any Chunk nodes carrying ``chunk_id``, whoever created them."""
+    rows = session.run(
+        "MATCH (n:Chunk {chunk_id: $chunk_id}) RETURN count(n) AS count",
         chunk_id=chunk_id,
     )
     for record in rows:
@@ -656,14 +672,20 @@ def verify_vector_index(
     * if an index with the run's name already exists before the run
       starts, the run aborts: a pre-existing index is never reused
       and never dropped by this function;
+    * likewise, if any node already carries the run's synthetic
+      ``chunk_id`` before the run starts (for example a leftover from
+      an earlier run whose cleanup failed, under a reused Run ID),
+      the run aborts before creating anything: that node cannot be
+      proven to be this run's, so it is never adopted or deleted;
     * the run creates its index, waits for ONLINE, inserts one
       synthetic Chunk node carrying the smoke marker and the Run ID,
       and queries the index for that vector;
     * cleanup removes exactly that node (matched by its exact
-      ``chunk_id`` and the marker) and drops the index only when this
-      run actually created it. Cleanup runs even when a step fails,
-      and a cleanup failure is reported as a failure (via
-      ``cleanup_errors`` / ``ok``), never silently as success.
+      ``chunk_id``, the marker, AND this run's Run ID together) and
+      drops the index only when this run actually created it.
+      Cleanup runs even when a step fails, and a cleanup failure is
+      reported as a failure (via ``cleanup_errors`` / ``ok``), never
+      silently as success.
     """
     dims = validate_dimensions(dimensions)
     run = validate_run_id(run_id) if run_id is not None else new_run_id()
@@ -676,6 +698,13 @@ def verify_vector_index(
             f"Temporary index {index_name!r} already exists before run {run}; "
             "refusing to reuse or drop an index this run did not create. "
             "Re-run with a fresh run id."
+        )
+    if _count_nodes_with_chunk_id(session, test_chunk_id) > 0:
+        raise SchemaError(
+            f"A node with smoke chunk_id {test_chunk_id!r} already exists "
+            f"before run {run}; refusing to adopt or delete a node this "
+            "run did not create. Inspect and remove the leftover "
+            "manually, or re-run with a fresh run id."
         )
 
     created = False
@@ -721,11 +750,12 @@ def verify_vector_index(
     cleanup_errors: list[str] = []
     try:
         session.run(
-            f"MATCH (n:Chunk {{chunk_id: $chunk_id, {SMOKE_MARKER_PROPERTY}: true}}) "
-            "DETACH DELETE n",
+            f"MATCH (n:Chunk {{chunk_id: $chunk_id, {SMOKE_MARKER_PROPERTY}: true, "
+            f"{SMOKE_RUN_ID_PROPERTY}: $run_id}}) DETACH DELETE n",
             chunk_id=test_chunk_id,
+            run_id=run,
         )
-        cleaned_node = _count_exact_smoke_node(session, test_chunk_id) == 0
+        cleaned_node = _count_exact_smoke_node(session, test_chunk_id, run) == 0
     except Exception as exc:
         cleanup_errors.append(f"smoke node cleanup failed: {exc}")
     if created:

@@ -127,20 +127,29 @@ class FakeSession:
         if query.startswith("CALL db.index.vector.queryNodes"):
             if self.fail_query:
                 raise RuntimeError("injected query failure")
-            chunk_id = next(iter(self.smoke_nodes), None)
-            if chunk_id is None:
-                return []
-            return [FakeRecord({"chunk_id": chunk_id, "score": 1.0})]
+            k = int(parameters.get("k", 5))
+            return [
+                FakeRecord({"chunk_id": chunk_id, "score": 1.0})
+                for chunk_id in list(self.smoke_nodes)[:k]
+            ]
         if "DETACH DELETE" in query:
             if self.fail_delete_node:
                 raise RuntimeError("injected delete failure")
-            self.smoke_nodes.pop(parameters["chunk_id"], None)
+            node = self.smoke_nodes.get(parameters["chunk_id"])
+            # The delete only lands when the stored node's run_id
+            # matches the run_id the statement carries: this models
+            # the run-scoped cleanup condition for real.
+            if node is not None and node.get("run_id") == parameters.get("run_id"):
+                self.smoke_nodes.pop(parameters["chunk_id"], None)
             return []
         if query.startswith("MATCH (n:Chunk"):
             if "chunk_id" in parameters:
-                return [
-                    FakeRecord({"count": 1 if parameters["chunk_id"] in self.smoke_nodes else 0})
-                ]
+                node = self.smoke_nodes.get(parameters["chunk_id"])
+                if node is None:
+                    return [FakeRecord({"count": 0})]
+                if "run_id" in parameters and node.get("run_id") != parameters["run_id"]:
+                    return [FakeRecord({"count": 0})]
+                return [FakeRecord({"count": 1})]
             return [FakeRecord({"count": len(self.smoke_nodes)})]
         raise AssertionError(f"Unexpected query: {query}")
 
@@ -185,6 +194,15 @@ class FakeSession:
             "properties": [prop],
             "dimensions": dimensions,
             "similarity": similarity,
+        }
+
+    def add_smoke_node(self, chunk_id: str, run_id: str) -> None:
+        """Plant a pre-existing smoke node as an earlier run left it."""
+        self.smoke_nodes[chunk_id] = {
+            "chunk_id": chunk_id,
+            "run_id": run_id,
+            "text": "leftover from an earlier run",
+            "embedding": [1.0] + [0.0] * 7,
         }
 
     def ddl_statements(self) -> list[str]:
@@ -412,6 +430,33 @@ class TestVectorIndex:
             verify_vector_index(session, dimensions=8, run_id="run00001", timeout_seconds=5)
         assert "m3_smoke_run00001" in session.indexes
         assert not any(s.startswith("DROP INDEX") for s in session.statements)
+
+    def test_verify_refuses_preexisting_node_and_preserves_it(self) -> None:
+        session = FakeSession()
+        # A leftover from an earlier run whose cleanup failed, under
+        # the same (reused) run id: this run cannot prove ownership,
+        # so it must abort and leave the node exactly as it found it.
+        session.add_smoke_node("m3-smoke:run00009", "run00009")
+        with pytest.raises(SchemaError, match="already exists"):
+            verify_vector_index(session, dimensions=8, run_id="run00009", timeout_seconds=5)
+        assert "m3-smoke:run00009" in session.smoke_nodes
+        assert session.indexes == {}
+        assert not any("DETACH DELETE" in s for s in session.statements)
+        assert not any(s.startswith("DROP INDEX") for s in session.statements)
+
+    def test_verify_cleanup_is_scoped_to_own_run_id(self) -> None:
+        session = FakeSession()
+        # Another run's leftover (different chunk_id and run_id) must
+        # survive this run completely untouched.
+        session.add_smoke_node("m3-smoke:other999", "other999")
+        result = verify_vector_index(session, dimensions=8, run_id="run00010", timeout_seconds=5)
+        assert result.ok
+        assert "m3-smoke:other999" in session.smoke_nodes
+        assert "m3-smoke:run00010" not in session.smoke_nodes
+        # The delete statement itself carries the run_id condition.
+        deletes = [s for s in session.statements if "DETACH DELETE" in s]
+        assert len(deletes) == 1
+        assert "m3_smoke_run_id" in deletes[0]
 
     def test_verify_index_cleanup_failure_is_reported_not_hidden(self) -> None:
         session = FakeSession()

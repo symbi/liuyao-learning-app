@@ -19,8 +19,18 @@
 #   behind the `production` environment, and authenticates with
 #   short-lived OIDC credentials via Workload Identity Federation.
 #   No service-account JSON key exists anywhere.
-# * The deployment identity cannot read the Neo4j secret; only the
-#   Job's runtime identity can, inside Cloud Run, at runtime.
+# * The WIF provider's attribute condition — not this file's `if:`
+#   conditions — is the trust boundary: it pins token exchange to
+#   this repository's numeric IDs (repository 1434453178, owner
+#   7766664), refs/heads/main, and the `production` environment, so
+#   other workflows/refs in this repo receive no credentials. The
+#   `production` environment must also be configured with required
+#   reviewers and main-only deployment branches (deploy/README.md
+#   sections 4.5 and 4.7).
+# * The deployment identity has no direct Secret Manager access;
+#   only the Job's runtime identity holds secretAccessor, inside
+#   Cloud Run, at runtime. Its indirect capability via deploying and
+#   running Jobs is recorded in deploy/README.md section 1.1.
 
 name: deploy-schema-job
 
