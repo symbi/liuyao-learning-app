@@ -64,30 +64,50 @@ class TestRevisionId:
 
 
 class TestChunkId:
+    """The M4a composition: position (paragraph ordinal + subchunk
+    index) plus the exact-text hash. See make_chunk_id's docstring
+    for the stability contract this shape exists to satisfy."""
+
     def test_composition(self) -> None:
         document_id = make_document_id("markdown", "repo", "docs/a.md")
         assert (
-            make_chunk_id(document_id, "chunker/1", HASH_A, 0)
-            == f"{document_id}|chunker/1|{HASH_A}|0"
+            make_chunk_id(document_id, "chunker/1", 0, 0, HASH_A)
+            == f"{document_id}|chunker/1|0|0|{HASH_A}"
         )
 
-    def test_occurrence_index_disambiguates_identical_text(self) -> None:
+    def test_paragraph_ordinal_disambiguates_identical_text(self) -> None:
         document_id = make_document_id("markdown", "repo", "docs/a.md")
-        assert make_chunk_id(document_id, "chunker/1", HASH_A, 0) != make_chunk_id(
-            document_id, "chunker/1", HASH_A, 1
+        assert make_chunk_id(document_id, "chunker/1", 0, 0, HASH_A) != make_chunk_id(
+            document_id, "chunker/1", 1, 0, HASH_A
         )
 
-    def test_chunker_version_is_part_of_identity(self) -> None:
+    def test_subchunk_index_disambiguates_within_paragraph(self) -> None:
         document_id = make_document_id("markdown", "repo", "docs/a.md")
-        assert make_chunk_id(document_id, "chunker/1", HASH_A, 0) != make_chunk_id(
-            document_id, "chunker/2", HASH_A, 0
+        assert make_chunk_id(document_id, "chunker/1", 0, 0, HASH_A) != make_chunk_id(
+            document_id, "chunker/1", 0, 1, HASH_A
         )
 
-    def test_rejects_bad_occurrence_index(self) -> None:
+    def test_text_hash_and_version_are_part_of_identity(self) -> None:
+        document_id = make_document_id("markdown", "repo", "docs/a.md")
+        assert make_chunk_id(document_id, "chunker/1", 0, 0, HASH_A) != make_chunk_id(
+            document_id, "chunker/1", 0, 0, HASH_B
+        )
+        assert make_chunk_id(document_id, "chunker/1", 0, 0, HASH_A) != make_chunk_id(
+            document_id, "chunker/2", 0, 0, HASH_A
+        )
+
+    def test_rejects_bad_indices(self) -> None:
         document_id = make_document_id("markdown", "repo", "docs/a.md")
         for bad in (-1, True, "0"):
             with pytest.raises(ValueError):
-                make_chunk_id(document_id, "chunker/1", HASH_A, bad)  # type: ignore[arg-type]
+                make_chunk_id(document_id, "chunker/1", bad, 0, HASH_A)  # type: ignore[arg-type]
+            with pytest.raises(ValueError):
+                make_chunk_id(document_id, "chunker/1", 0, bad, HASH_A)  # type: ignore[arg-type]
+
+    def test_rejects_non_sha256_hash(self) -> None:
+        document_id = make_document_id("markdown", "repo", "docs/a.md")
+        with pytest.raises(ValueError):
+            make_chunk_id(document_id, "chunker/1", 0, 0, "abc")
 
 
 class TestHashText:

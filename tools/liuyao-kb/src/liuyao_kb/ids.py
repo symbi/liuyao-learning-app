@@ -12,11 +12,17 @@ human-readable and unambiguous:
 * ``revision_id = document_id + content_hash`` — one version of that
   file; ``content_hash`` is the SHA-256 of the original bytes, the
   same digest rule the M2 source adapters already use.
-* ``chunk_id = document_id + chunker_version + normalized_chunk_hash
-  + occurrence_index`` — one chunk of one document. The chunker
-  (M4) owns text normalization and supplies the normalized hash;
-  ``occurrence_index`` disambiguates identical chunk texts inside
-  one document.
+* ``chunk_id = document_id + chunker_version + paragraph_ordinal
+  + subchunk_index + chunk_text_hash`` — one chunk of one document
+  (composition revised in M4a; see :func:`make_chunk_id`). Identity
+  is carried by the chunk's *position* (the ordinal of its body
+  paragraph inside the document, plus the subchunk index inside
+  that paragraph) together with the hash of its exact text.
+  ``revision_id`` and absolute character offsets are deliberately
+  NOT part of a chunk's identity, so editing one paragraph changes
+  only that paragraph's chunk IDs: later paragraphs keep theirs
+  even though their offsets move. Identical texts in different
+  paragraphs never collide, because their ordinals differ.
 
 ``record_id`` and ``case_id`` are deliberately NOT computed here:
 ``record_id`` is the HTML daily record subrecord's existing stable
@@ -96,22 +102,58 @@ def make_revision_id(document_id: str, content_hash: str) -> str:
     )
 
 
+def _require_index(value: int, name: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{name} must be an integer, got {value!r}")
+    if value < 0:
+        raise ValueError(f"{name} must be >= 0, got {value}")
+    return value
+
+
 def make_chunk_id(
     document_id: str,
     chunker_version: str,
-    normalized_chunk_hash: str,
-    occurrence_index: int,
+    paragraph_ordinal: int,
+    subchunk_index: int,
+    chunk_text_hash: str,
 ) -> str:
-    """Compose the ``chunk_id`` for one chunk of one document."""
-    if isinstance(occurrence_index, bool) or not isinstance(occurrence_index, int):
-        raise ValueError(f"occurrence_index must be an integer, got {occurrence_index!r}")
-    if occurrence_index < 0:
-        raise ValueError(f"occurrence_index must be >= 0, got {occurrence_index}")
+    """Compose the ``chunk_id`` for one chunk of one document.
+
+    The composition is ``document_id | chunker_version |
+    paragraph_ordinal | subchunk_index | chunk_text_hash`` where
+    ``paragraph_ordinal`` is the 0-based ordinal of the chunk's body
+    paragraph within the document, ``subchunk_index`` is the 0-based
+    index of the chunk inside that paragraph (0 unless the paragraph
+    was split for length), and ``chunk_text_hash`` is the SHA-256 of
+    the chunk's exact text.
+
+    Stability contract (M4a):
+
+    * Editing one paragraph changes only that paragraph's chunk
+      IDs — its text hash changes; other paragraphs keep their
+      ordinal, subchunk index and hash, so their IDs are unchanged
+      even when their absolute offsets shift.
+    * ``revision_id`` is not an input: a new document revision does
+      not by itself re-identify unchanged chunks.
+    * Heading-path changes do not propagate into chunk IDs.
+    * Identical texts at different positions get different IDs via
+      ``paragraph_ordinal``; identical subchunks of one paragraph
+      (possible after a hard character split) via ``subchunk_index``.
+
+    Known boundary: inserting or deleting a paragraph *before* a
+    paragraph renumbers the later paragraphs' ordinals and therefore
+    changes their chunk IDs. That is inherent to any position-based
+    identity; content-based occurrence counting was rejected because
+    editing a paragraph into a duplicate of another one would have
+    renumbered the *other* paragraph's chunks. A ``chunker_version``
+    change creates a new ID space for the whole document by design.
+    """
     return _SEPARATOR.join(
         (
             _require_composed_id(document_id, "document_id"),
             _require_component(chunker_version, "chunker_version"),
-            _require_sha256(normalized_chunk_hash, "normalized_chunk_hash"),
-            str(occurrence_index),
+            str(_require_index(paragraph_ordinal, "paragraph_ordinal")),
+            str(_require_index(subchunk_index, "subchunk_index")),
+            _require_sha256(chunk_text_hash, "chunk_text_hash"),
         )
     )
