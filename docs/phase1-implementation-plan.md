@@ -275,7 +275,7 @@ tools/liuyao-kb/
 
 - document_id = source_type + repository + path（稳定身份）。
 - revision_id = document_id + content_hash。
-- chunk_id = document_id + chunker_version + normalized_chunk_hash + occurrence_index。
+- chunk_id = document_id + chunker_version + paragraph_ordinal + subchunk_index + chunk_text_hash（M4a 修订：身份由段落序号 + 段内子块序号 + 正文哈希组成；不使用 revision_id 与绝对 offset 作为身份输入，保证只修改一个段落时其他段落的 chunk_id 不变、相同正文的不同段落不冲突；稳定性边界见 `tools/liuyao-kb/src/liuyao_kb/ids.py` 中 `make_chunk_id` 的说明）。
 - record_id = HTML 每日记录 JSON 中子记录的现有稳定 id（CastRecord 的身份）；不能只用日期或卦名当 ID。
 - case_id = 课堂案例的稳定身份（ClassCase 的身份，如 `L19-C01-work-transfer`）。case_id 与 record_id 是两套 ID，不得混用；只有 `dailyRecord.recordId` 明确匹配时，才在 ClassCase 与 CastRecord 之间建立 BASED_ON_RECORD。
 
