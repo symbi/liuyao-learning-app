@@ -45,6 +45,8 @@ from liuyao_kb.sources.case_markdown import (
 )
 from liuyao_kb.sources.config import (
     AllowedDailyRecord,
+    CaseReferenceSection,
+    CaseReferenceSettings,
     DailyRecordsSettings,
     SourcesConfig,
     find_sources_config,
@@ -93,6 +95,8 @@ __all__ = [
     "AllowedDailyRecord",
     "AllowlistError",
     "CaseMappingError",
+    "CaseReferenceSection",
+    "CaseReferenceSettings",
     "CastRecordMapping",
     "ClassCaseMapping",
     "ClassCaseMarkdownError",

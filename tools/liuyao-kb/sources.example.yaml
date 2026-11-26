@@ -62,6 +62,31 @@ pdf:
   files: []
   allow_model_processing: false
 
+# --- Case -> lesson-notes REFERENCES assignments --------------------------------
+# Explicit, human-recorded assignments only. The importer never infers
+# REFERENCES from content similarity: a case gets references only when
+# an entry here names the notes document and the sections (by heading
+# prefix) its chunks belong to. "primary" is the case's main section;
+# "secondary" is a supporting block such as the summary-table section.
+# Lesson-19 pilot assignments (decided 2026-11-25, see implementation
+# plan section 4): case-003 is taught in section 7; case-002 is
+# explained in section 3 with a second locator in the section 10
+# summary table. References point at whole chunks of those sections;
+# no row-level offset is fabricated for the table.
+case_references:
+  - case_id: "L19-C03-female-marriage-multiple-guangui"
+    notes_path: "docs/lessons/lesson-19-notes-v0.1.md"
+    sections:
+      - heading_prefix: "7. "
+        role: "primary"
+  - case_id: "L19-C02-shop-operation-transfer"
+    notes_path: "docs/lessons/lesson-19-notes-v0.1.md"
+    sections:
+      - heading_prefix: "3. "
+        role: "primary"
+      - heading_prefix: "10. "
+        role: "secondary"
+
 # --- External GitHub projects --------------------------------------------------
 # Empty until a repository, a path inside it and its licence are confirmed.
 # Imported content is always labelled external and never treated as a

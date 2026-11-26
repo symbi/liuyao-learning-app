@@ -9,6 +9,8 @@ import yaml
 from pydantic import ValidationError
 
 from liuyao_kb.sources.config import (
+    CaseReferenceSection,
+    CaseReferenceSettings,
     SourcesConfig,
     find_sources_config,
     load_sources_config,
@@ -18,6 +20,43 @@ from liuyao_kb.sources.config import (
 def write_yaml(path: Path, data: dict) -> Path:
     path.write_text(yaml.safe_dump(data, allow_unicode=True), encoding="utf-8")
     return path
+
+
+class TestCaseReferencesValidation:
+    """Explicit REFERENCES configuration never silently overrides
+    or duplicates itself."""
+
+    def _entry(self, case_id: str) -> CaseReferenceSettings:
+        return CaseReferenceSettings(
+            case_id=case_id,
+            notes_path="docs/lessons/lesson-19-notes-v0.1.md",
+            sections=[CaseReferenceSection(heading_prefix="7. ", role="primary")],
+        )
+
+    def test_duplicate_case_id_is_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="configured more than once"):
+            SourcesConfig(case_references=[self._entry("L19-C02-x"), self._entry("L19-C02-x")])
+
+    def test_duplicate_case_id_in_yaml_is_rejected(self, tmp_path: Path) -> None:
+        entry = {
+            "case_id": "L19-C02-x",
+            "notes_path": "docs/lessons/lesson-19-notes-v0.1.md",
+            "sections": [{"heading_prefix": "7. ", "role": "primary"}],
+        }
+        path = write_yaml(tmp_path / "sources.yaml", {"case_references": [entry, entry]})
+        with pytest.raises(ValidationError, match="configured more than once"):
+            load_sources_config(path)
+
+    def test_duplicate_prefix_in_one_entry_is_rejected(self) -> None:
+        with pytest.raises(ValidationError, match="listed more than once"):
+            CaseReferenceSettings(
+                case_id="L19-C02-x",
+                notes_path="docs/lessons/lesson-19-notes-v0.1.md",
+                sections=[
+                    CaseReferenceSection(heading_prefix="7. ", role="primary"),
+                    CaseReferenceSection(heading_prefix="7. ", role="secondary"),
+                ],
+            )
 
 
 class TestDefaults:
@@ -46,6 +85,7 @@ class TestDefaults:
             "daily_casting",
             "pdf_reference",
             "external_project_doc",
+            "case_references",
         }
 
     def test_summary_marks_raw_asr_as_low_confidence(self) -> None:

@@ -1,8 +1,8 @@
 """Command line interface for liuyao-kb.
 
-M1 scope: the skeleton commands only -- ``doctor``, ``sources list`` and
-``ingest --dry-run``. M3 adds the ``schema`` commands. Ingestion,
-embedding and querying arrive in later milestones.
+Commands: ``doctor``, ``sources list``, ``ingest run`` (M4b: a real
+incremental importer; dry-run by default) and the M3 ``schema``
+commands. Embedding and querying arrive in later milestones.
 """
 
 from __future__ import annotations
@@ -214,18 +214,30 @@ def ingest_run(
         bool,
         typer.Option(
             "--dry-run/--no-dry-run",
-            help="Report what would be imported without calling any API or writing.",
+            help="Report what would be imported without writing (default), "
+            "or execute the import with --no-dry-run.",
         ),
     ] = True,
     sources_path: Annotated[
         Path | None,
         typer.Option("--sources", help="Path to a sources config file."),
     ] = None,
+    repository: Annotated[
+        str | None,
+        typer.Option(
+            "--repository",
+            help="Repository slug (owner/name) the source roots belong to. "
+            "Required to build an import plan and to write.",
+        ),
+    ] = None,
 ) -> None:
-    """Import the allowlisted sources into Neo4j.
+    """Import the allowlisted sources into Neo4j (M4b).
 
-    M1 provides the dry-run scaffold only. Actual parsing, embedding and
-    writing arrive in M2 to M5.
+    The default dry run never touches the database. Without
+    ``--repository`` it prints the allowlist summary only; with it,
+    it builds the full import plan (parsing, mapping, chunking) and
+    reports counts. ``--no-dry-run`` executes the plan through the
+    incremental importer using the configured Neo4j credentials.
     """
     from liuyao_kb.sources.config import find_sources_config, load_sources_config
 
@@ -244,32 +256,84 @@ def ingest_run(
         console.print(f"[red]Could not load {resolved}: {exc}[/red]")
         raise typer.Exit(code=1) from exc
 
-    console.print(f"[bold]Dry run[/bold] against {resolved}")
-    table = Table(show_lines=True)
-    table.add_column("Source", style="bold")
-    table.add_column("Enabled")
-    table.add_column("Detail")
-    for row in sources.summary():
-        enabled = bool(row["enabled"])
-        status = "[green]yes[/green]" if enabled else "[dim]no[/dim]"
-        table.add_row(str(row["source"]), status, str(row["detail"]))
-    console.print(table)
+    if repository is None:
+        if not dry_run:
+            console.print(
+                "[red]--repository is required for --no-dry-run:[/red] document "
+                "identities are composed from the repository slug."
+            )
+            raise typer.Exit(code=1)
+        console.print(f"[bold]Dry run[/bold] against {resolved}")
+        table = Table(show_lines=True)
+        table.add_column("Source", style="bold")
+        table.add_column("Enabled")
+        table.add_column("Detail")
+        for row in sources.summary():
+            enabled = bool(row["enabled"])
+            status = "[green]yes[/green]" if enabled else "[dim]no[/dim]"
+            table.add_row(str(row["source"]), status, str(row["detail"]))
+        console.print(table)
+        console.print(
+            "[dim]Allowlist summary only. Pass --repository owner/name to build "
+            "the full import plan (still a dry run).[/dim]"
+        )
+        return
+
+    from liuyao_kb.ingest import collect_plan
+
+    try:
+        plan = collect_plan(sources, repository=repository)
+    except Exception as exc:
+        console.print(f"[red]Could not build the import plan: {exc}[/red]")
+        raise typer.Exit(code=1) from exc
 
     console.print(
-        "[yellow]M1 only reports the plan.[/yellow] Parsing, chunking, "
-        "embedding and writing land in later milestones (M2-M5)."
+        f"[bold]{'Dry run' if dry_run else 'Import'}[/bold] against {resolved}: "
+        f"{len(plan.documents)} documents, {plan.chunk_count()} chunks, "
+        f"{len(plan.lessons)} lessons, {len(plan.cases)} cases, "
+        f"{len(plan.records)} records, {len(plan.record_links)} record links, "
+        f"{len(plan.renders_links)} renders links, "
+        f"{sum(len(refs) for _, refs in plan.references)} references"
     )
+    for note in plan.skipped:
+        console.print(f"[yellow]Skipped:[/yellow] {note}")
 
-    if not dry_run:
-        console.print("[red]Refusing to write: ingestion is not implemented until M4.[/red]")
+    if dry_run:
+        if config.neo4j is None:
+            console.print(
+                "[dim]No Neo4j credentials configured; a dry run does not need them.[/dim]"
+            )
+        else:
+            console.print(
+                f"[dim]Target: {redact_uri(config.neo4j.uri)} "
+                f"(database {config.neo4j.database})[/dim]"
+            )
+        return
+
+    from liuyao_kb.ingest import run_plan
+    from liuyao_kb.neo4j.driver import classify_connection_error
+
+    with _schema_session() as session:
+        try:
+            report = run_plan(session, plan)
+        except Exception as exc:
+            console.print(f"[red]Import failed: {classify_connection_error(exc)}[/red]")
+            raise typer.Exit(code=1) from exc
+
+    outcomes: dict[str, int] = {}
+    for result in report.documents:
+        outcomes[result.outcome.value] = outcomes.get(result.outcome.value, 0) + 1
+    outcome_text = ", ".join(f"{name}={count}" for name, count in sorted(outcomes.items()))
+    console.print(
+        f"Documents: {outcome_text or 'none'}; lessons={report.lessons_imported}, "
+        f"cases={report.cases_imported}, records={report.records_imported}, "
+        f"record links={report.record_links}, renders={report.renders_links}, "
+        f"references={report.references_written}"
+    )
+    for failure in report.failures:
+        console.print(f"[red]Failed:[/red] {failure.item}: {failure.error}")
+    if not report.ok:
         raise typer.Exit(code=1)
-
-    if config.neo4j is None:
-        console.print("[dim]No Neo4j credentials configured; a dry run does not need them.[/dim]")
-    else:
-        console.print(
-            f"[dim]Target: {redact_uri(config.neo4j.uri)} (database {config.neo4j.database})[/dim]"
-        )
 
 
 def _schema_session() -> AbstractContextManager[Any]:
