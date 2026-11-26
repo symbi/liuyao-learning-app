@@ -397,7 +397,7 @@ Evidence Pack 不是最终断卦报告；它是有来源依据的“证据包”
 | M2-D：PDF | PDF 文本解析 / 页码 Locator | **deferred**；没有当前 PDF 输入，不纳入本轮 M2 |
 | 外部参考包接收 | Reference Package Validator / Adapter | 首批采集验证后实施；知识库不负责爬网站 |
 | M3：Neo4j Schema + 最小云端执行基础 | 节点/关系目录、唯一约束、Vector Index 管理；GCP Project、Secret Manager、最小权限身份、GitHub OIDC/WIF 与一次性 Cloud Run Schema Job 的最小基础 | 代码已合并（PR #15 `a1829941`、PR #16 `c1b918b`）；云端执行未开始：AR 仓库、两个 SA、WIF Pool/Provider、Schema Job 均未创建（用户 2026-11-25 决定暂停于部署 Phase 2 之前；三个 WIF API 已启用）；五项唯一约束与临时向量索引 smoke 的云端验收、真实业务验收均未进行 |
-| M4：云端增量 Importer（Cloud Run Job） | Manifest、Hash、Chunk、MERGE、版本管理 | 第一次导入新增；第二次重复运行 0 个新 Chunk/Embedding；修改一个段落只处理变化部分；**M4a Chunker 已合并（PR #18）；M4b Importer 已实现并交付 Draft PR #19 待审查（同步状态按第 8 节存于 Neo4j 节点，不另建本地同步库）；真实导入未执行，待单独授权** |
+| M4：云端增量 Importer（Cloud Run Job） | Manifest、Hash、Chunk、MERGE、版本管理 | 第一次导入新增；第二次重复运行 0 个新 Chunk/Embedding；修改一个段落只处理变化部分；**M4a Chunker 已合并（PR #18）；M4b Importer 已合并（PR #19，merge commit `805c53b`；同步状态按第 8 节存于 Neo4j 节点，不另建本地同步库）；真实导入未执行——M4c（真实试点导入与验证）任务书已提出、未启动，待单独授权** |
 | M5：云端 Embedding 与 AI 知识抽取（Cloud Run Job） | Embedding + 结构化候选抽取 | Chunk 有向量；候选知识能回到来源 Chunk；没有自动确认规则；Embedding/生成模型与生产向量维度在此确定（优先评估 Vertex AI Gemini）；**未开始：无 Embedding/抽取代码，模型与生产维度未定，无真实业务验收记录** |
 | M6：外部参考资料 | 从 Source Catalog 选择并导入获准 Reference Package 中的古籍章节、网页文本、README/docs 或源码文件 | 来源/版本/版权/commit 完整；不混入老师课程来源；不在本仓库内爬取 |
 | PDF 扩展 | 仅在将来用户明确指定 PDF 后单独立项 | 不属于当前 Phase 1 必需交付 |
