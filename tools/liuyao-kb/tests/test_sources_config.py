@@ -46,6 +46,7 @@ class TestDefaults:
             "daily_casting",
             "pdf_reference",
             "external_project_doc",
+            "case_references",
         }
 
     def test_summary_marks_raw_asr_as_low_confidence(self) -> None:

@@ -17,6 +17,7 @@ from liuyao_kb.neo4j.driver import (
 from liuyao_kb.neo4j.importer import (
     CaseReferenceImport,
     CastRecordImport,
+    CastRecordImportResult,
     ChunkConflictError,
     ClassCaseImport,
     DocumentImport,
@@ -55,6 +56,7 @@ __all__ = [
     "ApplyResult",
     "CaseReferenceImport",
     "CastRecordImport",
+    "CastRecordImportResult",
     "ChunkConflictError",
     "ClassCaseImport",
     "ConnectionProfile",

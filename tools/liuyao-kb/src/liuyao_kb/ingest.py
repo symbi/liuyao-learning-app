@@ -44,6 +44,7 @@ from liuyao_kb.ids import make_document_id, make_revision_id
 from liuyao_kb.neo4j.importer import (
     CaseReferenceImport,
     CastRecordImport,
+    CastRecordImportResult,
     ClassCaseImport,
     DocumentImport,
     DocumentImportResult,
@@ -119,6 +120,9 @@ class IngestReport(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     documents: tuple[DocumentImportResult, ...] = ()
+    #: Per-record outcomes with source provenance (container path
+    #: and JSON pointer; never body text).
+    records: tuple[CastRecordImportResult, ...] = ()
     lessons_imported: int = 0
     cases_imported: int = 0
     records_imported: int = 0
@@ -324,8 +328,20 @@ def _collect_daily(sources: SourcesConfig, repository: str, plan: dict[str, Any]
                 f"{container_stem}--{record.record_id}.md"
             )
             if (root / md_relative).is_file():
+                # Container verification (M2-C2): the Markdown's
+                # record must be one of the CastRecords the C1
+                # mapper actually mapped for this container under
+                # the same allowlist — an identity-level check tying
+                # the rendering to the accepted container mapping.
+                # It is not a full content-equality proof between
+                # the embedded JSON and the container subrecord; the
+                # M2 mapper offers no such comparison.
                 md_mapping = map_generated_markdown_file(
-                    root / md_relative, repository=repository, source_root=root
+                    root / md_relative,
+                    repository=repository,
+                    source_root=root,
+                    container_path=relative,
+                    settings=settings,
                 )
                 document_id = make_document_id("markdown", repository, md_relative)
                 plan["documents"].append(
@@ -390,6 +406,11 @@ def collect_plan(
     ``repository`` is the explicit ``owner/name`` slug every M2
     file-level API requires; it is a parameter, not a config field,
     matching how the mappers themselves take it.
+
+    REFERENCES assignments come from the sources configuration
+    (``case_references``, the reviewable entry the CLI uses);
+    ``reference_specs`` passed by a caller override the configured
+    assignment for the same case_id. Nothing is inferred.
     """
     plan: dict[str, Any] = {
         "documents": [],
@@ -420,7 +441,16 @@ def collect_plan(
         plan["skipped"].append(
             "external_projects: Reference Package intake is M6 and deferred; nothing was imported"
         )
-    _resolve_references(plan, reference_specs)
+    specs_by_case: dict[str, CaseReferenceSpec] = {}
+    for entry in sources.case_references:
+        specs_by_case[entry.case_id] = CaseReferenceSpec(
+            case_id=entry.case_id,
+            notes_document_id=make_document_id("markdown", repository, entry.notes_path),
+            sections=tuple((section.heading_prefix, section.role) for section in entry.sections),
+        )
+    for spec in reference_specs:
+        specs_by_case[spec.case_id] = spec
+    _resolve_references(plan, tuple(specs_by_case.values()))
     return IngestPlan(**plan)
 
 
@@ -434,6 +464,7 @@ def run_plan(session: ImporterSession, plan: IngestPlan) -> IngestReport:
     importer = Neo4jImporter(session)
     failures: list[IngestFailure] = []
     documents: list[DocumentImportResult] = []
+    record_results: list[CastRecordImportResult] = []
     lessons_imported = 0
     cases_imported = 0
     records_imported = 0
@@ -464,10 +495,11 @@ def run_plan(session: ImporterSession, plan: IngestPlan) -> IngestReport:
         if result is not failed:
             documents.append(result)
     for record in plan.records:
-        if (
-            attempt(f"record {record.record_id}", partial(importer.import_cast_record, record))
-            is not failed
-        ):
+        record_result = attempt(
+            f"record {record.record_id}", partial(importer.import_cast_record, record)
+        )
+        if record_result is not failed:
+            record_results.append(record_result)
             records_imported += 1
     for case in plan.cases:
         if attempt(f"case {case.case_id}", partial(importer.import_class_case, case)) is not failed:
@@ -496,6 +528,7 @@ def run_plan(session: ImporterSession, plan: IngestPlan) -> IngestReport:
 
     return IngestReport(
         documents=tuple(documents),
+        records=tuple(record_results),
         lessons_imported=lessons_imported,
         cases_imported=cases_imported,
         records_imported=records_imported,

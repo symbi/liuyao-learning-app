@@ -335,6 +335,40 @@ def _merge_taught_in(graph: FakeGraph, params: dict[str, Any]) -> FakeResult:
     return FakeResult()
 
 
+def _read_cast_record(graph: FakeGraph, params: dict[str, Any]) -> FakeResult:
+    record = graph.node("CastRecord", params["record_id"])
+    if record is None:
+        return FakeResult()
+    return FakeResult(
+        [
+            FakeRecord(
+                {
+                    "record_type": record.get("record_type"),
+                    "date": record.get("date"),
+                    "question": record.get("question"),
+                    "casting_json": record.get("casting_json"),
+                }
+            )
+        ]
+    )
+
+
+def _case_representation_docs(graph: FakeGraph, params: dict[str, Any]) -> FakeResult:
+    rows = [
+        FakeRecord({"document_id": rel["to"][1]})
+        for rel in graph.find_rels("HAS_REPRESENTATION", from_key=("ClassCase", params["case_id"]))
+    ]
+    return FakeResult(rows)
+
+
+def _case_taught_lesson(graph: FakeGraph, params: dict[str, Any]) -> FakeResult:
+    rows = [
+        FakeRecord({"lesson_id": rel["to"][1]})
+        for rel in graph.find_rels("TAUGHT_IN", from_key=("ClassCase", params["case_id"]))
+    ]
+    return FakeResult(rows)
+
+
 def _merge_cast_record(graph: FakeGraph, params: dict[str, Any]) -> FakeResult:
     node = graph.merge_node("CastRecord", params["record_id"])
     _apply_set(
@@ -393,6 +427,9 @@ _HANDLERS = {
     imp.Q_MERGE_CASE: _merge_case,
     imp.Q_MERGE_HAS_REPRESENTATION: _merge_has_representation,
     imp.Q_MERGE_TAUGHT_IN: _merge_taught_in,
+    imp.Q_READ_CAST_RECORD: _read_cast_record,
+    imp.Q_CASE_REPRESENTATION_DOCS: _case_representation_docs,
+    imp.Q_CASE_TAUGHT_LESSON: _case_taught_lesson,
     imp.Q_MERGE_CAST_RECORD: _merge_cast_record,
     imp.Q_LINK_BASED_ON_RECORD: _link_based_on_record,
     imp.Q_LINK_RENDERS: _link_renders,

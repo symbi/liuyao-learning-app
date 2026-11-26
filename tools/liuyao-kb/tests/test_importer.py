@@ -427,12 +427,86 @@ class TestCaseRecordAndLinks:
         node = graph.node("CastRecord", "rec-1")
         assert node is not None and node["record_type"] == "additionalQuestion"
 
-    def test_link_to_missing_record_returns_false(self) -> None:
+    def test_link_to_missing_record_is_an_error(self) -> None:
         session = FakeSession()
         importer = Neo4jImporter(session)
         self._seed_case(session)
-        assert importer.link_case_record("L99-C01-synthetic", "no-such-record") is False
+        with pytest.raises(ImporterError, match="BASED_ON_RECORD cannot be created"):
+            importer.link_case_record("L99-C01-synthetic", "no-such-record")
         assert session.graph.find_rels("BASED_ON_RECORD") == []
+
+    def test_renders_to_missing_document_is_an_error(self) -> None:
+        session = FakeSession()
+        importer = Neo4jImporter(session)
+        importer.import_cast_record(
+            CastRecordImport(
+                record_id="rec-1",
+                record_type="additionalQuestion",
+                casting_json='{"id": "rec-1"}',
+                container_path="daily-records/2099/01/2099-01-01.json",
+            )
+        )
+        with pytest.raises(ImporterError, match="RENDERS cannot be created"):
+            importer.link_record_renders("rec-1", "document_missing")
+        assert session.graph.find_rels("RENDERS") == []
+
+    def test_case_import_fails_and_rolls_back_when_representation_missing(self) -> None:
+        session = FakeSession()
+        importer = Neo4jImporter(session)
+        json_doc = _plain_document(
+            make_document_id(
+                "classroom_case", REPO, "materials/class-cases/lesson-99/case-001.json"
+            ),
+            "classroom_case",
+        )
+        importer.import_document(json_doc)  # the paired MD document is NOT imported
+        with pytest.raises(ImporterError, match="HAS_REPRESENTATION target"):
+            importer.import_class_case(
+                ClassCaseImport(
+                    case_id="L99-C01-synthetic",
+                    lesson_id="lesson-99",
+                    match_status="verified",
+                    json_document_id=json_doc.document_id,
+                    markdown_document_id=make_document_id(
+                        "markdown", REPO, "materials/class-cases/lesson-99/case-001-analysis.md"
+                    ),
+                )
+            )
+        graph = session.graph
+        assert graph.node("ClassCase", "L99-C01-synthetic") is None  # rolled back
+        assert graph.find_rels("HAS_REPRESENTATION") == []
+        assert graph.find_rels("TAUGHT_IN") == []
+
+    def test_cast_record_lifecycle_reports_provenance_and_outcome(self) -> None:
+        session = FakeSession()
+        importer = Neo4jImporter(session)
+        record = CastRecordImport(
+            record_id="rec-1",
+            record_type="additionalQuestion",
+            date="2099-01-01",
+            question=None,
+            casting_json='{"id": "rec-1", "v": 1}',
+            container_path="daily-records/2099/01/2099-01-01.json",
+            json_pointer="/additionalQuestions/0",
+        )
+        created = importer.import_cast_record(record)
+        assert created.outcome is ImportOutcome.CREATED
+        assert created.record_id == "rec-1"
+        assert created.container_path == "daily-records/2099/01/2099-01-01.json"
+        assert created.json_pointer == "/additionalQuestions/0"
+
+        writes_before = session.write_calls
+        unchanged = importer.import_cast_record(record)
+        assert unchanged.outcome is ImportOutcome.UNCHANGED
+        assert session.write_calls == writes_before  # no write for an identical record
+
+        changed = record.model_copy(update={"casting_json": '{"id": "rec-1", "v": 2}'})
+        updated = importer.import_cast_record(changed)
+        assert updated.outcome is ImportOutcome.UPDATED
+        node = session.graph.node("CastRecord", "rec-1")
+        assert node is not None and node["casting_json"] == '{"id": "rec-1", "v": 2}'
+        # The result DTO never carries body content.
+        assert "casting_json" not in updated.model_dump()
 
     def test_references_require_existing_chunks(self) -> None:
         session = FakeSession()

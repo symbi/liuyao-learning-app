@@ -139,3 +139,93 @@ class TestIngestDryRun:
         result = runner.invoke(app, ["ingest", "run", "--dry-run"])
         assert result.exit_code == 1
         assert "No sources config found" in result.stdout
+
+
+class TestIngestReferencesAndFailures:
+    """The CLI itself must build REFERENCES from the sources config,
+    and a plan link whose endpoint is missing must fail the run."""
+
+    def _write(self, path: Path, content: str) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
+    def test_dry_run_builds_references_from_config(self, tmp_path: Path) -> None:
+        repo = tmp_path / "repo"
+        self._write(
+            repo / "docs/lessons/lesson-19-notes-v0.1.md",
+            "# Lesson 19\n\n## 3. Section Three\n\nPrimary paragraph for case two.\n\n"
+            "## 7. Section Seven\n\nPrimary paragraph for case three.\n\n"
+            "## 10. Section Ten\n\nSummary paragraph.\n",
+        )
+        cases = repo / "materials/class-cases/lesson-19"
+        for case_id, stem in (
+            ("L19-C02-synthetic", "case-002"),
+            ("L19-C03-synthetic", "case-003"),
+        ):
+            self._write(
+                cases / f"{stem}.json",
+                json.dumps(
+                    {
+                        "recordType": "class-case",
+                        "id": case_id,
+                        "lessonId": "lesson-19",
+                        "matchStatus": "verified",
+                    }
+                ),
+            )
+            self._write(cases / f"{stem}-analysis.md", f"# {case_id}\n\nPaired body.\n")
+        config = {
+            "curated_notes": {"root": str(repo)},
+            "class_cases": {"root": str(repo)},
+            "case_references": [
+                {
+                    "case_id": "L19-C03-synthetic",
+                    "notes_path": "docs/lessons/lesson-19-notes-v0.1.md",
+                    "sections": [{"heading_prefix": "7. ", "role": "primary"}],
+                },
+                {
+                    "case_id": "L19-C02-synthetic",
+                    "notes_path": "docs/lessons/lesson-19-notes-v0.1.md",
+                    "sections": [
+                        {"heading_prefix": "3. ", "role": "primary"},
+                        {"heading_prefix": "10. ", "role": "secondary"},
+                    ],
+                },
+            ],
+        }
+        (tmp_path / "sources.yaml").write_text(yaml.safe_dump(config), encoding="utf-8")
+        result = runner.invoke(
+            app, ["ingest", "run", "--dry-run", "--repository", "symbi/liuyao-learning-app"]
+        )
+        assert result.exit_code == 0, result.stdout
+        assert "3 references" in result.stdout
+
+    def test_write_with_missing_link_endpoint_exits_nonzero(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        from contextlib import contextmanager
+        from typing import Any
+
+        import liuyao_kb.cli as cli_module
+        import liuyao_kb.ingest as ingest_module
+        from fake_neo4j import FakeSession
+        from liuyao_kb.ingest import IngestPlan
+
+        (tmp_path / "sources.yaml").write_text(
+            yaml.safe_dump({"curated_notes": {"enabled": True}}), encoding="utf-8"
+        )
+        plan = IngestPlan(record_links=(("L19-C02-synthetic", "missing-record-id"),))
+        monkeypatch.setattr(ingest_module, "collect_plan", lambda sources, repository: plan)
+
+        @contextmanager
+        def fake_session() -> Any:
+            yield FakeSession()
+
+        monkeypatch.setattr(cli_module, "_schema_session", fake_session)
+        result = runner.invoke(
+            app,
+            ["ingest", "run", "--no-dry-run", "--repository", "symbi/liuyao-learning-app"],
+        )
+        assert result.exit_code == 1
+        assert "based_on_record" in result.stdout
+        assert "Failed:" in result.stdout

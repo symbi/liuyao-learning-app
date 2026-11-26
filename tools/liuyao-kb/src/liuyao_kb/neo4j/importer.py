@@ -223,6 +223,22 @@ class DocumentImportResult(BaseModel):
     contains: int = 0
 
 
+class CastRecordImportResult(BaseModel):
+    """What one CastRecord import did, with its source provenance.
+
+    The provenance fields (container path + JSON pointer) are the
+    audit trail the report can offer without body text: which
+    container file and which subrecord the CastRecord came from.
+    """
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    record_id: str
+    container_path: str
+    json_pointer: str
+    outcome: ImportOutcome
+
+
 # ---------------------------------------------------------------------------
 # Cypher (fixed statement set; the test fake dispatches on these)
 # ---------------------------------------------------------------------------
@@ -314,12 +330,30 @@ MERGE (l:Lesson {lesson_id: $lesson_id})
 MERGE (k)-[:TAUGHT_IN]->(l)
 """
 
+Q_READ_CAST_RECORD = """
+MATCH (rec:CastRecord {record_id: $record_id})
+RETURN rec.record_type AS record_type,
+       rec.date AS date,
+       rec.question AS question,
+       rec.casting_json AS casting_json
+"""
+
 Q_MERGE_CAST_RECORD = """
 MERGE (rec:CastRecord {record_id: $record_id})
 SET rec.record_type = $record_type,
     rec.date = $date,
     rec.question = $question,
     rec.casting_json = $casting_json
+"""
+
+Q_CASE_REPRESENTATION_DOCS = """
+MATCH (k:ClassCase {case_id: $case_id})-[:HAS_REPRESENTATION]->(d:SourceDocument)
+RETURN d.document_id AS document_id
+"""
+
+Q_CASE_TAUGHT_LESSON = """
+MATCH (k:ClassCase {case_id: $case_id})-[:TAUGHT_IN]->(l:Lesson)
+RETURN l.lesson_id AS lesson_id
 """
 
 Q_LINK_BASED_ON_RECORD = """
@@ -537,10 +571,71 @@ class Neo4jImporter:
                 )
             if case.lesson_id is not None:
                 tx.run(Q_MERGE_TAUGHT_IN, case_id=case.case_id, lesson_id=case.lesson_id)
+            # MATCH-based writes fail silently when an endpoint is
+            # absent, so verify inside the same transaction: a
+            # missing representation document (for example because
+            # its own import failed earlier) must fail the whole
+            # case import and roll back, never half-link the case.
+            found = {
+                row["document_id"]
+                for row in tx.run(Q_CASE_REPRESENTATION_DOCS, case_id=case.case_id)
+            }
+            expected = {case.json_document_id}
+            if case.markdown_document_id is not None:
+                expected.add(case.markdown_document_id)
+            missing = expected - found
+            if missing:
+                raise ImporterError(
+                    f"case {case.case_id}: HAS_REPRESENTATION target document(s) "
+                    f"not imported: {', '.join(sorted(missing))}; the case import "
+                    "is rolled back"
+                )
+            if case.lesson_id is not None:
+                taught = {
+                    row["lesson_id"] for row in tx.run(Q_CASE_TAUGHT_LESSON, case_id=case.case_id)
+                }
+                if case.lesson_id not in taught:
+                    raise ImporterError(
+                        f"case {case.case_id}: TAUGHT_IN link to lesson "
+                        f"{case.lesson_id} was not created; the case import "
+                        "is rolled back"
+                    )
 
         self._session.execute_write(work)
 
-    def import_cast_record(self, record: CastRecordImport) -> None:
+    def import_cast_record(self, record: CastRecordImport) -> CastRecordImportResult:
+        """Create or update one CastRecord, reporting what happened.
+
+        The current content is replaced when the subrecord changed
+        (outcome ``updated``); an identical record is ``unchanged``
+        and performs no write. The frozen M3 catalog gives
+        CastRecord no revision/audit properties and the container
+        is not a SourceDocument, so prior record content is *not*
+        retained in the graph — that history gap is a documented,
+        deferred schema-design item (plan section 8), not something
+        this importer silently pretends to solve. The per-run
+        report carries the outcome plus provenance (container path,
+        JSON pointer) without body text.
+        """
+
+        def read(tx: TxLike) -> dict[str, Any] | None:
+            rows = list(tx.run(Q_READ_CAST_RECORD, record_id=record.record_id))
+            return dict(rows[0].data()) if rows else None
+
+        existing = self._session.execute_read(read)
+        if existing is not None and (
+            existing["record_type"] == record.record_type
+            and existing["date"] == record.date
+            and existing["question"] == record.question
+            and existing["casting_json"] == record.casting_json
+        ):
+            return CastRecordImportResult(
+                record_id=record.record_id,
+                container_path=record.container_path,
+                json_pointer=record.json_pointer,
+                outcome=ImportOutcome.UNCHANGED,
+            )
+
         def work(tx: TxLike) -> None:
             tx.run(
                 Q_MERGE_CAST_RECORD,
@@ -552,27 +647,49 @@ class Neo4jImporter:
             )
 
         self._session.execute_write(work)
+        return CastRecordImportResult(
+            record_id=record.record_id,
+            container_path=record.container_path,
+            json_pointer=record.json_pointer,
+            outcome=ImportOutcome.UPDATED if existing is not None else ImportOutcome.CREATED,
+        )
 
     def link_case_record(self, case_id: str, record_id: str) -> bool:
-        """Create BASED_ON_RECORD; False when either endpoint is absent.
+        """Create BASED_ON_RECORD; a missing endpoint is an error.
 
         Callers must only pass links already established by exact
         recordId matching (M2 ``link_daily_records``) against records
-        that were actually imported.
+        that were actually imported. If either endpoint is absent
+        the plan asked for a link that cannot exist, so this raises
+        :class:`ImporterError` instead of silently skipping it.
         """
 
         def work(tx: TxLike) -> bool:
             rows = list(tx.run(Q_LINK_BASED_ON_RECORD, case_id=case_id, record_id=record_id))
-            return len(rows) > 0
+            if not rows:
+                raise ImporterError(
+                    f"BASED_ON_RECORD cannot be created: case {case_id} or "
+                    f"record {record_id} is not imported"
+                )
+            return True
 
         return bool(self._session.execute_write(work))
 
     def link_record_renders(self, record_id: str, document_id: str) -> bool:
-        """Create CastRecord -[:RENDERS]-> SourceDocument (generated MD)."""
+        """Create CastRecord -[:RENDERS]-> SourceDocument (generated MD).
+
+        A missing endpoint raises :class:`ImporterError`, for the
+        same reason as :meth:`link_case_record`.
+        """
 
         def work(tx: TxLike) -> bool:
             rows = list(tx.run(Q_LINK_RENDERS, record_id=record_id, document_id=document_id))
-            return len(rows) > 0
+            if not rows:
+                raise ImporterError(
+                    f"RENDERS cannot be created: record {record_id} or "
+                    f"document {document_id} is not imported"
+                )
+            return True
 
         return bool(self._session.execute_write(work))
 

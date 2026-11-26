@@ -295,10 +295,10 @@ Chunker 首版规则（用户 2026-11-25 决定；本计划只记录，M4a 实�
 | 新文件 | 创建 SourceDocument + DocumentRevision + Chunks |
 | 相同文件再次运行 | 完全跳过；不得重复请求 Embedding/LLM |
 | 文档修改 | 创建新 revision；仅对变化 Chunk 执行新处理；未变化 Chunk 尽量复用 |
-| 文档删除/路径变化 | 标记旧来源不再 active，不物理删除历史 |
+| 文档删除/路径变化 | 目标行为：标记旧来源不再 active，不物理删除历史。**M4b 未实现（明确延期）**：冻结的 M3 属性目录中 SourceDocument 没有 active 类属性，本轮不擅自扩 Schema；当前行为是未被本轮计划扫描到的文档不删除、不标记（行为已由测试固定），待单独 Schema 设计决定标记方式后再实现 |
 | Raw ASR v1 → v2 | 创建新 revision；不覆盖 v1，不自动提升为 Curated |
 | 课堂案例内容修改（Memo、卦盘等） | 更新同一个 case_id 的 ClassCase 对应表示或 revision，并保留 audit 信息；案例身份（case_id）不变 |
-| 每日记录修改 | 更新对应 record_id 的 CastRecord 当前内容，并保留 revision/audit 信息；不因此创建或替换 ClassCase |
+| 每日记录修改 | 更新对应 record_id 的 CastRecord 当前内容；不因此创建或替换 ClassCase。**revision/audit 保留为已知缺口（明确延期）**：冻结目录中 CastRecord 没有 revision/audit 属性、容器又不是 SourceDocument，图内无法保留旧版本；M4b 已实现当前内容更新与未变化跳过，运行级审计由 IngestReport 的逐条 outcome（created/updated/unchanged）与 provenance（容器路径 + JSON Pointer，不含正文）承担，图内历史保留待单独 Schema 设计 |
 | 规则候选重复抽取 | 使用稳定 candidate_id / MERGE 去重；始终保留来源 Chunk |
 
 Importer 实现契约（M4b，2026-11-26 落地，`tools/liuyao-kb/src/liuyao_kb/neo4j/importer.py` 与 `ingest.py`）：
@@ -306,7 +306,9 @@ Importer 实现契约（M4b，2026-11-26 落地，`tools/liuyao-kb/src/liuyao_kb
 - 每个文档 revision 的写入是一个 Neo4j 写事务：先做 Chunk 冲突检查（已有 chunk_id 正文或 text_hash 不一致即报错终止，错误信息只含 id 与哈希、不含正文，事务回滚），再依次 MERGE 文档、revision、Chunk 节点与 CONTAINS 关系，`current_revision_id` 作为事务内最后一条语句更新——中途失败不可能留下指针超前于数据的状态。
 - 未变化判定：revision 的 content_hash、parser_version、chunker_version 与导入一致且 status 为 `imported`（DocumentRevision.status 在完整写入后置为该值）时判定 unchanged，不执行任何写事务。内容变化生成新 revision，历史 revision 及其 CONTAINS 保留；同一内容更换 chunker/parser 版本时只删除并重写该 revision 自己的 CONTAINS 集合，Chunk 节点不删除（可被其他 revision 复用），且仅当该 revision 是当前 revision 时才移动 current_revision_id。
 - 节点属性严格以第 7 节 NODE_SPECS 目录为准，不新增属性：CastRecord 的容器路径与 json_pointer 是来源 provenance，携带于导入 DTO 与运行报告，不写入节点；图内文件级锚点为生成 MD 的 SourceDocument（经 RENDERS）。ClassCase 的原始 matchStatus 拼写（如 `matched`）保存在 JSON 表示的 HAS_REPRESENTATION 关系属性 `match_status_raw` 上，节点保存归一化值。
-- 案例到课程笔记的 REFERENCES 只由显式 CaseReferenceSpec（笔记 document_id + 章节标题前缀 + primary/secondary 角色）生成，指向整段 Chunk，不推断、不伪造行内 offset；目标 Chunk 不存在时报错，不静默丢弃。
+- 案例到课程笔记的 REFERENCES 只由显式 CaseReferenceSpec（笔记 document_id + 章节标题前缀 + primary/secondary 角色）生成，指向整段 Chunk，不推断、不伪造行内 offset；目标 Chunk 不存在时报错，不静默丢弃。其可审查配置入口是 sources 配置的 `case_references`（case_id + notes_path + 章节前缀/角色列表，模板见 `sources.example.yaml`，含第十九课试点映射）；CLI 的 dry-run 与真实执行共用同一配置，编程式传入的 spec 按 case_id 覆盖配置项。
+- 关系端点缺失一律是失败而非跳过：计划要求创建的 BASED_ON_RECORD / RENDERS 在任一端点缺失时抛 ImporterError 并进入运行报告 failures（CLI 非零退出）；HAS_REPRESENTATION / TAUGHT_IN 在案例导入事务内回读校验，目标文档未导入则整个案例事务回滚，不留半条关系。
+- CastRecord 导入返回逐条结果（created / updated / unchanged + 容器路径与 JSON Pointer），未变化不写、变化更新当前内容；图内历史版本保留是上表标注的延期缺口。生成 MD 与 CastRecord 的关联经 M2-C2 容器校验绑定（MD 的 record 必须是该容器在同一 allowlist 下实际映射出的 CastRecord——身份级校验；M2 Mapper 不提供嵌入 JSON 与容器子记录的全文内容比对，不声称已验证完整内容一致）。
 - 编排层只复用 M2 文件级 Mapper 与 M4a Chunker；repository slug 是显式参数（与 Mapper 签名一致）。每日容器 JSON 不建 SourceDocument；生成 MD 默认不切分（如未来允许，必须以 M2-C2 的 body_sections 为输入）。Raw ASR 不进入本管线。
 
 模型升级规则：

@@ -515,3 +515,13 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 测试：全套 341 passed（基线 325 + 新增 16），Ruff check / format、Mypy strict、git diff --check 全清，无新依赖；测试在 Cooper 的 Linux venv 运行，非 Mac、非 CI。任务书 20 项验收逐项覆盖（含 FakeSession 对节点/关系属性与重跑后状态的断言，而非仅调用计数）。
 - 真实试点 dry-run（计划构建 + 对内存 FakeSession 执行，计数 only、未输出正文）：7 个文档、69 个 Chunk（笔记 30、case-002 MD 19、case-003 MD 20，与 M4a 试运行一致）、1 Lesson、2 ClassCase、2 CastRecord、BASED_ON_RECORD 2、RENDERS 2、REFERENCES 9（case-003 §7 primary 4；case-002 §3 primary 2 + §10 secondary 3）；全量重跑 7 个文档全部 unchanged、图稳定（88 节点、95 关系）。CLI `ingest run --dry-run --repository …` 同样输出 7 文档 / 69 Chunk 计数。
 - 边界确认：未连接 AuraDB、未写真实 Neo4j、未执行 Schema、未创建或修改任何 GCP 资源、未调用 Embedding/生成模型、未改 HTML/Functions/Source Collector。M4b 代码交付不等于真实导入完成；真实导入须待 PR 审查合并后另行授权，且云端执行仍受 2026-11-25 云端资源创建暂停决定约束。
+
+### M4b 审查修订检查点（2026-11-26，PR #19 同分支）
+
+- 按 ChatGPT 审查意见在原分支修订，PR #19 保持 Open / Draft：
+  1. **REFERENCES 进入 CLI 实际路径**：sources 配置新增 `case_references` 显式配置段（case_id + notes_path + 章节前缀/primary/secondary），`sources.example.yaml` 写入第十九课试点映射（case-003 §7 primary；case-002 §3 primary + §10 secondary）；CLI dry-run 与 --no-dry-run 共用同一配置，编程式 spec 按 case_id 覆盖。真实 CLI dry-run 复测：7 文档、69 Chunk、**9 references**（此前 CLI 路径为 0）。新增 CLI 集成测试证明实际 CLI 构建出的计划含预期 REFERENCES。
+  2. **关系失败不再静默**：BASED_ON_RECORD / RENDERS 端点缺失改为抛 ImporterError 并进入 IngestReport.failures（CLI 非零退出，已有集成测试）；HAS_REPRESENTATION / TAUGHT_IN 在案例导入同一事务内回读校验，目标文档未导入则案例事务整体回滚（测试证明 ClassCase 节点不残留）。
+  3. **CastRecord provenance 与更新语义**：import_cast_record 返回逐条结果（created/updated/unchanged + container_path + json_pointer，不含正文），IngestReport 新增 records 明细；未变化不写、内容变化更新当前内容并报告 updated。生成 MD 改走 M2-C2 容器校验（身份级绑定）。**图内 revision/audit 历史保留仍是缺口**：冻结 M3 目录无相应属性、容器非 SourceDocument，本轮不扩 Schema，明确延期至单独设计（计划第 8 节已标注），不声称已完成。
+  4. **文档删除/路径变化明确延期**：SourceDocument 目录无 active 属性，不自增 Schema；计划第 8 节已标注未实现/待设计，当前行为（未扫描到的文档不删除、不标记）已由测试固定。
+- 测试：全套 **348 passed**（此前 341，本轮净增 7：关系端点失败 ×3、CastRecord 生命周期、记录更新、未扫描文档不动、CLI REFERENCES 构建、CLI 失败退出码——含 1 个旧测试由"返回 False"改为"抛错"口径）；Ruff check / format、Mypy strict、git diff --check 全清，无新依赖；测试在 Cooper 的 Linux venv 运行，非 Mac、非 CI。
+- 边界确认：未连接 AuraDB、未写真实 Neo4j、未执行 Schema、未做任何 GCP 操作、未调用模型、未改 HTML/Functions/Source Collector。

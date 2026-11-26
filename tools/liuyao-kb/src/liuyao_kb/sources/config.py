@@ -16,7 +16,7 @@ Safe defaults, all of them:
 from __future__ import annotations
 
 from pathlib import Path, PurePosixPath
-from typing import Any
+from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -178,6 +178,51 @@ class ClassCasesSettings(BaseModel):
     include_globs: list[str] = Field(default_factory=lambda: ["materials/class-cases/**/*.json"])
 
 
+class CaseReferenceSection(BaseModel):
+    """One notes section assigned to a case, with its role."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    #: Matched against the start of a chunk's heading_path entries,
+    #: for example "7. " for the seventh numbered section.
+    heading_prefix: str = Field(min_length=1)
+    role: Literal["primary", "secondary"] = "primary"
+
+
+class CaseReferenceSettings(BaseModel):
+    """One explicit ClassCase -> lesson-notes REFERENCES assignment.
+
+    References are never inferred from content similarity: a human
+    records here which sections of which notes document a case's
+    REFERENCES links point at. ``notes_path`` is the
+    repository-relative POSIX path of the notes Markdown; the
+    importer composes its document_id from the repository slug.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    case_id: str = Field(min_length=1)
+    notes_path: str
+    sections: list[CaseReferenceSection] = Field(min_length=1)
+
+    @field_validator("notes_path")
+    @classmethod
+    def _validate_notes_path(cls, value: str) -> str:
+        raw = value.strip().replace("\\", "/")
+        if not raw or raw.startswith("/") or ":" in raw.split("/")[0]:
+            raise ValueError("notes_path must be a repository-relative POSIX path")
+        segments: list[str] = []
+        for segment in raw.split("/"):
+            if segment in {"", "."}:
+                continue
+            if segment == "..":
+                raise ValueError("notes_path must not contain '..' segments")
+            segments.append(segment)
+        if not segments:
+            raise ValueError("notes_path must not be empty")
+        return PurePosixPath(*segments).as_posix()
+
+
 class SourcesConfig(BaseModel):
     """Top-level source allowlist."""
 
@@ -189,6 +234,9 @@ class SourcesConfig(BaseModel):
     daily_records: DailyRecordsSettings = Field(default_factory=DailyRecordsSettings)
     pdf: PdfSettings = Field(default_factory=PdfSettings)
     external_projects: list[ExternalProject] = Field(default_factory=list)
+    #: Explicit case -> notes REFERENCES assignments (M4b). Empty by
+    #: default: no references are created unless a human lists them.
+    case_references: list[CaseReferenceSettings] = Field(default_factory=list)
 
     def summary(self) -> list[dict[str, Any]]:
         """A safe, human-readable description of what is enabled."""
@@ -232,6 +280,12 @@ class SourcesConfig(BaseModel):
                 "enabled": bool(self.external_projects),
                 "detail": f"{len(self.external_projects)} project(s)",
                 "trust": "external",
+            },
+            {
+                "source": "case_references",
+                "enabled": bool(self.case_references),
+                "detail": f"{len(self.case_references)} explicit case assignment(s)",
+                "trust": "classroom",
             },
         ]
         return rows

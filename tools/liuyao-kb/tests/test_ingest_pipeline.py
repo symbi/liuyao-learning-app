@@ -14,10 +14,16 @@ from typing import Any
 
 from fake_neo4j import FakeSession
 from liuyao_kb.ids import make_document_id
-from liuyao_kb.ingest import CaseReferenceSpec, collect_plan, run_plan
+from liuyao_kb.ingest import collect_plan, run_plan
 from liuyao_kb.neo4j.importer import ImportOutcome
 from liuyao_kb.sources import AllowedDailyRecord, DailyRecordsSettings, SourcesConfig
-from liuyao_kb.sources.config import ClassCasesSettings, CuratedNotesSettings, RawAsrSettings
+from liuyao_kb.sources.config import (
+    CaseReferenceSection,
+    CaseReferenceSettings,
+    ClassCasesSettings,
+    CuratedNotesSettings,
+    RawAsrSettings,
+)
 
 REPO = "symbi/liuyao-learning-app"
 RECORD_ID = "11111111-2222-3333-4444-555555555555"
@@ -121,27 +127,35 @@ def build_repo(root: Path) -> SourcesConfig:
             root=root,
             allowed_records=[AllowedDailyRecord(path=CONTAINER, record_id=RECORD_ID)],
         ),
+        case_references=list(CASE_REFERENCES),
     )
 
 
-SPECS = (
-    CaseReferenceSpec(
+#: The lesson-19 pilot assignments expressed through the sources
+#: configuration — the same entry the CLI uses. collect_plan is
+#: called without explicit specs in these tests, so they prove the
+#: configured path, not a hand-passed argument.
+CASE_REFERENCES = [
+    CaseReferenceSettings(
         case_id="L19-C03-synthetic",
-        notes_document_id=NOTES_DOC_ID,
-        sections=(("7. ", "primary"),),
+        notes_path=NOTES_PATH,
+        sections=[CaseReferenceSection(heading_prefix="7. ", role="primary")],
     ),
-    CaseReferenceSpec(
+    CaseReferenceSettings(
         case_id="L19-C02-synthetic",
-        notes_document_id=NOTES_DOC_ID,
-        sections=(("3. ", "primary"), ("10. ", "secondary")),
+        notes_path=NOTES_PATH,
+        sections=[
+            CaseReferenceSection(heading_prefix="3. ", role="primary"),
+            CaseReferenceSection(heading_prefix="10. ", role="secondary"),
+        ],
     ),
-)
+]
 
 
 class TestPilotShapedPlan:
     def test_collect_and_run(self, tmp_path: Path) -> None:
         sources = build_repo(tmp_path)
-        plan = collect_plan(sources, repository=REPO, reference_specs=SPECS)
+        plan = collect_plan(sources, repository=REPO)
 
         # The container JSON itself never becomes a document.
         assert all(not document.source_uri.endswith(CONTAINER) for document in plan.documents)
@@ -158,6 +172,15 @@ class TestPilotShapedPlan:
         session = FakeSession()
         report = run_plan(session, plan)
         assert report.ok, report.failures
+        assert report.references_written == 3
+        # Per-record provenance reaches the report without body text.
+        assert len(report.records) == 1
+        record_result = report.records[0]
+        assert record_result.record_id == RECORD_ID
+        assert record_result.container_path == CONTAINER
+        assert record_result.json_pointer == "/additionalQuestions/0"
+        assert record_result.outcome is ImportOutcome.CREATED
+        assert "casting_json" not in record_result.model_dump()
         graph = session.graph
 
         cases = graph.nodes_with_label("ClassCase")
@@ -195,6 +218,7 @@ class TestPilotShapedPlan:
         report_two = run_plan(session, plan)
         assert report_two.ok
         assert all(result.outcome is ImportOutcome.UNCHANGED for result in report_two.documents)
+        assert report_two.records[0].outcome is ImportOutcome.UNCHANGED
         assert graph.counts() == counts
 
     def test_asr_is_never_imported(self, tmp_path: Path) -> None:
@@ -208,3 +232,60 @@ class TestPilotShapedPlan:
         assert plan.documents == ()
         assert plan.chunk_count() == 0
         assert any("raw_asr" in note for note in plan.skipped)
+
+
+def test_record_content_update_is_reported_and_applied(tmp_path: Path) -> None:
+    sources = build_repo(tmp_path)
+    session = FakeSession()
+    first = run_plan(session, collect_plan(sources, repository=REPO))
+    assert first.records[0].outcome is ImportOutcome.CREATED
+    node = session.graph.node("CastRecord", RECORD_ID)
+    assert node is not None
+    before = node["casting_json"]
+
+    # The same allowlisted subrecord changes inside its container.
+    container_path = tmp_path / CONTAINER
+    container = json.loads(container_path.read_text(encoding="utf-8"))
+    container["additionalQuestions"][0]["question"] = "revised synthetic question"
+    container_path.write_text(json.dumps(container, ensure_ascii=False), encoding="utf-8")
+
+    second = run_plan(session, collect_plan(sources, repository=REPO))
+    assert second.ok, second.failures
+    assert second.records[0].outcome is ImportOutcome.UPDATED
+    assert second.records[0].container_path == CONTAINER
+    node = session.graph.node("CastRecord", RECORD_ID)
+    assert node is not None
+    assert node["casting_json"] != before
+    assert "revised synthetic question" in node["casting_json"]
+    # The frozen M3 catalog retains no prior record version in the
+    # graph; the run-level outcome above is the audit trail the
+    # report offers (the gap is documented in plan section 8).
+
+
+def test_unscanned_documents_are_left_untouched(tmp_path: Path) -> None:
+    """Deletion / path-change handling is deferred by design (plan
+    section 8): a later plan that no longer scans a document neither
+    deletes it nor marks it — the importer only writes what the
+    current plan carries, and history is never physically removed.
+    """
+    sources = build_repo(tmp_path)
+    session = FakeSession()
+    plan = collect_plan(sources, repository=REPO)
+    assert run_plan(session, plan).ok
+    graph = session.graph
+    counts_before = graph.counts()
+
+    notes_only = plan.model_copy(
+        update={
+            "documents": tuple(d for d in plan.documents if d.chunks),
+            "lessons": (),
+            "cases": (),
+            "records": (),
+            "record_links": (),
+            "renders_links": (),
+            "references": (),
+        }
+    )
+    assert run_plan(session, notes_only).ok
+    assert graph.counts() == counts_before
+    assert graph.node("ClassCase", "L19-C02-synthetic") is not None
