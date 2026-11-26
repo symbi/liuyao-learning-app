@@ -304,6 +304,71 @@ class TestChunkIdStability:
         assert all(c.revision_id == expected for c in result.chunks)
 
 
+class TestRevisionOccurrenceLayering:
+    """One chunk_id, two revisions: the occurrences coexist.
+
+    The Chunk DTO carries a stable identity layer (chunk_id, text,
+    text_hash, chunker_version) and a revision-specific locator
+    layer (revision_id, heading_path, offsets). The same paragraph
+    appearing in two revisions under different headings keeps its
+    chunk_id while its locators differ — in Neo4j that is one
+    Chunk node with two CONTAINS relationships, so the two DTOs
+    must be able to exist side by side without overwriting.
+    """
+
+    def test_same_paragraph_in_two_revisions_shares_id_not_locators(self) -> None:
+        first = chunk("# 甲标题\n\n相同正文段落。\n")
+        second = chunk("# 更长的乙标题\n\n相同正文段落。\n")
+        a, b = first.chunks[0], second.chunks[0]
+        # Identity layer is shared.
+        assert a.chunk_id == b.chunk_id
+        assert a.text == b.text
+        assert a.text_hash == b.text_hash
+        assert a.chunker_version == b.chunker_version
+        # Locator layer differs per revision.
+        assert a.revision_id != b.revision_id
+        assert a.heading_path == ("甲标题",)
+        assert b.heading_path == ("更长的乙标题",)
+        assert a.start_offset != b.start_offset
+        # Both occurrences coexist independently.
+        occurrences = {(c.revision_id, c.chunk_id): c for c in (a, b)}
+        assert len(occurrences) == 2
+        assert occurrences[(a.revision_id, a.chunk_id)].heading_path == ("甲标题",)
+        assert occurrences[(b.revision_id, b.chunk_id)].heading_path == ("更长的乙标题",)
+
+    def test_dto_objects_with_same_id_are_independent(self) -> None:
+        shared = {
+            "chunk_id": "doc|chunker-1|0|0|" + "a" * 64,
+            "document_id": "doc",
+            "text": "正文",
+            "text_hash": "a" * 64,
+            "chunker_version": CHUNKER_VERSION,
+        }
+        one = Chunk(
+            **shared,
+            revision_id="doc|rev-1",
+            heading_path=("标题一",),
+            paragraph_ordinal=0,
+            subchunk_index=0,
+            start_offset=10,
+            end_offset=12,
+        )
+        two = Chunk(
+            **shared,
+            revision_id="doc|rev-2",
+            heading_path=("标题二", "小节"),
+            paragraph_ordinal=0,
+            subchunk_index=0,
+            start_offset=42,
+            end_offset=44,
+        )
+        assert one.chunk_id == two.chunk_id
+        assert one != two
+        assert one.revision_id != two.revision_id
+        assert one.heading_path != two.heading_path
+        assert (one.start_offset, one.end_offset) != (two.start_offset, two.end_offset)
+
+
 class TestChunkModel:
     def test_span_must_match_text_length(self) -> None:
         with pytest.raises(ValueError):

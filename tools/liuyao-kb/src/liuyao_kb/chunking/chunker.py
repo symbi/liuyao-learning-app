@@ -38,6 +38,27 @@ subchunk_index + chunk_text_hash``. Neither ``revision_id`` nor the
 absolute offsets take part, so editing one paragraph re-identifies
 only that paragraph's chunks.
 
+Identity vs. locator layering (the M4b storage contract):
+
+* The :class:`Chunk` model below is an *occurrence DTO* for one
+  chunking run: it carries both layers so the importer has
+  everything in one object, but the layers must be stored
+  separately in Neo4j.
+* **Stable Chunk identity** — what the unique ``Chunk`` node holds:
+  ``chunk_id``, ``text``, ``text_hash`` (plus the M5 embedding
+  properties later). ``chunker_version`` is part of the identity
+  through ``chunk_id`` itself and is also recorded on the
+  ``DocumentRevision`` node.
+* **Revision-specific locator** — where this chunk occurs in one
+  particular revision: ``paragraph_ordinal``, ``subchunk_index``,
+  ``heading_path``, ``start_offset``, ``end_offset``. These values
+  may differ from revision to revision for the same ``chunk_id``,
+  so they belong on the ``DocumentRevision -[:CONTAINS]-> Chunk``
+  relationship as its properties, never as single-valued
+  properties of the shared Chunk node. ``revision_id`` is
+  expressed by the CONTAINS relationship's start node; it is not
+  a property of the Chunk node.
+
 Known v1 boundaries:
 
 * Fenced code blocks are body blocks for the adapter, so they are
@@ -84,18 +105,34 @@ _ELLIPSIS = "…"
 
 
 class Chunk(BaseModel):
-    """One retrievable text chunk of one document revision."""
+    """One chunk occurrence produced by one chunking run.
+
+    This is a DTO, not the Neo4j node shape. Its fields split into
+    the stable identity layer (``chunk_id``, ``text``,
+    ``text_hash``, ``chunker_version`` — what the shared Chunk
+    node stores) and the revision-specific locator layer
+    (``revision_id``, ``heading_path``, ``paragraph_ordinal``,
+    ``subchunk_index``, ``start_offset``, ``end_offset`` — what
+    the importer writes as properties of the
+    ``DocumentRevision -[:CONTAINS]-> Chunk`` relationship).
+    Two Chunk objects with the same ``chunk_id`` but different
+    locator fields are two occurrences of one chunk, not a
+    conflict. See the module docstring for the full contract.
+    """
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
+    # --- stable identity layer (the future Chunk node's content) ---
     chunk_id: str = Field(min_length=1)
     document_id: str = Field(min_length=1)
-    #: The revision this chunk was cut from. Carried for provenance
-    #: only; it is NOT part of the chunk's identity.
-    revision_id: str | None = None
     text: str = Field(min_length=1)
     #: SHA-256 of ``text`` (the same value embedded in ``chunk_id``).
     text_hash: str
+    # --- revision-specific locator layer (CONTAINS properties) ---
+    #: The revision this occurrence was cut from. Provenance for
+    #: the importer; in Neo4j it is the CONTAINS start node, never
+    #: a property of the shared Chunk node.
+    revision_id: str | None = None
     #: Heading hierarchy in effect at this chunk, outermost first.
     #: Empty when the paragraph precedes the first heading.
     heading_path: tuple[str, ...] = ()
@@ -109,6 +146,9 @@ class Chunk(BaseModel):
     #: 0-based half-open offsets into the revision's source text.
     start_offset: int = Field(ge=0)
     end_offset: int = Field(ge=0)
+    #: Part of the identity layer (it is a ``chunk_id`` component);
+    #: repeated on every occurrence so a run's output is
+    #: self-describing, and also stored on the DocumentRevision.
     chunker_version: str = Field(min_length=1)
 
     @model_validator(mode="after")

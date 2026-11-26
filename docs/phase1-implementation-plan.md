@@ -258,6 +258,7 @@ tools/liuyao-kb/
 重要实现约束：
 
 - 对 document_id、revision_id、chunk_id、record_id、case_id 建唯一约束。
+- Chunk 身份与定位分层（M4a 契约，2026-11-26）：Chunk 节点只保存跨 revision 稳定的内容属性（chunk_id、text、text_hash，以及 M5 的 embedding、embedding_model、embedding_dimensions）。某个 Chunk 在某个 revision 中的出现位置属于 revision-specific locator，保存在 `DocumentRevision -[:CONTAINS]-> Chunk` 的关系属性上：paragraph_ordinal、subchunk_index、heading_path（字符串数组）、start_offset、end_offset；revision_id 由 CONTAINS 的起点 DocumentRevision 节点表达，不得把会随 revision 变化的定位值写成共享 Chunk 节点的单一属性。节点目录中原有的 `ordinal`、`heading` 是本分层之前为同一批定位数据预留的名称（ordinal 对应段落序号、heading 对应标题信息）：按本契约改由 CONTAINS 关系承载，M4b 不得将其写到 Chunk 节点上；二者暂保留为目录中的历史名称，是否从 Schema 目录移除留待后续 Schema 修订单独决定（真实 Schema 尚未执行，无迁移问题；本条不修改 M3 Schema 代码）。`page` 对 Markdown 无意义，保持不写。关系属性不受数据库约束强制，由 Importer 在应用层校验（与既有约定一致）。
 - 对 JSON 中嵌套的六爻字段，用原始 JSON 字符串或明确的扁平化属性保存；不要假设 Neo4j 节点属性可直接存任意嵌套 JSON 对象。
 - ClassCase 与 CastRecord 是两个独立节点，各自保留唯一 ID（case_id 与 record_id）；不得把两者压成同一个节点或同一个 ID。只有 `dailyRecord.recordId` 明确匹配时才建立 BASED_ON_RECORD 关系；匹配不明确时不建关系，并保留 matchStatus 说明。
 - 同一个课堂案例的 JSON 与 MD 是同一案例的两份不同资料（JSON 为结构化记录；MD 为可读资料，可包含自身分析内容、来源链接与上下文），不要求内容一致，不产生重复 ClassCase 节点或重复案例计数，也不为 MD 另立案例身份；两者各自保留来源、路径与版本，内容冲突时保留各自来源、标记待核对、不静默合并；MD 中的链接只登记引用信息，不自动抓取目标文件；老师分析、用户 Memo、AI 分析保留各自来源身份，不能互相转化为老师确认内容。M2-C1 只识别配对 MD 的路径、存在状态与 case_id 关联（不解析正文），M2-C3 负责解析 MD 正文。自动生成 MD（daily-records）与课堂案例 MD 是两类文件，不得共用身份模型：前者是 CastRecord 的呈现（RENDERS），其 Chunk 必须排除 `## 原始记录 JSON` 代码块，避免把内嵌 JSON 当作独立文本重复索引。
@@ -276,6 +277,7 @@ tools/liuyao-kb/
 - document_id = source_type + repository + path（稳定身份）。
 - revision_id = document_id + content_hash。
 - chunk_id = document_id + chunker_version + paragraph_ordinal + subchunk_index + chunk_text_hash（M4a 修订：身份由段落序号 + 段内子块序号 + 正文哈希组成；不使用 revision_id 与绝对 offset 作为身份输入，保证只修改一个段落时其他段落的 chunk_id 不变、相同正文的不同段落不冲突；稳定性边界见 `tools/liuyao-kb/src/liuyao_kb/ids.py` 中 `make_chunk_id` 的说明）。
+- Chunk 存储分层契约（M4b 实现依据，2026-11-26）：Chunker 的输出对象（Python `Chunk`）是一次切分运行的 occurrence DTO，同时携带稳定身份字段与 revision-specific locator 字段；M4b 写入 Neo4j 时必须拆开——身份字段（chunk_id、text、text_hash）进 Chunk 节点，locator 字段（paragraph_ordinal、subchunk_index、heading_path、start_offset、end_offset）进 CONTAINS 关系属性，revision_id 由 CONTAINS 起点节点表达。同一 chunk_id 在不同 revision 中以不同 locator 出现是正常形态，不是冲突。详见第 7 节实现约束。
 - record_id = HTML 每日记录 JSON 中子记录的现有稳定 id（CastRecord 的身份）；不能只用日期或卦名当 ID。
 - case_id = 课堂案例的稳定身份（ClassCase 的身份，如 `L19-C01-work-transfer`）。case_id 与 record_id 是两套 ID，不得混用；只有 `dailyRecord.recordId` 明确匹配时，才在 ClassCase 与 CastRecord 之间建立 BASED_ON_RECORD。
 

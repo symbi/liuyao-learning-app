@@ -495,3 +495,9 @@ Secrets, credentials, private audio/transcripts, and personal records must never
 - 真实试点只读试运行（仅统计、未输出正文、未改原文件）：lesson-19 笔记 30 段 → 30 Chunk（最大 664 字符，拆分 0）；case-003 分析 MD 20 段 → 20 Chunk（最大 758，拆分 0）；case-002 分析 MD 19 段 → 19 Chunk（最大 730，拆分 0）；三份文件 offset 验证全部通过（69/69），重复运行 Chunk ID 完全一致。试点真实段落均未超过 1,200 字符，拆分路径由合成测试覆盖。
 - 已知限制：围栏代码块按普通段落切分（超长多为硬拆，无代码感知）；表格/列表按多行段落块切分，无行列结构；句子边界为确定性规则集而非语言学分句；每日生成 MD 必须经 M2-C2 的 body_sections 输入，直接对原始每日 MD 切分会重新包含嵌入 JSON（chunker 无法自行识别，已在模块 docstring 与集成测试中标明）。
 - 边界确认：未连接 AuraDB、未写 Neo4j、未调用 Embedding/生成模型、未创建或修改任何 GCP 资源、未改 HTML/Functions/Source Collector。M4a 完成不等于 M4 完成；M4b 须在本 PR 审查合并后单独启动。
+
+### M4a 修订：Chunk 身份与 revision-specific locator 分层（2026-11-26，PR #18 同分支）
+
+- 契约：Chunk 分两层。稳定身份层（未来 Neo4j Chunk 节点）：chunk_id、text、text_hash（及 M5 的 embedding 系列）；chunker_version 是 chunk_id 的组成部分，并同时记录在 DocumentRevision 节点上。Revision-specific locator 层（未来 `DocumentRevision -[:CONTAINS]-> Chunk` 关系属性）：paragraph_ordinal、subchunk_index、heading_path、start_offset、end_offset；revision_id 由 CONTAINS 起点节点表达，不作共享 Chunk 节点的单一版本属性。M4a 的 Python Chunk 模型仍是一次切分运行的 occurrence/result DTO，两层都携带，供 M4b 拆分写入。
+- 落点：`chunker.py` 模块 docstring 与 Chunk 模型注释已写明分层；实施计划第 7 节实现约束新增该契约并处理与 M3 Schema 目录的兼容：第 7 节/ schema.py 节点目录中 Chunk 的 `ordinal`、`heading` 是分层之前为同批定位数据预留的名称，按新契约改由 CONTAINS 关系承载，M4b 不得写到 Chunk 节点；暂保留为目录历史名称，是否移除留待后续 Schema 修订单独决定（真实 Schema 未执行，无迁移问题；本修订不改 Schema 代码、不执行数据库操作）。`page` 对 Markdown 无意义，保持不写。计划第 8 节已记录该存储契约供 M4b 直接实现。
+- 测试：新增 TestRevisionOccurrenceLayering（同一段落在两个 revision 中 chunk_id 相同而 revision_id / heading_path / offset 不同、两 occurrence 独立共存；以及同 chunk_id 的两个 DTO 对象互不覆盖）。既有 heading rename 与 offset 移动的 ID 稳定性测试保留不变。Chunk ID 公式与拆分算法未改。
