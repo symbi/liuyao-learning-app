@@ -105,7 +105,7 @@ RETURN k.case_id AS case_without_lesson;
 // ---------------------------------------------------------------------------
 MATCH (rec:CastRecord)
 OPTIONAL MATCH (k:ClassCase)-[b:BASED_ON_RECORD]->(rec)
-OPTIONAL MATCH (d:SourceDocument)-[r:RENDERS]->(rec)
+OPTIONAL MATCH (rec)-[r:RENDERS]->(d:SourceDocument)
 RETURN rec.record_id AS record_id, rec.record_type AS record_type,
        rec.date AS date, count(DISTINCT b) AS based_on_record,
        count(DISTINCT r) AS renders

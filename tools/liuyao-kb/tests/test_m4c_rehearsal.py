@@ -126,6 +126,19 @@ def test_pilot_first_import_matches_expected_counts() -> None:
         assert record_result.container_path.startswith("daily-records/2026/11/")
         assert record_result.json_pointer
 
+    # RENDERS direction and endpoints, one by one: the importer creates
+    # CastRecord -[:RENDERS]-> SourceDocument (the generated Markdown).
+    # Each of the two pilot links must start at its own CastRecord and
+    # end at that record's generated-Markdown document -- never the
+    # reverse, never crossed between the two records.
+    renders = session.graph.find_rels("RENDERS")
+    assert len(renders) == 2
+    expected_renders = {
+        (("CastRecord", record_id), ("SourceDocument", document_id))
+        for record_id, document_id in plan.renders_links
+    }
+    assert {(rel["from"], rel["to"]) for rel in renders} == expected_renders
+
 
 def test_pilot_rerun_is_fully_unchanged_and_stable() -> None:
     plan = _pilot_plan()

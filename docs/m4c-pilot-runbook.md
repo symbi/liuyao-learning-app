@@ -52,12 +52,12 @@ CLI dry-run 的预期输出行（路径部分除外须逐字一致）：
 > 每一步的实际命令以仓库 CLI 为准（`liuyao-kb schema check`、`liuyao-kb schema init`、`liuyao-kb ingest run …`）。关口之间必须停下汇报，不得连贯越过。
 
 1. **Schema check（只读）**：`schema check`。在 init 之前，预期为非零退出并报告 5 个唯一约束缺失——这是 init 前的预期状态，不是部署失败，原样记录。
-2. **** 取得单独授权后执行 `schema init`：只创建 M3 目录中的 5 个唯一约束（SourceDocument.document_id、DocumentRevision.revision_id、Chunk.chunk_id、CastRecord.record_id、ClassCase.case_id），不创建生产向量索引（向量维度是 M5 的决策）。
+2. **授权关口 1（Schema init）**：取得单独授权后执行 `schema init`。只创建 M3 目录中的 5 个唯一约束（SourceDocument.document_id、DocumentRevision.revision_id、Chunk.chunk_id、CastRecord.record_id、ClassCase.case_id），不创建生产向量索引（向量维度是 M5 的决策）。
 3. **Init 后重新 check**：`schema check` 必须退出 0；不为 0 则停止，报告差异，不导入数据。
 4. **最终 dry-run**：重复第 4 节第 6 步，确认计划未漂移。
-5. **** 取得单独授权后执行一次 `ingest run --no-dry-run --repository symbi/liuyao-learning-app`。只执行一次；无论结果如何都不自动重跑（复跑是关口 3 的独立步骤）。保存完整运行报告：每份文档的 outcome、每条 CastRecord 的 outcome 与 provenance（容器路径 + JSON Pointer，不含正文）、失败清单（预期为空）。
+5. **授权关口 2（单次真实导入）**：取得单独授权后执行一次 `ingest run --no-dry-run --repository symbi/liuyao-learning-app`。只执行一次；无论结果如何都不自动重跑（复跑是关口 3 的独立步骤）。保存完整运行报告：每份文档的 outcome、每条 CastRecord 的 outcome 与 provenance（容器路径 + JSON Pointer，不含正文）、失败清单（预期为空）。
 6. **导入后只读验证**：按 `tools/liuyao-kb/verification/pilot-verification.cypher` 逐条执行 Q1–Q10，与每条查询的预期比对；另将 Q7 的两条 record_id 与第 5 步报告中的 provenance 交叉核对（容器路径与 JSON Pointer 只存在于报告侧，图侧只验证 BASED_ON_RECORD / RENDERS 链）。任一条失败即停止，按第 7 节处理。
-7. **** 取得授权（可与关口 2 同批，但须明确提及）后，再执行一次同一命令。预期：7 份文档与 2 条记录全部 unchanged、报告 ok；随后重跑 Q1/Q2，结果须与第 6 步逐行全等（cypher 文件 Q11）。
+7. **授权关口 3（幂等复跑）**：取得授权（可与关口 2 同批，但须明确提及）后，再执行一次同一命令。预期：7 份文档与 2 条记录全部 unchanged、报告 ok；随后重跑 Q1/Q2，结果须与第 6 步逐行全等（cypher 文件 Q11）。
 8. **收尾记录**：把执行基线 SHA、各步退出码、导入报告摘要、验证结果写入 `docs/phase1-progress.md` 的 M4c 检查点；M4 至此才可标记为真实导入完成。
 
 ## 6. 事务边界（必须先理解再执行）
