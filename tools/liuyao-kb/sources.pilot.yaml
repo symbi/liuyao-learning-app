@@ -1,0 +1,95 @@
+# ---------------------------------------------------------------------------
+# liuyao-kb PILOT source allowlist (M4c first real-import pilot)
+#
+# This is the fixed, reviewable source set for the first controlled
+# import into AuraDB: the lesson-19 notes, classroom cases 002 and 003
+# (JSON + paired Markdown), and exactly two allowlisted daily records
+# with their generated Markdown. Nothing else is in scope:
+#
+#   * case-001 is NOT part of the pilot (deferred: no generated daily
+#     Markdown; its sources also reach into other lessons).
+#   * The 2026-11-22 subrecord d4f2ced4-... is NOT allowlisted: it has
+#     no class-case JSON link and stays a pending candidate.
+#   * Raw ASR stays disabled; no PDF; no external projects.
+#
+# Usage (M4c-B, separately authorized -- do not run from this file
+# without that authorization):
+#
+#   cp sources.pilot.yaml sources.yaml   # then set every `root` below
+#                                        # to your actual checkout path
+#   -- or pass it directly:  ingest run --sources sources.pilot.yaml ...
+#
+# The roots below use the same placeholder convention as
+# sources.example.yaml; they MUST be pointed at a real checkout of
+# symbi/liuyao-learning-app before any run. The M4c-A rehearsal test
+# (tests/test_m4c_rehearsal.py) loads this file and substitutes the
+# repository root programmatically, so the globs, the daily allowlist
+# and the case_references below are exactly what the rehearsal pins.
+# ---------------------------------------------------------------------------
+
+# --- Curated lesson notes: ONLY the lesson-19 notes ----------------------
+curated_notes:
+  enabled: true
+  root: ~/src/liuyao-learning-app
+  include_globs:
+    - "docs/lessons/lesson-19-notes-v0.1.md"
+  exclude_globs: []
+
+# --- Classroom cases: ONLY case-002 and case-003 (JSON; the paired ----
+# --- *-analysis.md Markdown is located by the mapper's convention) -----
+class_cases:
+  enabled: true
+  root: ~/src/liuyao-learning-app
+  include_globs:
+    - "materials/class-cases/lesson-19/case-002.json"
+    - "materials/class-cases/lesson-19/case-003.json"
+
+# --- Raw ASR: disabled. The pilot never reads transcript content. -------
+raw_asr:
+  enabled: false
+  root: ~/src/liuyao-learning-raw
+  index_content: false
+  allow_model_processing: false
+
+# --- Daily records: exactly the two pilot records -------------------------
+# case-002's record (container 2026-11-22) and case-003's record
+# (container 2026-11-24). Both ids were verified against the case JSON
+# dailyRecord links and the containers themselves (M4c-A, 2026-11-26).
+# The container JSON is NOT a SourceDocument; each generated Markdown
+# is imported unchunked and linked to its CastRecord via RENDERS.
+daily_records:
+  include: true
+  only_cases: true
+  root: ~/src/liuyao-learning-app
+  allowed_records:
+    - path: "daily-records/2026/11/2026-11-22.json"
+      record_id: "13e9c29a-cdbc-41e0-912d-5e02fa7c54d3"
+    - path: "daily-records/2026/11/2026-11-24.json"
+      record_id: "518d525a-838e-479d-8d2c-815296358b5e"
+
+# --- PDF: none in the pilot ----------------------------------------------
+pdf:
+  enabled: false
+  files: []
+  allow_model_processing: false
+
+# --- Case -> lesson-notes REFERENCES (explicit assignments only) ---------
+# Same assignments as sources.example.yaml (decided 2026-11-25):
+# case-003 is taught in notes section 7 (primary); case-002 is explained
+# in section 3 (primary) with the section 10 summary table as secondary.
+case_references:
+  - case_id: "L19-C03-female-marriage-multiple-guangui"
+    notes_path: "docs/lessons/lesson-19-notes-v0.1.md"
+    sections:
+      - heading_prefix: "7. "
+        role: "primary"
+  - case_id: "L19-C02-shop-operation-transfer"
+    notes_path: "docs/lessons/lesson-19-notes-v0.1.md"
+    sections:
+      - heading_prefix: "3. "
+        role: "primary"
+      - heading_prefix: "10. "
+        role: "secondary"
+
+# --- External projects: none in the pilot ---------------------------------
+external_projects: []
