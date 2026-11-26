@@ -200,6 +200,73 @@ class TestIngestReferencesAndFailures:
         assert result.exit_code == 0, result.stdout
         assert "3 references" in result.stdout
 
+    def _build_repo(self, tmp_path: Path, case_references: list[dict]) -> None:
+        repo = tmp_path / "repo"
+        self._write(
+            repo / "docs/lessons/lesson-19-notes-v0.1.md",
+            "# Lesson 19\n\n## 3. Section Three\n\nPrimary paragraph for case two.\n\n"
+            "## 7. Section Seven\n\nPrimary paragraph for case three.\n\n"
+            "## 10. Section Ten\n\nSummary paragraph.\n",
+        )
+        cases = repo / "materials/class-cases/lesson-19"
+        for case_id, stem in (
+            ("L19-C02-synthetic", "case-002"),
+            ("L19-C03-synthetic", "case-003"),
+        ):
+            self._write(
+                cases / f"{stem}.json",
+                json.dumps(
+                    {
+                        "recordType": "class-case",
+                        "id": case_id,
+                        "lessonId": "lesson-19",
+                        "matchStatus": "verified",
+                    }
+                ),
+            )
+            self._write(cases / f"{stem}-analysis.md", f"# {case_id}\n\nPaired body.\n")
+        config = {
+            "curated_notes": {"root": str(repo)},
+            "class_cases": {"root": str(repo)},
+            "case_references": case_references,
+        }
+        (tmp_path / "sources.yaml").write_text(yaml.safe_dump(config), encoding="utf-8")
+
+    def test_dry_run_with_unknown_configured_case_fails(self, tmp_path: Path) -> None:
+        self._build_repo(
+            tmp_path,
+            [
+                {
+                    "case_id": "L19-C99-absent",
+                    "notes_path": "docs/lessons/lesson-19-notes-v0.1.md",
+                    "sections": [{"heading_prefix": "7. ", "role": "primary"}],
+                }
+            ],
+        )
+        result = runner.invoke(
+            app, ["ingest", "run", "--dry-run", "--repository", "symbi/liuyao-learning-app"]
+        )
+        assert result.exit_code == 1
+        assert "L19-C99-absent" in result.stdout
+
+    def test_dry_run_with_unmatched_prefix_fails(self, tmp_path: Path) -> None:
+        self._build_repo(
+            tmp_path,
+            [
+                {
+                    "case_id": "L19-C02-synthetic",
+                    "notes_path": "docs/lessons/lesson-19-notes-v0.1.md",
+                    "sections": [{"heading_prefix": "99. ", "role": "primary"}],
+                }
+            ],
+        )
+        result = runner.invoke(
+            app, ["ingest", "run", "--dry-run", "--repository", "symbi/liuyao-learning-app"]
+        )
+        assert result.exit_code == 1
+        assert "99. " in result.stdout
+        assert "matched no chunk" in " ".join(result.stdout.split())
+
     def test_write_with_missing_link_endpoint_exits_nonzero(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:

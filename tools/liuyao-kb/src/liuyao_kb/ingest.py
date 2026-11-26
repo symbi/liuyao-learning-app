@@ -53,6 +53,7 @@ from liuyao_kb.neo4j.importer import (
     Neo4jImporter,
 )
 from liuyao_kb.sources import (
+    CaseReferenceSettings,
     ClassCaseMapping,
     SourcesConfig,
     link_daily_records,
@@ -366,9 +367,30 @@ def _collect_daily(sources: SourcesConfig, repository: str, plan: dict[str, Any]
     return record_mappings
 
 
-def _resolve_references(plan: dict[str, Any], specs: tuple[CaseReferenceSpec, ...]) -> None:
+class IngestPlanError(ValueError):
+    """The sources configuration or plan inputs are inconsistent.
+
+    Raised for explicitly configured ``case_references`` entries
+    that cannot be honoured exactly as written (fail-closed): a
+    configuration mistake must fail the run, never degrade into a
+    silent skip. Messages carry identifiers only (case_id,
+    notes_path, heading_prefix) — never source body text.
+    """
+
+
+def _resolve_references(
+    plan: dict[str, Any],
+    specs: tuple[CaseReferenceSpec, ...],
+    resolved: dict[str, tuple[CaseReferenceImport, ...]],
+) -> None:
+    """Lenient resolution for programmatic specs (kept for callers).
+
+    A spec whose notes document is absent, or whose sections match
+    nothing, is reported in the plan's skipped notes instead of
+    failing. Configured entries do NOT take this path — they are
+    validated strictly by :func:`_resolve_configured_references`.
+    """
     documents = {document.document_id: document for document in plan["documents"]}
-    resolved: dict[str, tuple[CaseReferenceImport, ...]] = {}
     for spec in specs:
         notes = documents.get(spec.notes_document_id)
         if notes is None:
@@ -392,7 +414,66 @@ def _resolve_references(plan: dict[str, Any], specs: tuple[CaseReferenceSpec, ..
                 f"case {spec.case_id}: no chunks matched the assigned notes sections; "
                 "references skipped (nothing is fabricated)"
             )
-    plan["references"] = tuple(resolved.items())
+
+
+def _resolve_configured_references(
+    plan: dict[str, Any],
+    configured: list[tuple[CaseReferenceSettings, str]],
+    resolved: dict[str, tuple[CaseReferenceImport, ...]],
+) -> None:
+    """Strict (fail-closed) resolution for ``case_references`` config.
+
+    Every configured entry must hold exactly as written: the case
+    is in this plan, the notes document is in this plan and has
+    chunks, every heading_prefix matches at least one chunk, and
+    no chunk is claimed by sections with conflicting roles. Any
+    violation raises :class:`IngestPlanError`, which fails
+    ``collect_plan`` — and therefore both CLI modes — before any
+    write is attempted.
+    """
+    documents = {document.document_id: document for document in plan["documents"]}
+    case_ids = {case.case_id for case in plan["cases"]}
+    for entry, document_id in configured:
+        where = f"case {entry.case_id} (notes_path {entry.notes_path})"
+        if entry.case_id not in case_ids:
+            raise IngestPlanError(
+                f"case_references: {where} is not among the cases in this "
+                "import plan; fix or remove the configuration entry"
+            )
+        notes = documents.get(document_id)
+        if notes is None:
+            raise IngestPlanError(
+                f"case_references: the notes document for {where} is not part of this import plan"
+            )
+        if not notes.chunks:
+            raise IngestPlanError(
+                f"case_references: the notes document for {where} produced no chunks to reference"
+            )
+        chosen: dict[str, str] = {}
+        for section in entry.sections:
+            matched = [
+                chunk
+                for chunk in notes.chunks
+                if any(heading.startswith(section.heading_prefix) for heading in chunk.heading_path)
+            ]
+            if not matched:
+                raise IngestPlanError(
+                    f"case_references: heading_prefix {section.heading_prefix!r} "
+                    f"for {where} matched no chunk in the notes document"
+                )
+            for chunk in matched:
+                previous = chosen.get(chunk.chunk_id)
+                if previous is not None and previous != section.role:
+                    raise IngestPlanError(
+                        f"case_references: role conflict for {where}: the chunk "
+                        f"at paragraph {chunk.paragraph_ordinal} is matched by "
+                        f"sections with roles {previous!r} and {section.role!r}; "
+                        "overlapping section assignments must agree on one role"
+                    )
+                chosen[chunk.chunk_id] = section.role
+        resolved[entry.case_id] = tuple(
+            CaseReferenceImport(chunk_id=chunk_id, role=role) for chunk_id, role in chosen.items()
+        )
 
 
 def collect_plan(
@@ -441,16 +522,16 @@ def collect_plan(
         plan["skipped"].append(
             "external_projects: Reference Package intake is M6 and deferred; nothing was imported"
         )
-    specs_by_case: dict[str, CaseReferenceSpec] = {}
-    for entry in sources.case_references:
-        specs_by_case[entry.case_id] = CaseReferenceSpec(
-            case_id=entry.case_id,
-            notes_document_id=make_document_id("markdown", repository, entry.notes_path),
-            sections=tuple((section.heading_prefix, section.role) for section in entry.sections),
-        )
-    for spec in reference_specs:
-        specs_by_case[spec.case_id] = spec
-    _resolve_references(plan, tuple(specs_by_case.values()))
+    programmatic = {spec.case_id: spec for spec in reference_specs}
+    configured = [
+        (entry, make_document_id("markdown", repository, entry.notes_path))
+        for entry in sources.case_references
+        if entry.case_id not in programmatic
+    ]
+    resolved: dict[str, tuple[CaseReferenceImport, ...]] = {}
+    _resolve_configured_references(plan, configured, resolved)
+    _resolve_references(plan, tuple(programmatic.values()), resolved)
+    plan["references"] = tuple(resolved.items())
     return IngestPlan(**plan)
 
 

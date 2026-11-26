@@ -460,6 +460,7 @@ class TestCaseRecordAndLinks:
             "classroom_case",
         )
         importer.import_document(json_doc)  # the paired MD document is NOT imported
+        importer.import_lesson(LessonImport(lesson_id="lesson-99", lesson_number=99, title="L99"))
         with pytest.raises(ImporterError, match="HAS_REPRESENTATION target"):
             importer.import_class_case(
                 ClassCaseImport(
@@ -476,6 +477,41 @@ class TestCaseRecordAndLinks:
         assert graph.node("ClassCase", "L99-C01-synthetic") is None  # rolled back
         assert graph.find_rels("HAS_REPRESENTATION") == []
         assert graph.find_rels("TAUGHT_IN") == []
+
+    def test_case_import_fails_and_rolls_back_when_lesson_missing(self) -> None:
+        session = FakeSession()
+        importer = Neo4jImporter(session)
+        json_doc = _plain_document(
+            make_document_id(
+                "classroom_case", REPO, "materials/class-cases/lesson-99/case-001.json"
+            ),
+            "classroom_case",
+        )
+        md_doc = _plain_document(
+            make_document_id(
+                "markdown", REPO, "materials/class-cases/lesson-99/case-001-analysis.md"
+            )
+        )
+        importer.import_document(json_doc)
+        importer.import_document(md_doc)
+        lessons_before = len(session.graph.nodes_with_label("Lesson"))
+        with pytest.raises(ImporterError, match="TAUGHT_IN cannot be created"):
+            importer.import_class_case(
+                ClassCaseImport(
+                    case_id="L99-C01-synthetic",
+                    lesson_id="lesson-99",
+                    match_status="verified",
+                    json_document_id=json_doc.document_id,
+                    markdown_document_id=md_doc.document_id,
+                )
+            )
+        graph = session.graph
+        # Nothing from the case transaction survives, and no
+        # identity-only placeholder Lesson was created.
+        assert graph.node("ClassCase", "L99-C01-synthetic") is None
+        assert graph.find_rels("HAS_REPRESENTATION") == []
+        assert graph.find_rels("TAUGHT_IN") == []
+        assert len(graph.nodes_with_label("Lesson")) == lessons_before == 0
 
     def test_cast_record_lifecycle_reports_provenance_and_outcome(self) -> None:
         session = FakeSession()

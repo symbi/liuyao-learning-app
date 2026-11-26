@@ -525,3 +525,13 @@ Secrets, credentials, private audio/transcripts, and personal records must never
   4. **文档删除/路径变化明确延期**：SourceDocument 目录无 active 属性，不自增 Schema；计划第 8 节已标注未实现/待设计，当前行为（未扫描到的文档不删除、不标记）已由测试固定。
 - 测试：全套 **348 passed**（此前 341，本轮净增 7：关系端点失败 ×3、CastRecord 生命周期、记录更新、未扫描文档不动、CLI REFERENCES 构建、CLI 失败退出码——含 1 个旧测试由"返回 False"改为"抛错"口径）；Ruff check / format、Mypy strict、git diff --check 全清，无新依赖；测试在 Cooper 的 Linux venv 运行，非 Mac、非 CI。
 - 边界确认：未连接 AuraDB、未写真实 Neo4j、未执行 Schema、未做任何 GCP 操作、未调用模型、未改 HTML/Functions/Source Collector。
+
+### M4b 第二轮审查修订检查点（2026-11-26，PR #19 同分支）
+
+- 按 ChatGPT 第二轮审查意见修订两项，PR #19 保持 Open / Draft：
+  1. **TAUGHT_IN 不再自动创建 Lesson**：`Q_MERGE_TAUGHT_IN` 改为双端点 MATCH + MERGE 关系并 RETURN；Lesson 未先导入时语句无匹配、抛 ImporterError，案例事务（ClassCase、HAS_REPRESENTATION 等）整体回滚。测试 Fake 同步真实 MATCH 语义（不在该路径补建 Lesson）。新增测试：Lesson 缺失时案例导入失败且 ClassCase/HAS_REPRESENTATION/TAUGHT_IN 均不残留、Lesson 节点数不增加；正常路径（先 Lesson 后 Case）由既有测试覆盖并断言关系存在。
+  2. **显式 REFERENCES 配置 fail-closed**：配置加载期拒绝重复 case_id 与条目内重复 heading_prefix（pydantic 校验，YAML 与构造两路均有测试）；计划构建期新增严格验证 `_resolve_configured_references`——case 不在计划、notes 文档不在计划或无 Chunk、任一 heading_prefix 零匹配、重叠章节角色冲突，四类错误均抛 IngestPlanError（含 case_id/notes_path/heading_prefix 定位、不含正文），collect_plan 失败，CLI dry-run 与 --no-dry-run 都在写入前非零退出（CLI 侧新增未知 case 与未匹配 prefix 两项失败测试）。编程式 reference_specs 的宽松跳过与按 case_id 覆盖规则保留，与配置路径明确区分；无 case_references 时无 REFERENCES 的正常导入有回归测试。
+- 复测：真实试点（配置驱动）仍为 9 条 REFERENCES（case-003 primary 4；case-002 primary 2 + secondary 3），全量重跑 unchanged、图稳定；真实 CLI dry-run 仍输出 9 references、退出码 0。
+- 测试：全套 **359 passed**（348 + 11）；Ruff check / format、Mypy strict、git diff --check 全清，无新依赖；Cooper 的 Linux venv，非 Mac、非 CI。
+- 保留不变：Chunk/locator 分层、revision 事务与回滚、Chunk 冲突保护、未变化零写事务、CastRecord 三态与 provenance、每日记录 audit 历史与文档删除/路径变化两项明确延期、M3 Schema 未动。
+- 边界确认：未连接 AuraDB、未执行真实写入或 Schema、未做任何 GCP 操作、未调用模型、未读 ASR 正文、未改 HTML/Functions/Source Collector。

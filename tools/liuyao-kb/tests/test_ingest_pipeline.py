@@ -12,9 +12,11 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from fake_neo4j import FakeSession
 from liuyao_kb.ids import make_document_id
-from liuyao_kb.ingest import collect_plan, run_plan
+from liuyao_kb.ingest import IngestPlanError, collect_plan, run_plan
 from liuyao_kb.neo4j.importer import ImportOutcome
 from liuyao_kb.sources import AllowedDailyRecord, DailyRecordsSettings, SourcesConfig
 from liuyao_kb.sources.config import (
@@ -260,6 +262,71 @@ def test_record_content_update_is_reported_and_applied(tmp_path: Path) -> None:
     # The frozen M3 catalog retains no prior record version in the
     # graph; the run-level outcome above is the audit trail the
     # report offers (the gap is documented in plan section 8).
+
+
+class TestConfiguredReferencesFailClosed:
+    """Explicit case_references configuration is fail-closed: any
+    entry that cannot be honoured exactly as written fails
+    collect_plan with an IngestPlanError naming the identifiers
+    involved (never body text)."""
+
+    def _sources(
+        self, tmp_path: Path, case_references: list[CaseReferenceSettings]
+    ) -> SourcesConfig:
+        return build_repo(tmp_path).model_copy(update={"case_references": case_references})
+
+    def _entry(self, case_id: str, sections: list[CaseReferenceSection]) -> CaseReferenceSettings:
+        return CaseReferenceSettings(case_id=case_id, notes_path=NOTES_PATH, sections=sections)
+
+    def test_unknown_case_fails(self, tmp_path: Path) -> None:
+        sources = self._sources(
+            tmp_path,
+            [self._entry("L19-C99-absent", [CaseReferenceSection(heading_prefix="7. ")])],
+        )
+        with pytest.raises(IngestPlanError, match="L19-C99-absent"):
+            collect_plan(sources, repository=REPO)
+
+    def test_notes_document_not_in_plan_fails(self, tmp_path: Path) -> None:
+        entry = CaseReferenceSettings(
+            case_id="L19-C02-synthetic",
+            notes_path="docs/lessons/lesson-20-notes-v0.1.md",
+            sections=[CaseReferenceSection(heading_prefix="3. ")],
+        )
+        sources = self._sources(tmp_path, [entry])
+        with pytest.raises(IngestPlanError, match="not part of this import plan"):
+            collect_plan(sources, repository=REPO)
+
+    def test_prefix_without_match_fails(self, tmp_path: Path) -> None:
+        sources = self._sources(
+            tmp_path,
+            [self._entry("L19-C02-synthetic", [CaseReferenceSection(heading_prefix="99. ")])],
+        )
+        with pytest.raises(IngestPlanError, match="matched no chunk"):
+            collect_plan(sources, repository=REPO)
+
+    def test_role_conflict_fails(self, tmp_path: Path) -> None:
+        sources = self._sources(
+            tmp_path,
+            [
+                self._entry(
+                    "L19-C02-synthetic",
+                    [
+                        CaseReferenceSection(heading_prefix="3. ", role="primary"),
+                        CaseReferenceSection(heading_prefix="3. 求", role="secondary"),
+                    ],
+                )
+            ],
+        )
+        with pytest.raises(IngestPlanError, match="role conflict"):
+            collect_plan(sources, repository=REPO)
+
+    def test_no_configuration_still_imports(self, tmp_path: Path) -> None:
+        sources = self._sources(tmp_path, [])
+        plan = collect_plan(sources, repository=REPO)
+        assert plan.references == ()
+        report = run_plan(FakeSession(), plan)
+        assert report.ok, report.failures
+        assert report.references_written == 0
 
 
 def test_unscanned_documents_are_left_untouched(tmp_path: Path) -> None:

@@ -205,6 +205,19 @@ class CaseReferenceSettings(BaseModel):
     notes_path: str
     sections: list[CaseReferenceSection] = Field(min_length=1)
 
+    @model_validator(mode="after")
+    def _validate_unique_prefixes(self) -> CaseReferenceSettings:
+        seen: set[str] = set()
+        for section in self.sections:
+            if section.heading_prefix in seen:
+                raise ValueError(
+                    f"case_references for case {self.case_id}: heading_prefix "
+                    f"{section.heading_prefix!r} is listed more than once; "
+                    "each prefix may appear once, with one role"
+                )
+            seen.add(section.heading_prefix)
+        return self
+
     @field_validator("notes_path")
     @classmethod
     def _validate_notes_path(cls, value: str) -> str:
@@ -237,6 +250,19 @@ class SourcesConfig(BaseModel):
     #: Explicit case -> notes REFERENCES assignments (M4b). Empty by
     #: default: no references are created unless a human lists them.
     case_references: list[CaseReferenceSettings] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _validate_unique_case_references(self) -> SourcesConfig:
+        seen: set[str] = set()
+        for entry in self.case_references:
+            if entry.case_id in seen:
+                raise ValueError(
+                    f"case_references: case {entry.case_id} is configured more "
+                    "than once; merge its sections into a single entry — a "
+                    "later entry never silently overrides an earlier one"
+                )
+            seen.add(entry.case_id)
+        return self
 
     def summary(self) -> list[dict[str, Any]]:
         """A safe, human-readable description of what is enabled."""

@@ -326,8 +326,9 @@ SET rel.format = $format, rel.match_status_raw = $match_status_raw
 
 Q_MERGE_TAUGHT_IN = """
 MATCH (k:ClassCase {case_id: $case_id})
-MERGE (l:Lesson {lesson_id: $lesson_id})
+MATCH (l:Lesson {lesson_id: $lesson_id})
 MERGE (k)-[:TAUGHT_IN]->(l)
+RETURN l.lesson_id AS lesson_id
 """
 
 Q_READ_CAST_RECORD = """
@@ -349,11 +350,6 @@ SET rec.record_type = $record_type,
 Q_CASE_REPRESENTATION_DOCS = """
 MATCH (k:ClassCase {case_id: $case_id})-[:HAS_REPRESENTATION]->(d:SourceDocument)
 RETURN d.document_id AS document_id
-"""
-
-Q_CASE_TAUGHT_LESSON = """
-MATCH (k:ClassCase {case_id: $case_id})-[:TAUGHT_IN]->(l:Lesson)
-RETURN l.lesson_id AS lesson_id
 """
 
 Q_LINK_BASED_ON_RECORD = """
@@ -570,7 +566,20 @@ class Neo4jImporter:
                     match_status_raw=None,
                 )
             if case.lesson_id is not None:
-                tx.run(Q_MERGE_TAUGHT_IN, case_id=case.case_id, lesson_id=case.lesson_id)
+                # MATCH-only on both endpoints: a Lesson is created
+                # exclusively by import_lesson. If it was not
+                # imported first, the statement matches nothing and
+                # the case import fails and rolls back — an
+                # identity-only placeholder Lesson is never created.
+                taught_rows = list(
+                    tx.run(Q_MERGE_TAUGHT_IN, case_id=case.case_id, lesson_id=case.lesson_id)
+                )
+                if not taught_rows:
+                    raise ImporterError(
+                        f"case {case.case_id}: TAUGHT_IN cannot be created: "
+                        f"lesson {case.lesson_id} is not imported; the case "
+                        "import is rolled back"
+                    )
             # MATCH-based writes fail silently when an endpoint is
             # absent, so verify inside the same transaction: a
             # missing representation document (for example because
@@ -590,16 +599,6 @@ class Neo4jImporter:
                     f"not imported: {', '.join(sorted(missing))}; the case import "
                     "is rolled back"
                 )
-            if case.lesson_id is not None:
-                taught = {
-                    row["lesson_id"] for row in tx.run(Q_CASE_TAUGHT_LESSON, case_id=case.case_id)
-                }
-                if case.lesson_id not in taught:
-                    raise ImporterError(
-                        f"case {case.case_id}: TAUGHT_IN link to lesson "
-                        f"{case.lesson_id} was not created; the case import "
-                        "is rolled back"
-                    )
 
         self._session.execute_write(work)
 
