@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>六爻排卦与每日记录 v80</title>
+<title>六爻排卦与每日记录 v98</title>
 <style>
   :root {
     --paper:#f7f3e9; --paper-2:#efe7d5; --ink:#282b25; --muted:#77786b;
@@ -42,7 +42,7 @@
   .calendar-char.element-wood{color:#32844b}
   .calendar-char.element-earth{color:#89613f}
   .calendar-char.element-fire{color:#c44738}
-  .calendar-char.element-metal{color:#b98519}
+  .calendar-char.element-metal{color:#D19A00}
   /* v49: monthly 旺相 marker. Fill = 旺 element; ring = 相 element.
      Compact 36px circle with a 3px ring; no glow/shadow and no pillar-width change. */
   .calendar-char.month-wangxiang{
@@ -62,10 +62,12 @@
   .branch-groups{display:grid;grid-template-columns:auto auto;gap:12px;align-items:center}
   .branch-sub{font-size:11px;color:var(--muted);margin-bottom:6px}
   .tiles{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
-  .tile{user-select:none;touch-action:none;border:1px solid #dcd5c5;background:#fffdf7;border-radius:7px;min-width:28px;width:28px;height:30px;padding:3px 1px;text-align:center;color:var(--ink);font-size:13px;font-weight:750;cursor:grab;box-shadow:none;transition:transform .12s,border-color .12s,background .12s}
-  .tile:hover{border-color:#8da794;transform:translateY(-1px)}
+  .tile{user-select:none;touch-action:none;border:1px solid #dcd5c5;background:#fffdf7;border-radius:7px;min-width:28px;width:28px;height:30px;padding:3px 1px;text-align:center;color:var(--ink);font-size:13px;font-weight:750;cursor:grab;box-shadow:none;transition:transform .2s cubic-bezier(.2,.75,.25,1),border-color .2s ease,background .2s ease,box-shadow .2s ease}
+  .tile:hover{border-color:#8da794;transform:translateY(-4px) scale(1.12);z-index:4;cursor:grab;box-shadow:0 4px 10px rgba(61,48,28,.16)}
   .tile:active{cursor:grabbing}
-  .tile.selected{outline:2px solid var(--gold);background:var(--gold-soft);border-color:var(--gold)}
+  .tile.selected{outline:2px solid var(--gold);background:var(--gold-soft);border-color:var(--gold);position:relative;z-index:6;transform:translateY(-6px) scale(1.18);box-shadow:0 6px 14px rgba(61,48,28,.24)}
+  .branch-pair .tile.selected{transform:translateY(-6px) scale(1.18);z-index:7}
+  .tile.selected:hover,.branch-pair .tile.selected:hover{transform:translateY(-6px) scale(1.18);z-index:8;box-shadow:0 6px 14px rgba(61,48,28,.24)}
   .tile.yang{color:#8a6032;background:#fcf5e5}
   .tile.yin{color:#526c83;background:#f0f5f7}
   /* Five-element colors for the earthly branches */
@@ -73,22 +75,43 @@
   .tile.element-wood{color:#32844b;background:#edf6ed;border-color:#bfd9c2}
   .tile.element-earth{color:#89613f;background:#f5eee5;border-color:#d9c6ae}
   .tile.element-fire{color:#c44738;background:#fff0ed;border-color:#efc2b9}
-  .tile.element-metal{color:#b98519;background:#fcf4df;border-color:#e5d19b}
+  .tile.element-metal{color:#D19A00;background:#FFF7D6;border-color:#E6C454}
   .kin-tiles .tile{min-width:44px;width:44px;height:30px;padding:3px 1px}
   .palette-help{display:none}
   .palette-help strong{color:var(--jade)}
   .worksheet{padding:12px 12px 14px}
-  .worksheet-subhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;min-height:36px}
-  .hexagram-heading{display:flex;align-items:center;min-height:34px;min-width:56px;gap:10px;flex-wrap:wrap}
+  .worksheet-subhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px;min-height:36px;flex-wrap:wrap}
+  .auto-assembly-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex:0 0 auto;margin-left:auto}
+  .auto-review-report{width:100%;margin:0 0 8px;padding:8px 10px;border:1px solid #e2d3b8;border-radius:8px;background:#fbf6e9;color:#504b3f;font-size:12px;line-height:1.5}
+  .auto-review-report[hidden]{display:none!important}
+  .auto-review-report strong{display:block;margin-bottom:2px;font-size:12px;font-weight:900}
+  .auto-review-summary{color:#686252}
+  .auto-review-list{display:grid;gap:2px;margin:5px 0 0;padding-left:18px;max-height:190px;overflow:auto}
+  .auto-review-list li{padding-right:3px}
+  .auto-review-list li.error{color:#a33e2d}
+  .auto-review-list li.missing{color:#90651d}
+  .auto-review-list li.note{color:#65685d}
+  .drop-slot.auto-check-error{border:1.5px solid #b94d39!important;background:#fff0ec!important;box-shadow:0 0 0 2px rgba(185,77,57,.13)!important}
+  .drop-slot.auto-check-missing{border:1.5px dashed #D19A00!important;background:#fff8e8!important;box-shadow:0 0 0 2px rgba(185,133,25,.11)!important}
+  .drop-slot.wrong-xunkong{outline:2px solid #c44738;outline-offset:2px;}
+  .hexagram-heading{display:flex;align-items:center;min-height:34px;min-width:56px;gap:6px;flex-wrap:wrap;flex:1 1 auto}
+  @media(max-width:560px){.auto-assembly-actions{width:100%;margin-left:0;justify-content:flex-start}.auto-assembly-actions .small-action{padding:5px 8px;font-size:11px}.auto-review-report{font-size:11px}}
   .date-branch-sidecar{white-space:nowrap;}
   .hexagram-name{display:inline-flex;align-items:center;font-size:25px;font-weight:900;line-height:1;letter-spacing:.04em;white-space:nowrap}
-  .hexagram-element-badge{width:27px;height:27px;flex:0 0 27px;border:1.8px solid currentColor;border-radius:50%;display:inline-grid;place-items:center;font-size:14px;font-weight:900;line-height:1;white-space:nowrap;background:rgba(255,253,247,.75)}
-  .hexagram-element-badge:empty{display:none}
-  .hexagram-element-badge.element-water{color:#2677b8;border-color:#2677b8}
-  .hexagram-element-badge.element-wood{color:#32844b;border-color:#32844b}
-  .hexagram-element-badge.element-earth{color:#89613f;border-color:#89613f}
-  .hexagram-element-badge.element-fire{color:#c44738;border-color:#c44738}
-  .hexagram-element-badge.element-metal{color:#b98519;border-color:#b98519}
+  .hexagram-shi-prefix{margin-right:1px}
+  .hexagram-palace-badge{
+    width:27px;height:27px;min-width:27px;flex:0 0 27px;
+    display:inline-flex;align-items:center;justify-content:center;
+    box-sizing:border-box;border:2px solid currentColor;border-radius:50%;
+    background:#fffdf7;font-size:15px;font-weight:950;line-height:1;
+    margin-left:1px;white-space:nowrap;
+  }
+  .hexagram-palace-badge[hidden]{display:none!important}
+  .hexagram-palace-badge.element-water{color:#2677b8;background:#eaf3fb}
+  .hexagram-palace-badge.element-wood{color:#32844b;background:#edf6ed}
+  .hexagram-palace-badge.element-earth{color:#89613f;background:#f5eee5}
+  .hexagram-palace-badge.element-fire{color:#c44738;background:#fff0ed}
+  .hexagram-palace-badge.element-metal{color:#D19A00;background:#FFF7D6}
   .hexagram-meta{font-size:15px;font-weight:900;line-height:1.2;color:#282b25;white-space:nowrap;padding:0;margin-left:5px;min-height:0;display:inline-flex;align-items:center;gap:0}
   .hexagram-meta:empty{display:none}
   .hexagram-meta .relation-shi,.hexagram-meta .relation-ying{font-weight:950}
@@ -113,12 +136,12 @@
   .hexagram-name.element-wood{color:#32844b}
   .hexagram-name.element-earth{color:#89613f}
   .hexagram-name.element-fire{color:#c44738}
-  .hexagram-name.element-metal{color:#b98519}
+  .hexagram-name.element-metal{color:#D19A00}
   .hexagram-name .element-water{color:#2677b8}
   .hexagram-name .element-wood{color:#32844b}
   .hexagram-name .element-earth{color:#89613f}
   .hexagram-name .element-fire{color:#c44738}
-  .hexagram-name .element-metal{color:#b98519}
+  .hexagram-name .element-metal{color:#D19A00}
   .hexagram-name:empty{visibility:hidden}
   .worksheet-tools{display:flex;gap:7px;flex-wrap:wrap}
   .legend{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:11px;flex-wrap:wrap}
@@ -137,23 +160,46 @@
   .trigram-name.element-wood{color:#32844b}
   .trigram-name.element-earth{color:#89613f}
   .trigram-name.element-fire{color:#c44738}
-  .trigram-name.element-metal{color:#b98519}
+  .trigram-name.element-metal{color:#D19A00}
   .calendar-value{display:inline-flex;align-items:center;gap:1px;white-space:nowrap}
   .calendar-char.element-water{color:#2677b8}
   .calendar-char.element-wood{color:#32844b}
   .calendar-char.element-earth{color:#89613f}
   .calendar-char.element-fire{color:#c44738}
-  .calendar-char.element-metal{color:#b98519}
+  .calendar-char.element-metal{color:#D19A00}
   .calendar-divider{color:#999687;font-weight:500;padding:0 3px}
   .trigram-group-rows{display:flex;flex-direction:column;gap:7px;min-width:0}
-  .line-row{display:grid;width:max-content;max-width:100%;grid-template-columns:116px 52px 29px 46px 52px 29px 46px 6em;gap:6px;align-items:center;border:1px solid #e8e0d1;border-radius:9px;padding:6px 8px;background:#fffefb;transition:border-color .15s,background .15s;overflow-x:auto}
+  .line-row{display:grid;width:max-content;max-width:100%;grid-template-columns:116px 52px 52px 46px 52px 29px 46px 6em 88px;gap:6px;align-items:center;border:1px solid #e8e0d1;border-radius:9px;padding:6px 8px;background:#fffefb;transition:border-color .15s,background .15s;overflow-x:auto}
   .line-row:hover{border-color:#c9d6c9}
+  .branch-cell-group{display:flex;align-items:center;gap:2px;width:100%;min-width:0;}
+  .branch-cell-group>.hidden-relation-cell{flex:0 0 21px;width:21px;min-width:21px;height:31px;min-height:31px;padding:0;font-size:9px;}
+  .hidden-relation-cell .drop-token{font-size:9px;}
+  .hidden-relation-cell .clear-slot{right:-3px;top:-4px;width:10px;height:10px;font-size:8px;}
+  .branch-cell-group>.branch-cell{flex:1 1 0;width:auto;min-width:0;}
   .cell-label{display:none;font-size:10px;color:var(--muted);margin-bottom:3px}
   .flower-options{display:flex;gap:3px;flex-wrap:nowrap;justify-content:flex-start}
   .flower-btn{width:26px;min-width:26px;height:29px;flex:0 0 26px;border:1px solid #e0d8c8;border-radius:6px;padding:3px 0;background:#faf7ef;color:#535349;font-size:14px;line-height:1;font-weight:800;white-space:nowrap}
   .flower-btn:hover{border-color:#b6c6b5}
   .flower-btn.active{background:var(--jade-soft);border-color:#7ca087;color:#315844;box-shadow:inset 0 0 0 1px #7ca087}
   .flower-btn.active.moving-option{background:var(--red-soft);border-color:var(--red);color:var(--red);box-shadow:inset 0 0 0 1px var(--red)}
+
+  /* The six casting controls follow the completed hexagram's 八宫 element. */
+  .rows.element-water .flower-btn{background:#eaf3fb;border-color:#b9d5ea;color:#2677b8}
+  .rows.element-water .flower-btn:hover{background:#dcecf8;border-color:#2677b8}
+  .rows.element-water .flower-btn.active,.rows.element-water .flower-btn.active.moving-option{background:#2677b8;border-color:#1d6299;color:#fffdf7;box-shadow:inset 0 0 0 1px #1d6299}
+  .rows.element-wood .flower-btn{background:#edf6ed;border-color:#bfd9c2;color:#32844b}
+  .rows.element-wood .flower-btn:hover{background:#deefdf;border-color:#32844b}
+  .rows.element-wood .flower-btn.active,.rows.element-wood .flower-btn.active.moving-option{background:#32844b;border-color:#286b3c;color:#fffdf7;box-shadow:inset 0 0 0 1px #286b3c}
+  .rows.element-earth .flower-btn{background:#f5eee5;border-color:#d9c6ae;color:#89613f}
+  .rows.element-earth .flower-btn:hover{background:#eee0d0;border-color:#89613f}
+  .rows.element-earth .flower-btn.active,.rows.element-earth .flower-btn.active.moving-option{background:#89613f;border-color:#704b30;color:#fffdf7;box-shadow:inset 0 0 0 1px #704b30}
+  .rows.element-fire .flower-btn{background:#fff0ed;border-color:#efc2b9;color:#c44738}
+  .rows.element-fire .flower-btn:hover{background:#ffe2dc;border-color:#c44738}
+  .rows.element-fire .flower-btn.active,.rows.element-fire .flower-btn.active.moving-option{background:#c44738;border-color:#9f382e;color:#fffdf7;box-shadow:inset 0 0 0 1px #9f382e}
+  .rows.element-metal .flower-btn{background:#FFF7D6;border-color:#E6C454;color:#D19A00}
+  .rows.element-metal .flower-btn:hover{background:#FFF0B3;border-color:#D19A00}
+  .rows.element-metal .flower-btn.active,.rows.element-metal .flower-btn.active.moving-option{background:#D19A00;border-color:#A87900;color:#fffdf7;box-shadow:inset 0 0 0 1px #A87900}
+
   .line-result{text-align:center}
   .change-cell{display:flex;align-items:center;justify-content:center;min-width:0}
   .change-mark{width:48px;height:15px;position:relative;display:flex;gap:4px;align-items:center;justify-content:center}
@@ -180,7 +226,7 @@
   .drop-token.element-wood{color:#32844b}
   .drop-token.element-earth{color:#89613f}
   .drop-token.element-fire{color:#c44738}
-  .drop-token.element-metal{color:#b98519}
+  .drop-token.element-metal{color:#D19A00}
   .kin-filled .drop-token{color:#80602b}
   .drop-token small{font-size:10px;font-weight:500;color:var(--muted);display:block;margin-top:3px}
   .clear-slot{position:absolute;right:-4px;top:-5px;z-index:2;border:0;border-radius:50%;width:13px;height:13px;display:grid;place-items:center;background:#f4e7de;color:#9c5b4c;padding:0;font-size:11px;line-height:1;opacity:0;cursor:pointer}
@@ -192,7 +238,13 @@
   .effect-select option{font-family:inherit;font-size:13px;font-weight:750;}
   .change-branch-cell{display:flex;align-items:center;justify-content:center;min-width:0;}
   .line-row.trigram-inactive .change-cell,.line-row.trigram-inactive .change-branch-cell,.line-row.trigram-inactive .change-kin-cell{visibility:hidden;pointer-events:none;}
-  .drag-ghost{position:fixed;z-index:1000;pointer-events:none;opacity:.92;transform:translate(-50%,-50%);box-shadow:0 6px 18px #0002;}
+  .drag-ghost{
+    position:fixed !important;z-index:1000;pointer-events:none;opacity:.98;
+    transform:translate(-50%,-50%) !important;
+    box-shadow:0 6px 18px rgba(40,43,37,.24);
+    border-color:var(--gold)!important;background:var(--gold-soft)!important;
+    cursor:grabbing;margin:0;
+  }
   .drop-slot.drag-over{transform:scale(1.04)}
   /* Compact, unframed 64-hexagram memory aid. */
   .palace-reference-card{margin-top:10px;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;}
@@ -210,18 +262,24 @@
   .palace-element-wood{--palace-color:#32844b;}
   .palace-element-earth{--palace-color:#89613f;}
   .palace-element-fire{--palace-color:#c44738;}
-  .palace-element-metal{--palace-color:#b98519;}
+  .palace-element-metal{--palace-color:#D19A00;}
   .palace-column-head.palace-element-water,.palace-entry.palace-element-water{color:#2677b8;}
   .palace-column-head.palace-element-wood,.palace-entry.palace-element-wood{color:#32844b;}
   .palace-column-head.palace-element-earth,.palace-entry.palace-element-earth{color:#89613f;}
   .palace-column-head.palace-element-fire,.palace-entry.palace-element-fire{color:#c44738;}
-  .palace-column-head.palace-element-metal,.palace-entry.palace-element-metal{color:#b98519;}
+  .palace-column-head.palace-element-metal,.palace-entry.palace-element-metal{color:#D19A00;}
   .bottom-note{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;flex-wrap:wrap;margin-top:13px;color:var(--muted);font-size:11px}
   .footer-note{text-align:center;color:#8c8778;font-size:11px;margin:19px 0 0}
-  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(15px);background:#283e32;color:#fff;padding:10px 15px;border-radius:10px;box-shadow:0 7px 24px #0002;opacity:0;pointer-events:none;transition:.2s;z-index:10;font-size:12px}
+  .save-record-status{display:inline-flex;align-items:center;min-height:20px;font-size:11px;line-height:1.25;color:#747267;white-space:nowrap}
+  .save-record-status:empty{display:none}
+  .save-record-status.success{color:#286545;font-weight:850}
+  .save-record-status.pending{color:#946a08;font-weight:750}
+  .save-record-status.partial{color:#946a08;font-weight:800}
+  .save-record-status.error{color:#b44735;font-weight:800;white-space:normal;max-width:260px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(15px);background:#283e32;color:#fff;padding:10px 15px;border-radius:10px;box-shadow:0 7px 24px #0002;opacity:0;pointer-events:none;transition:.2s;z-index:1000;font-size:12px}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(max-width:1120px){
-    .line-row{grid-template-columns:116px 48px 28px 44px 48px 28px 44px 6em;gap:5px;padding:6px}
+    .line-row{grid-template-columns:116px 48px 52px 44px 48px 28px 44px 6em 88px;gap:5px;padding:6px}
   }
   @media(max-width:820px){
     .trigram-group{grid-template-columns:48px minmax(0,1fr);gap:6px}
@@ -232,7 +290,7 @@
     .prototype-tag{font-size:10px;padding:6px 9px}
     .palette-grid{grid-template-columns:1fr;gap:16px}
     .palette-group+.palette-group{border-left:0;border-top:1px solid var(--line);padding:15px 0 0}
-    .line-row{grid-template-columns:112px 45px 27px 42px 45px 27px 42px 6em;gap:4px;padding:6px}
+    .line-row{grid-template-columns:112px 45px 52px 42px 45px 27px 42px 6em 88px;gap:4px;padding:6px}
     .flower-cell{grid-area:auto}
     .symbol-cell{grid-area:auto}
     .branch-cell{grid-area:auto}
@@ -267,7 +325,7 @@
     .palette-grid{grid-template-columns:1fr;gap:9px}
     .palette-group+.palette-group{border-left:0;border-top:1px solid var(--line);padding:9px 0 0}
     .branch-groups{grid-template-columns:auto auto;gap:8px}
-    .line-row{overflow-x:auto;grid-template-columns:108px 42px 26px 40px 42px 26px 40px 6em;gap:3px;padding:5px 4px}
+    .line-row{overflow-x:auto;grid-template-columns:108px 42px 52px 40px 42px 26px 40px 6em 88px;gap:3px;padding:5px 4px}
     .effect-select{height:29px;font-family:inherit;font-size:13px;font-weight:750;width:6em;min-width:6em;max-width:6em;padding-left:7px;padding-right:26px}
   }
 
@@ -357,7 +415,7 @@
   .branch-pair.liuhe-earth{--pair-color:#89613f;--pair-bg:#f7f0e8;}
   .branch-pair.liuhe-wood{--pair-color:#32844b;--pair-bg:#eff7ee;}
   .branch-pair.liuhe-fire{--pair-color:#c44738;--pair-bg:#fff1ee;}
-  .branch-pair.liuhe-metal{--pair-color:#b98519;--pair-bg:#fcf6e7;}
+  .branch-pair.liuhe-metal{--pair-color:#D19A00;--pair-bg:#FFF7D6;}
   .branch-pair.liuhe-water{--pair-color:#2677b8;--pair-bg:#edf5fb;}
   .branch-pair.liuhe-fire-earth{
     --pair-bg:#faf2e9;
@@ -366,7 +424,7 @@
       linear-gradient(135deg,#c44738 0 50%,#89613f 50% 100%) border-box;
   }
   .branch-pair .tile{width:29px;min-width:29px;height:29px;flex:0 0 29px;margin:0;}
-  .branch-pair .tile:hover{transform:none;filter:brightness(.98);}
+  .branch-pair .tile:hover{transform:translateY(-4px) scale(1.12);filter:brightness(.98);z-index:4;box-shadow:0 4px 10px rgba(61,48,28,.16);}
   .branch-pair .tile.yang,.branch-pair .tile.yin{font-weight:850;}
   @media(max-width:820px){
     .branch-groups{gap:5px;}
@@ -387,7 +445,7 @@
   .date-controls{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap;}
   .jianchu-glyph{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:22px;height:26px;margin-left:3px;font-size:19px;font-weight:900;line-height:1;white-space:nowrap;}
   .jianchu-glyph.tone-black{color:#202020;}
-  .jianchu-glyph.tone-yellow{color:#b98519;}
+  .jianchu-glyph.tone-yellow{color:#D19A00;}
   .jianchu-glyph.tone-neutral{color:#858585;}
   .jianchu-guidance{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;max-width:min(760px,62vw);margin-left:4px;font-size:14px;line-height:1.35;white-space:normal;}
   .jianchu-guidance:empty{display:none;}
@@ -424,13 +482,48 @@
   .case-field{display:grid;gap:3px;color:#686b5d;font-size:11px;font-weight:750;}
   .case-field select{width:100%;min-width:0;padding:6px 7px;border:1px solid #ded5c2;border-radius:7px;background:#fffdf7;color:#34362f;font:inherit;font-size:12px;}
   .case-hint{margin:0;color:var(--muted);font-size:11px;line-height:1.4;}
+  .entry-mode-switch{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0 3px;}
+  .entry-mode-button{border:1px solid #d8d0bf;border-radius:7px;background:#fffdf7;color:#5f6358;padding:7px 13px;font:inherit;font-size:12px;font-weight:800;cursor:pointer;}
+  .entry-mode-button.active{background:#e8efe8;border-color:#89a18d;color:#3f654b;box-shadow:inset 0 0 0 1px rgba(63,101,75,.08);}
+  .calendar-value[hidden],.case-inline-pillar[hidden],.case-stem-source[hidden]{display:none !important;}
+  .case-inline-pillar{display:flex;flex-direction:column;align-items:center;gap:0;}
+  .case-inline-pillar .case-pillar-slot{
+    width:36px;min-width:36px;height:36px;min-height:36px;flex:0 0 36px;
+    padding:2px;border-radius:6px;background:#fffdf7;font-size:16px;
+  }
+  .case-inline-pillar .case-pillar-slot .slot-label{font-size:16px;}
+  .case-inline-pillar .case-pillar-slot .drop-token{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:100%;height:100%;font-size:16px;font-weight:850;line-height:1;
+  }
+  .case-pillar-slot.filled{border-color:#aebea9;background:#f5f8f1;}
+  .case-pillar-slot.drag-over{outline:2px solid var(--jade);outline-offset:2px;}
+  .case-stem-source{
+    display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;
+    gap:5px;margin:0 4px;padding:0;flex:0 1 auto;min-width:0;align-self:flex-start;
+  }
+  .case-token-row{display:flex;align-items:center;justify-content:flex-start;min-height:29px;}
+  .case-stem-source .stem-tiles{display:flex;align-items:center;gap:3px;flex-wrap:nowrap;margin:0;}
+  .case-stem-source .stem-tiles .tile{width:28px;min-width:28px;height:30px;flex:0 0 28px;}
+  .case-stem-source .branch-groups{
+    display:grid;grid-template-columns:repeat(6,minmax(36px,1fr));gap:6px;
+    align-items:stretch;width:max-content;max-width:100%;
+  }
+  .manual-pillar-validation.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+  @media(max-width:680px){
+    .date-card.manual-case-pillars .calendar-pillars{flex-wrap:wrap;}
+    .case-stem-source{margin:0;flex-basis:100%;width:max-content;max-width:100%;}
+  }
+  .date-card.manual-case-pillars #jianchu-name,
+  .date-card.manual-case-pillars #jianchu-guidance,
+  .date-card.manual-case-pillars #mansions-panel{display:none;}
   .record-case-tag{display:inline-flex;align-items:center;margin-left:6px;padding:2px 6px;border-radius:999px;background:var(--gold-soft);color:#80612b;font-size:10px;font-weight:800;vertical-align:middle;}
   .palette-stack{display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
   .sixgod-palette{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .sixgod-caption{font-size:11px;color:var(--muted);font-weight:700;white-space:nowrap;}
   .god-tiles{display:flex;align-items:center;gap:4px;flex-wrap:wrap;}
   .god-tiles .tile{width:44px;min-width:44px;height:30px;font-size:12px;}
-  .line-row{grid-template-columns:116px 52px 29px 46px 46px 52px 29px 46px 6em;}
+  .line-row{grid-template-columns:116px 52px 52px 46px 46px 52px 29px 46px 6em 88px;}
   .drop-slot.inactive-change-slot{visibility:hidden;pointer-events:none;}
   .shen-cell{width:46px;min-width:46px;}
   .drop-slot.shen-filled{background:#f2eff8;border-color:#d1c8df;}
@@ -443,7 +536,7 @@
   .drop-slot.shen-filled.god-gouchen,.drop-slot.shen-filled.god-tengshe{background:#f5eee5;border-color:#d9c6ae;}
   .drop-slot.shen-filled.god-gouchen .drop-token,.drop-slot.shen-filled.god-tengshe .drop-token{color:#89613f!important;background:transparent!important;}
   .drop-slot.shen-filled.god-baihu{background:#fcf4df;border-color:#e5d19b;}
-  .drop-slot.shen-filled.god-baihu .drop-token{color:#b98519!important;background:transparent!important;}
+  .drop-slot.shen-filled.god-baihu .drop-token{color:#D19A00!important;background:transparent!important;}
   .drop-slot.shen-filled.god-xuanwu{background:#eaf3fb;border-color:#b9d5ea;}
   .drop-slot.shen-filled.god-xuanwu .drop-token{color:#2677b8!important;background:transparent!important;}
   .records-dialog{width:min(640px,calc(100vw - 28px));max-height:min(76vh,760px);border:1px solid #d8cfbd;border-radius:15px;padding:0;background:#fffdf7;color:var(--ink);box-shadow:0 18px 65px #0003;}
@@ -479,12 +572,12 @@
   .tile.god-qinglong{color:#258b78!important;background:#e9f5f1!important;border-color:#b9ddd2!important;}
   .tile.god-zhuque{color:#c44738!important;background:#fff0ed!important;border-color:#efc2b9!important;}
   .tile.god-gouchen,.tile.god-tengshe{color:#89613f!important;background:#f5eee5!important;border-color:#d9c6ae!important;}
-  .tile.god-baihu{color:#b98519!important;background:#fcf4df!important;border-color:#e5d19b!important;}
+  .tile.god-baihu{color:#D19A00!important;background:#fcf4df!important;border-color:#e5d19b!important;}
   .tile.god-xuanwu{color:#2677b8!important;background:#eaf3fb!important;border-color:#b9d5ea!important;}
   .drop-token.god-qinglong{color:#258b78!important;background:transparent!important;}
   .drop-token.god-zhuque{color:#c44738!important;background:transparent!important;}
   .drop-token.god-gouchen,.drop-token.god-tengshe{color:#89613f!important;background:transparent!important;}
-  .drop-token.god-baihu{color:#b98519!important;background:transparent!important;}
+  .drop-token.god-baihu{color:#D19A00!important;background:transparent!important;}
   .drop-token.god-xuanwu{color:#2677b8!important;background:transparent!important;}
   .god-tiles .tile{font-size:13px;font-weight:850;}
   .day-god-hint{font-size:10px;line-height:1.15;color:var(--muted);white-space:nowrap;font-weight:750;visibility:hidden;}
@@ -493,13 +586,13 @@
   .day-god-drop-slot .drop-token{font-size:13px;}
   /* Six-spirit palette tiles share one consistent button treatment; no automatic tile outline. */
 
-  @media(max-width:1120px){.line-row{grid-template-columns:116px 48px 28px 44px 44px 48px 28px 44px 6em;gap:5px;padding:6px;}}
+  @media(max-width:1120px){.line-row{grid-template-columns:116px 48px 52px 44px 44px 48px 28px 44px 6em 88px;gap:5px;padding:6px;}}
   @media(max-width:820px){
     .calendar-topline{align-items:flex-start;flex-direction:column;gap:8px;}
     .jianchu-guidance{max-width:min(92vw,720px);}
     .record-controls{justify-content:flex-start;}
     .palette-stack{gap:7px;}
-    .line-row{grid-template-columns:112px 45px 27px 42px 42px 45px 27px 42px 6em;gap:4px;padding:6px;}
+    .line-row{grid-template-columns:112px 45px 52px 42px 42px 45px 27px 42px 6em 88px;gap:4px;padding:6px;}
     .god-tiles .tile{width:42px;min-width:42px;}
   }
   /* v71 mobile: the six-column worksheet remains horizontally scrollable on narrow phones. */
@@ -512,7 +605,7 @@
     .jianchu-guidance{flex:1 1 100%;width:100%;max-width:100%;margin-left:2px;padding-left:3px;gap:1px;font-size:13px;}
     .jianchu-guidance>span{flex:0 0 auto;white-space:nowrap;}
     .record-controls{width:100%;justify-content:flex-start;}
-    .line-row{grid-template-columns:108px 42px 26px 40px 40px 42px 26px 40px 6em;gap:3px;padding:5px 4px;}
+    .line-row{grid-template-columns:108px 42px 52px 40px 40px 42px 26px 40px 6em 88px;gap:3px;padding:5px 4px;}
     .shen-cell{width:40px;min-width:40px;}
     .god-tiles .tile{width:40px;min-width:40px;}
   }
@@ -588,54 +681,60 @@
 
 
 
-  /* v52: mark 月破 and 旬空 around the draggable 纳甲地支 token. */
+  /* 旬空用五行色粗虚线外环；休囚用灰底。旬空与休囚可叠加，旺相环仍让位给旬空。 */
   .drop-token.branch-token{
     width:27px;min-width:27px;height:27px;box-sizing:border-box;
     display:inline-flex;align-items:center;justify-content:center;
     border:2px solid transparent;border-radius:50%;
-    padding:0;line-height:1;position:relative;
+    padding:0;line-height:1;position:relative;overflow:visible;
   }
-  .drop-token.branch-token.is-month-break{
-    border-color:#c44738;background:#fff0ed!important;
-  }
-  .drop-token.branch-token.is-xunkong{
-    border:2px dashed #7567a6;background:#f2effa!important;
-  }
-  .drop-token.branch-token.is-month-break.is-xunkong{
-    border:2px solid #c44738;background:#fff0ed!important;
-    outline:2px dashed #7567a6;outline-offset:2px;
-  }
-  /* v58: 月令旺相／休囚同步显示在本卦、变卦纳甲地支上。
-     旺相沿用 v57 的配色逻辑：旺的五行作底色，相的五行作外圈；
-     休、囚、死统一灰底。月破、旬空仍用边框标记并保留状态底色。 */
   .drop-token.branch-token.is-monthly-wangxiang{
     border:3px solid var(--monthly-ring);
     background:var(--monthly-bg)!important;
   }
   .drop-token.branch-token.is-monthly-xiuqiu{
     border:2px solid transparent;
-    background:var(--monthly-bg,#666666)!important;
+    background:var(--monthly-bg,#777777)!important;
+  }
+  .drop-token.branch-token.is-xunkong{
+    border:2px solid transparent;
+    background:var(--monthly-bg,#f2effa)!important;
+  }
+  .drop-token.branch-token.is-xunkong::before{
+    content:'';
+    position:absolute;
+    inset:-7px;
+    z-index:2;
+    box-sizing:border-box;
+    border:3px dashed var(--xunkong-color,#7567a6);
+    border-radius:50%;
+    background:none;
+    pointer-events:none;
   }
   .drop-token.branch-token.is-month-break{
     background:var(--monthly-bg,#fff0ed)!important;
   }
-  .drop-token.branch-token.is-xunkong{
-    background:var(--monthly-bg,#f2effa)!important;
+  .drop-token.branch-token.is-month-break::after{
+    content:'破';
+    position:absolute;right:-5px;top:-6px;z-index:3;
+    width:12px;height:12px;display:grid;place-items:center;
+    border:1px solid #fffdf7;border-radius:50%;
+    background:#c44738;color:#fffdf7;
+    font-size:7px;line-height:1;font-weight:900;
+    box-shadow:0 0 0 1px #c44738;
+    pointer-events:none;
   }
-  .drop-token.branch-token.is-month-break.is-xunkong{
-    border:2px solid #c44738;
-    outline:2px dashed #7567a6;outline-offset:2px;
-    background:var(--monthly-bg,#fff0ed)!important;
+  /* Compact reminder for a moving line whose original and transformed branches form 六合. */
+  .branch-relation-hint{
+    width:88px;min-width:88px;height:31px;box-sizing:border-box;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+    padding:2px 3px;border:1px solid #ddcfad;border-radius:6px;
+    background:#fbf5e8;color:#805d2e;text-align:center;line-height:1.05;
   }
-  /* Reassert collision frames after the seasonal circle declarations above. */
-  .drop-token.branch-token.is-month-break{
-    border:2px solid #c44738;
-    background:var(--monthly-bg,#fff0ed)!important;
-  }
-  .drop-token.branch-token.is-xunkong{
-    border:2px dashed #7567a6;
-    background:var(--monthly-bg,#f2effa)!important;
-  }
+  .branch-relation-hint:empty{visibility:hidden;}
+  .branch-relation-hint strong{font-size:11px;font-weight:900;white-space:nowrap;}
+  .branch-relation-hint small{font-size:9px;color:#786d5a;white-space:nowrap;}
+  .branch-relation-hint.has-control{border-color:#d6aa91;background:#fff1e9;color:#9f4e38;}
   .liuhe-overlay{position:absolute;left:0;top:0;z-index:11;display:block;overflow:visible;pointer-events:none;}
   .liuhe-overlay .liuhe-edge{fill:none;stroke-width:2.8;stroke-linecap:round;stroke-dasharray:5 5;opacity:.84;}
   .liuhe-overlay .liuhe-endpoint{stroke:#fffdf7;stroke-width:1.1;}
@@ -644,7 +743,7 @@
   .worksheet{position:relative;}
   .rows{padding-top:0;box-sizing:border-box;}
   .trigram-group-rows{position:relative;}
-  .date-branch-sidecar{position:absolute;z-index:20;display:flex;align-items:center;align-self:flex-start;gap:9px;width:max-content;margin:0;padding:0;left:0;top:-35px;pointer-events:none;white-space:nowrap;}
+  .date-branch-sidecar{position:absolute;z-index:20;display:flex;align-items:center;align-self:flex-start;gap:9px;width:max-content;max-width:100%;margin:0;padding:0;left:0;top:0;pointer-events:none;white-space:nowrap;}
   /* v57: date branches align above the top Najia slot; hexagram heading moves to the top-right band. */
   .worksheet-subhead{position:relative;}
   .hexagram-heading{position:absolute;left:0;top:0;z-index:22;width:max-content;max-width:none;pointer-events:auto;}
@@ -666,7 +765,7 @@
   .date-branch-token.element-wood{color:#32844b;background:#edf6ed;}
   .date-branch-token.element-earth{color:#89613f;background:#f5eee5;}
   .date-branch-token.element-fire{color:#c44738;background:#fff0ed;}
-  .date-branch-token.element-metal{color:#b98519;background:#fcf4df;}
+  .date-branch-token.element-metal{color:#D19A00;background:#FFF7D6;}
   .trine-overlay .date-trine-fill{stroke:none;}
   .trine-overlay .date-trine-edge{fill:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:3.5 4;opacity:.86;}
   .trine-overlay .date-trine-edge.mode-a{stroke-width:3.1;stroke-dasharray:none;opacity:.88;}
@@ -821,6 +920,7 @@
     box-shadow:0 2px 8px rgba(61,48,28,.045);
   }
   .worksheet-memo-header{display:flex;align-items:center;flex:0 0 auto;}
+  .worksheet-memo-header[hidden]{display:none !important;}
   .worksheet-memo-header strong{font-size:12px;font-weight:800;color:#34372f;}
   .case-meta{flex:0 0 auto;}
   .worksheet-memo textarea{
@@ -831,10 +931,84 @@
     outline:none;
   }
   .worksheet-memo textarea:focus{border-color:#8da794;box-shadow:0 0 0 2px rgba(73,109,90,.12);}
+  .case-conclusion-field{display:flex;flex:0 0 auto;flex-direction:column;gap:5px;margin-top:2px;}
+  .case-conclusion-field[hidden]{display:none !important;}
+  .case-conclusion-field label{font-size:12px;font-weight:850;color:#34372f;}
+  .case-conclusion-field textarea{display:block;width:100%;min-width:0;min-height:76px;resize:vertical;padding:8px 9px;border:1px solid #ded5c2;border-radius:7px;background:#fffdf7;color:#34362f;font:500 12px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;outline:none;}
+  .case-conclusion-field textarea:focus{border-color:#8da794;box-shadow:0 0 0 2px rgba(73,109,90,.12);}
   @media(max-width:820px){
     .worksheet{display:block;}
     .worksheet-memo{margin:12px 0 0;min-height:190px;}
     .worksheet-memo textarea{min-height:170px;}
+  }
+
+
+  /* v99: keep 28-mansion guidance beside the seven-mansion strip on wide screens. */
+  .mansions-panel{
+    display:grid;grid-template-columns:minmax(300px,auto) minmax(0,1fr);
+    align-items:center;column-gap:22px;row-gap:8px;
+  }
+  .mansions-list{width:auto;min-width:0;flex:initial;justify-content:flex-start;}
+  .mansions-yiji{width:auto;min-width:0;flex:initial;padding-left:0;}
+  .auto-place-ghost{
+    position:fixed;z-index:99999;pointer-events:none;margin:0;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .30s cubic-bezier(.2,.8,.25,1),opacity .30s ease;
+    will-change:transform,opacity;box-shadow:0 5px 14px rgba(40,43,37,.22);
+  }
+  @media(max-width:760px){
+    .mansions-panel{grid-template-columns:minmax(0,1fr);row-gap:6px;}
+    .mansions-yiji{width:100%;}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .auto-place-ghost{display:none!important;transition:none!important;}
+  }
+
+
+  /* v100: move the six-kin and six-god drag palettes into the open right side of the date card. */
+  .calendar-workarea{
+    display:grid;grid-template-columns:max-content minmax(0,1fr);
+    align-items:center;column-gap:10px;row-gap:8px;min-width:0;
+  }
+  .calendar-workarea .calendar-pillars{min-width:0;}
+  .calendar-palette-area{
+    display:grid;grid-template-columns:minmax(0,1fr);gap:9px;min-width:0;
+    padding-left:0;border-left:0;
+  }
+  .calendar-palette-row{
+    display:flex;align-items:center;min-width:0;
+  }
+
+  .calendar-palette-area .kin-tiles,
+  .calendar-palette-area .god-tiles{
+    display:flex;align-items:center;flex-wrap:nowrap;gap:4px;min-width:0;
+  }
+  .calendar-palette-area .kin-tiles .tile,
+  .calendar-palette-area .god-tiles .tile{
+    width:44px;min-width:44px;flex:0 0 44px;height:30px;
+  }
+  .date-card.manual-case-pillars .calendar-workarea{grid-template-columns:minmax(0,1fr);}
+  .date-card.manual-case-pillars .calendar-palette-area{display:none;}
+  /* Keep the lower chart-entry palettes beside the two-row earthly-branch source. */
+  .palette-card .palette-grid{
+    grid-template-columns:max-content max-content;justify-content:start;
+    align-items:center;column-gap:14px;row-gap:8px;
+  }
+  .palette-card .chart-palette-group{min-width:0;}
+  .palette-card .chart-palette-group .palette-stack{gap:7px;align-items:flex-start;}
+  @media(max-width:820px){
+    .palette-card .palette-grid{grid-template-columns:1fr;gap:9px;}
+    .palette-card .chart-palette-group{padding:0;border:0;}
+  }
+  @media(max-width:900px){
+    .calendar-workarea{grid-template-columns:minmax(0,1fr);row-gap:10px;}
+    .calendar-palette-area{padding:0;border:0;}
+  }
+  @media(max-width:460px){
+    .calendar-palette-area .kin-tiles,
+    .calendar-palette-area .god-tiles,
+    .palette-card .chart-palette-group .kin-tiles,
+    .palette-card .chart-palette-group .god-tiles{flex-wrap:wrap;}
   }
 
 </style>
@@ -858,16 +1032,21 @@
         <div class="date-controls">
           <span class="today-stamp" id="calendar-date"></span>
           <span class="jianchu-glyph tone-neutral" id="jianchu-name" aria-label="建除值日计算中" title="">—</span>
-          <label class="date-picker-trigger" title="选择起卦日期" aria-label="选择起卦日期">▦<input id="record-date" type="date" aria-label="选择起卦日期"></label>
+          <label class="date-picker-trigger" title="选择记录日期" aria-label="选择记录日期">▦<input id="record-date" type="date" aria-label="选择记录/归档日期"></label>
           <div class="jianchu-guidance" id="jianchu-guidance" role="status" aria-live="polite" aria-label="当天宜忌"></div>
         </div>
         <div class="record-controls">
-          <button type="button" class="small-action" id="toggle-case" aria-pressed="false">标记为案例</button>
+          <button type="button" class="small-action" id="toggle-case" aria-pressed="false" hidden></button>
           <button type="button" class="small-action primary" id="save-record">保存卦例</button>
+          <span class="save-record-status" id="save-record-status" role="status" aria-live="polite" aria-atomic="true"></span>
           <button type="button" class="small-action" id="open-records">卦例记录 <span id="record-count">0</span></button>
           <button type="button" class="small-action" id="github-login">连接 GitHub</button>
           <span id="github-sync-status" class="section-note" role="status" aria-live="polite">GitHub 未连接</span>
         </div>
+      </div>
+      <div class="entry-mode-switch" role="group" aria-label="录入模式">
+        <button type="button" class="entry-mode-button active" id="mode-daily" aria-pressed="true">每日排卦</button>
+        <button type="button" class="entry-mode-button" id="mode-classroom" aria-pressed="false">输入课堂案例</button>
       </div>
       <section class="mansions-panel" id="mansions-panel" data-symbol="朱雀" aria-label="二十八宿">
         <div class="mansions-list" id="mansions-list" aria-label="当前四象所属七宿"></div>
@@ -892,17 +1071,36 @@
           </label>
         </div>
       </section>
+      <div class="calendar-workarea">
       <div class="calendar-pillars">
         <div class="pillar-group" aria-label="年柱">
-          <div class="cal-cell"><b class="calendar-value" id="year-pillar">— —</b></div>
+          <div class="cal-cell">
+            <b class="calendar-value" id="year-pillar">— —</b>
+            <div class="case-inline-pillar" id="year-pillar-manual" hidden>
+              <div class="drop-slot case-pillar-slot" data-drop-type="stem" data-case-pillar-key="year" data-case-pillar-part="stem" role="button" tabindex="0" aria-label="拖入年柱天干">＋</div>
+              <div class="drop-slot case-pillar-slot" data-drop-type="branch" data-case-pillar-key="year" data-case-pillar-part="branch" role="button" tabindex="0" aria-label="拖入年柱地支">＋</div>
+            </div>
+          </div>
           <div class="drop-slot kin-filled calendar-drop-slot" data-drop-type="relation" data-calendar-key="yearRelation" role="button" tabindex="0" aria-label="年柱六亲"><span class="slot-label">＋</span></div>
         </div>
         <div class="pillar-group" aria-label="月柱">
-          <div class="cal-cell"><b class="calendar-value" id="month-pillar">— —</b></div>
+          <div class="cal-cell">
+            <b class="calendar-value" id="month-pillar">— —</b>
+            <div class="case-inline-pillar" id="month-pillar-manual" hidden>
+              <div class="drop-slot case-pillar-slot" data-drop-type="stem" data-case-pillar-key="month" data-case-pillar-part="stem" role="button" tabindex="0" aria-label="拖入月柱天干">＋</div>
+              <div class="drop-slot case-pillar-slot" data-drop-type="branch" data-case-pillar-key="month" data-case-pillar-part="branch" role="button" tabindex="0" aria-label="拖入月柱地支">＋</div>
+            </div>
+          </div>
           <div class="drop-slot kin-filled calendar-drop-slot" data-drop-type="relation" data-calendar-key="monthRelation" role="button" tabindex="0" aria-label="月柱六亲"><span class="slot-label">＋</span></div>
         </div>
         <div class="pillar-group" aria-label="日柱">
-          <div class="cal-cell"><b class="calendar-value" id="day-pillar">— —</b></div>
+          <div class="cal-cell">
+            <b class="calendar-value" id="day-pillar">— —</b>
+            <div class="case-inline-pillar" id="day-pillar-manual" hidden>
+              <div class="drop-slot case-pillar-slot" data-drop-type="stem" data-case-pillar-key="day" data-case-pillar-part="stem" role="button" tabindex="0" aria-label="拖入日柱天干">＋</div>
+              <div class="drop-slot case-pillar-slot" data-drop-type="branch" data-case-pillar-key="day" data-case-pillar-part="branch" role="button" tabindex="0" aria-label="拖入日柱地支">＋</div>
+            </div>
+          </div>
           <div class="drop-slot kin-filled calendar-drop-slot" data-drop-type="relation" data-calendar-key="dayRelation" role="button" tabindex="0" aria-label="日柱六亲"><span class="slot-label">＋</span></div>
         </div>
         <div class="xunkong-group" aria-label="日干六神与旬空">
@@ -914,16 +1112,38 @@
             <div class="drop-slot xunkong-drop-slot calendar-drop-slot" data-drop-type="branch" data-calendar-key="xunkong2" role="button" tabindex="0" aria-label="旬空第二个地支"><span class="slot-label">＋</span></div>
           </div>
         </div>
+        <div class="case-stem-source" id="case-stem-source" hidden aria-label="课堂案例干支拖拽区">
+          <div class="case-token-row">
+            <div class="tiles stem-tiles" id="stem-tiles" aria-label="十天干项目"></div>
+          </div>
+          <div class="case-token-row">
+            <div class="branch-groups" id="branch-pairs-top" aria-label="顶部六合地支配对"></div>
+          </div>
+        </div>
       </div>
+        <div class="calendar-palette-area" aria-label="拖拽到年月日六亲及日干六神位置">
+          <div class="calendar-palette-row">
+            <div class="tiles kin-tiles" id="kin-tiles" aria-label="拖入年柱、月柱、日柱的六亲"></div>
+          </div>
+          <div class="calendar-palette-row">
+            <div class="tiles god-tiles" id="god-tiles" aria-label="拖入日干六神位置"></div>
+          </div>
+        </div>
+      </div>
+      <p class="manual-pillar-validation visually-hidden" id="manual-pillar-validation" aria-live="polite"></p>
     </div>
   </section>
 
   <section class="card worksheet" aria-label="六爻输入区">
     <div class="worksheet-subhead">
-      <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-element-badge" id="hexagram-element-badge" aria-label="卦宫五行"></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
+      <div class="hexagram-heading" aria-live="polite"><span class="hexagram-name" id="hexagram-name"></span><span class="hexagram-palace-badge" id="hexagram-palace-badge" hidden></span><span class="hexagram-meta" id="hexagram-meta"></span></div>
+      <div class="auto-assembly-actions" role="group" aria-label="自动装卦与检查">
+        <button type="button" class="small-action primary" id="auto-assemble-check" title="有空缺时自动补齐；全部填写后检查卦盘，不覆盖已有内容">自动装卦 / 检查</button>
+      </div>
     </div>
+    <div class="auto-review-report" id="auto-review-report" hidden aria-live="polite"></div>
     <div class="rows" id="rows"></div>
-    <aside class="worksheet-memo" aria-label="每日记录或案例 Memo">
+    <aside class="worksheet-memo" aria-label="记录内容">
       <div class="worksheet-memo-header"><strong id="memo-title">每日记录 Memo</strong></div>
       <div class="case-meta" id="case-meta" hidden>
         <label class="case-field" for="case-source">案例类型
@@ -942,21 +1162,23 @@
         <p class="case-hint" id="case-memo-hint"></p>
       </div>
       <textarea id="daily-memo" rows="10" maxlength="8000" aria-label="每日记录 Memo" placeholder="记录当天的观察和复盘…"></textarea>
+      <div class="case-conclusion-field" id="case-conclusion-field" hidden>
+        <label for="case-conclusion">老师结论</label>
+        <textarea id="case-conclusion" rows="3" maxlength="3000" aria-label="老师结论" placeholder="记录老师最后给出的判断…"></textarea>
+      </div>
     </aside>
   </section>
 
   <section class="card palette-card" aria-label="可拖拽项目">
     <div class="palette-grid">
       <div class="palette-group">
-        <div class="branch-groups" id="branch-pairs" aria-label="六合地支配对">
-          <!-- Each column groups the two branches of one 六合; outline color shows its 合化 element. -->
-        </div>
+        <div class="branch-groups" id="branch-pairs" aria-label="六合地支配对"></div>
       </div>
-      <div class="palette-group">
+      <div class="palette-group chart-palette-group">
         <div class="palette-stack">
-          <div class="tiles kin-tiles" id="kin-tiles" aria-label="六亲项目"></div>
+          <div class="tiles kin-tiles" id="chart-kin-tiles" aria-label="单击依次填入六爻六亲"></div>
           <div class="sixgod-palette">
-            <div class="tiles god-tiles" id="god-tiles" aria-label="六神项目"></div>
+            <div class="tiles god-tiles" id="chart-god-tiles" aria-label="单击依次填入六爻六神"></div>
           </div>
         </div>
       </div>
@@ -994,7 +1216,7 @@
 <dialog class="records-dialog import-dialog" id="unsaved-changes-dialog" aria-labelledby="unsaved-changes-title">
   <div class="records-dialog-inner">
     <div class="records-dialog-head"><h2 id="unsaved-changes-title">当前卦有尚未保存的修改</h2></div>
-    <p class="section-note" style="margin:0 0 14px">你修改了当前卦的爻位、纳甲、六亲、案例信息或 Memo。开始新卦之前，如何处理这些修改？</p>
+    <p class="section-note" style="margin:0 0 14px">你修改了当前卦的爻位、纳甲、六亲、案例信息、老师结论或 Memo。开始新卦之前，如何处理这些修改？</p>
     <div class="record-actions" style="justify-content:flex-end;flex-wrap:wrap">
       <button type="button" class="small-action primary" id="save-and-new-entry">先保存，再开始新卦</button>
       <button type="button" class="small-action" id="discard-and-new-entry">放弃修改，开始新卦</button>
@@ -1037,7 +1259,7 @@
 
   // v64: beginner-friendly question categories in one dropdown, with compact 六亲 reminders.
   const QUESTION_CATALOG = [
-    {value:'daily',label:'今日运势（每日卦）',useGod:'世爻',hint:'先看世爻，再结合日月、动爻与全卦关系。'},
+    {value:'daily',label:'今日运势（每日卦）',useGod:'无固定用神',hint:'没有固定六亲用神，以世爻为主，再结合日月、动爻与全卦关系。'},
     {value:'wealth',label:'财运、投资、项目',useGod:'妻财',hint:'子孙、兄弟'},
     {value:'promotion',label:'升职、求官、功名',useGod:'官鬼',hint:'同时留意父母（支持）、子孙（克官）。'},
     {value:'study',label:'学习、文书、证件',useGod:'父母',hint:'考试、资格、合同等，重点留意父母爻。'},
@@ -1045,7 +1267,7 @@
     {value:'male-marriage',label:'男性自问婚姻',useGod:'妻财',hint:'妻财代表所问的女方／妻子。'},
     {value:'female-marriage',label:'女性自问婚姻',useGod:'官鬼',hint:'官鬼代表所问的男方／丈夫。'},
     {value:'parents',label:'问父母、父母病情',useGod:'父母',hint:'重点留意父母爻；子女代问父母时尤其注意。'},
-    {value:'annual',label:'年度整体运势',useGod:'世爻',hint:'先看世爻，再按需要看财、官、父母、子孙。'}
+    {value:'annual',label:'年度整体运势',useGod:'无固定用神',hint:'没有固定六亲用神，以世爻为主，再按需要看财、官、父母、子孙。'}
   ];
   const questionCategoryEl=document.getElementById('question-category');
   const questionTextEl=document.getElementById('question-text');
@@ -1056,32 +1278,173 @@
   const caseSourceSelect=document.getElementById('case-source');
   const caseReviewField=document.getElementById('case-review-field');
   const caseReviewStatusSelect=document.getElementById('case-review-status');
+  const caseConclusionField=document.getElementById('case-conclusion-field');
+  const caseConclusionTextarea=document.getElementById('case-conclusion');
   const caseMemoTitle=document.getElementById('memo-title');
   const caseMemoHint=document.getElementById('case-memo-hint');
+  const memoHeader=document.querySelector('.worksheet-memo-header');
   const memoTextarea=document.getElementById('daily-memo');
+  const manualPillarValidation=document.getElementById('manual-pillar-validation');
+  const dailyModeButton=document.getElementById('mode-daily');
+  const classroomModeButton=document.getElementById('mode-classroom');
   const CASE_REVIEW_LABELS={pending:'待核对',verified:'已核实',disputed:'存在分歧'};
   let isCaseRecord=false;
+  let manualPillarOverride={enabled:false,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
+  // Keep the daily worksheet and classroom-case worksheet as separate in-memory drafts.
+  // Drafts are scoped to the selected archive date and survive mode switches in this tab.
+  const entryModeDraftCache={daily:new Map(),classroom:new Map()};
   function updateCaseEditor(){
-    const source=caseSourceSelect.value==='practice'?'practice':'classroom';
-    const isClassroom=isCaseRecord&&source==='classroom';
     caseToggleButton.textContent=isCaseRecord?'已标记为案例':'标记为案例';
     caseToggleButton.classList.toggle('primary',isCaseRecord);
     caseToggleButton.setAttribute('aria-pressed',String(isCaseRecord));
-    caseMetaEl.hidden=!isCaseRecord;
-    caseReviewField.hidden=!isClassroom;
-    caseMemoTitle.textContent=!isCaseRecord?'每日记录 Memo':(isClassroom?'课堂案例 Memo':'个人练习 Memo');
-    memoTextarea.setAttribute('aria-label',!isCaseRecord?'每日记录 Memo':(isClassroom?'课堂案例 Memo':'个人练习 Memo'));
-    memoTextarea.placeholder=!isCaseRecord?'记录当天的观察和复盘…':(isClassroom?'记录老师的分析重点、判断依据和课堂结论…':'记录自己的分析过程与复盘…');
-    caseMemoHint.textContent=isClassroom?'课堂案例会单独保存老师的分析笔记；默认待核对，不会自动当成已确认规则。':'个人练习会单独保存，不会与老师课堂案例混在一起。';
+    // Classroom case notes are intentionally a plain text area; legacy metadata
+    // remains hidden for backwards-compatible loading, but is no longer shown.
+    caseMetaEl.hidden=true;
+    caseReviewField.hidden=true;
+    caseConclusionField.hidden=!isCaseRecord;
+    memoHeader.hidden=isCaseRecord;
+    document.querySelectorAll('.calendar-value').forEach(node=>{node.hidden=isCaseRecord;});
+    document.querySelectorAll('.case-inline-pillar').forEach(node=>{node.hidden=!isCaseRecord;});
+    const stemSource=document.getElementById('case-stem-source');
+    if(stemSource) stemSource.hidden=!isCaseRecord;
+    caseMemoTitle.textContent=isCaseRecord?'':'每日记录 Memo';
+    memoTextarea.setAttribute('aria-label',isCaseRecord?'老师的分析':'每日记录 Memo');
+    memoTextarea.placeholder=isCaseRecord?'':'记录当天的观察和复盘…';
+    caseMemoHint.textContent='';
+    if(dailyModeButton){
+      dailyModeButton.classList.toggle('active',!isCaseRecord);
+      dailyModeButton.setAttribute('aria-pressed',String(!isCaseRecord));
+    }
+    if(classroomModeButton){
+      classroomModeButton.classList.toggle('active',isCaseRecord);
+      classroomModeButton.setAttribute('aria-pressed',String(isCaseRecord));
+    }
   }
   function setCaseEditor(record=null){
     isCaseRecord=record?.isCase===true;
     caseSourceSelect.value=record?.caseSource==='practice'?'practice':'classroom';
     caseReviewStatusSelect.value=Object.prototype.hasOwnProperty.call(CASE_REVIEW_LABELS,record?.caseReviewStatus)?record.caseReviewStatus:'pending';
+    caseConclusionTextarea.value=typeof record?.caseConclusion==='string'?record.caseConclusion:'';
+    const saved=record?.pillarOverride;
+    manualPillarOverride={
+      enabled:saved?.enabled===true,
+      year:{stem:saved?.year?.stem||'',branch:saved?.year?.branch||''},
+      month:{stem:saved?.month?.stem||'',branch:saved?.month?.branch||''},
+      day:{stem:saved?.day?.stem||'',branch:saved?.day?.branch||''}
+    };
     updateCaseEditor();
   }
-  caseToggleButton.addEventListener('click',()=>{isCaseRecord=!isCaseRecord;updateCaseEditor();});
-  caseSourceSelect.addEventListener('change',updateCaseEditor);
+  function modeDraftDateKey(){
+    return selectedDateKey||document.getElementById('record-date')?.value||'current';
+  }
+  function captureEntryModeDraft(){
+    return {
+      lines:state.map(item=>({...item})),
+      calendarAssignments:{...calendarAssignments},
+      question:getQuestionSnapshot(),
+      memo:memoTextarea.value,
+      caseConclusion:caseConclusionTextarea.value,
+      caseSource:caseSourceSelect.value,
+      caseReviewStatus:caseReviewStatusSelect.value,
+      manualPillarOverride:JSON.parse(JSON.stringify(manualPillarOverride)),
+      editingRecordId,
+      forceNewRecord,
+      entryBaseline
+    };
+  }
+  function renderRestoredEntryDraft(draft){
+    state=(draft.lines||Array.from({length:6},()=>({flowers:null,branch:null,relation:null,hiddenRelation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}))).map(item=>({...item}));
+    selected=null;
+    updateSelectedTiles();
+    renderManualPillarInputs();
+    applyPillarContext();
+    calendarAssignments={
+      yearRelation:draft.calendarAssignments?.yearRelation||null,
+      monthRelation:draft.calendarAssignments?.monthRelation||null,
+      dayRelation:draft.calendarAssignments?.dayRelation||null,
+      dayGod:draft.calendarAssignments?.dayGod||null,
+      xunkong1:draft.calendarAssignments?.xunkong1??currentXunkongBranches[0]??null,
+      xunkong2:draft.calendarAssignments?.xunkong2??currentXunkongBranches[1]??null
+    };
+    editingRecordId=draft.editingRecordId||null;
+    forceNewRecord=!!draft.forceNewRecord;
+    memoTextarea.value=draft.memo||'';
+    caseConclusionTextarea.value=draft.caseConclusion||'';
+    caseSourceSelect.value=draft.caseSource==='practice'?'practice':'classroom';
+    caseReviewStatusSelect.value=Object.prototype.hasOwnProperty.call(CASE_REVIEW_LABELS,draft.caseReviewStatus)?draft.caseReviewStatus:'pending';
+    restoreQuestion(draft.question||{category:'daily',text:''});
+    renderCalendarDropSlots();
+    state.forEach((_,index)=>renderRow(index));
+    refreshBranchStatusTokens();
+    renderTrigramNames();
+    entryBaseline=draft.entryBaseline;
+  }
+  function startFreshEntryMode(mode){
+    const classroom=mode==='classroom';
+    state=Array.from({length:6},()=>({flowers:null,branch:null,relation:null,hiddenRelation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}));
+    calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
+    lastXunkongDayPillar=null;
+    selected=null;editingRecordId=null;forceNewRecord=false;
+    const emptyOverride={enabled:true,year:{stem:'',branch:''},month:{stem:'',branch:''},day:{stem:'',branch:''}};
+    setCaseEditor(classroom?{isCase:true,caseSource:'classroom',caseReviewStatus:'pending',pillarOverride:emptyOverride}:null);
+    restoreQuestion(classroom?{category:'',text:''}:{category:'daily',text:''});
+    memoTextarea.value=classroom?'':(activeDayDocument?.recordDate===modeDraftDateKey()?(activeDayDocument.dailyMemo||''):'');
+    caseConclusionTextarea.value='';
+    renderManualPillarInputs();
+    applyPillarContext();
+    updateSelectedTiles();
+    renderCalendarDropSlots();
+    state.forEach((_,index)=>renderRow(index));
+    refreshBranchStatusTokens();
+    renderTrigramNames();
+    markEntryClean();
+  }
+  function savedDailyRecordForCurrentDate(){
+    const date=modeDraftDateKey();
+    const cloudRecord=activeDayDocument?.recordDate===date?activeDayDocument.dailyFortune:null;
+    if(cloudRecord) return {...cloudRecord,date,recordType:'dailyFortune'};
+    const localRecord=readRecords().find(record=>record.date===date&&(
+      record.recordType==='dailyFortune'||(!record.isCase&&(record.question?.category||'daily')==='daily')
+    ));
+    return localRecord?{...localRecord,recordType:'dailyFortune'}:null;
+  }
+  function switchEntryMode(mode){
+    const nextMode=mode==='classroom'?'classroom':'daily';
+    const currentMode=isCaseRecord?'classroom':'daily';
+    if(nextMode===currentMode) return;
+    const dateKey=modeDraftDateKey();
+
+    // Preserve the current worksheet exactly as it appears, including unsaved notes.
+    entryModeDraftCache[currentMode].set(dateKey,captureEntryModeDraft());
+
+    const cached=entryModeDraftCache[nextMode].get(dateKey);
+    if(cached){
+      setCaseEditor(nextMode==='classroom'?{
+        isCase:true,caseSource:cached.caseSource,caseReviewStatus:cached.caseReviewStatus,
+        caseConclusion:cached.caseConclusion,
+        pillarOverride:cached.manualPillarOverride
+      }:null);
+      renderRestoredEntryDraft(cached);
+      updateCaseEditor();
+      return;
+    }
+
+    if(nextMode==='daily'){
+      const savedDaily=savedDailyRecordForCurrentDate();
+      if(savedDaily){openRecord(savedDaily);return;}
+    }
+
+    // A mode with no saved or cached entry starts from a completely blank six-line chart.
+    startFreshEntryMode(nextMode);
+  }
+  dailyModeButton.addEventListener('click',()=>switchEntryMode('daily'));
+  classroomModeButton.addEventListener('click',()=>switchEntryMode('classroom'));
+  caseToggleButton.addEventListener('click',()=>switchEntryMode(isCaseRecord?'daily':'classroom'));
+  caseSourceSelect.addEventListener('change',()=>{
+    updateCaseEditor();
+    renderManualPillarInputs();
+    applyPillarContext();
+  });
   setCaseEditor(null);
   const QUESTION_CATEGORY_BY_VALUE=new Map(QUESTION_CATALOG.map(item=>[item.value,item]));
   QUESTION_CATALOG.forEach(category=>{
@@ -1094,7 +1457,7 @@
     const category=QUESTION_CATEGORY_BY_VALUE.get(categoryValue||'');
     questionCategoryEl.value=category?category.value:'';
     questionUseGodEl.textContent=category?category.useGod:'—';
-    questionHintEl.textContent=category?category.hint:'';
+    questionHintEl.textContent=category&&category.useGod!=='无固定用神'?category.hint:'';
   }
   questionCategoryEl.addEventListener('change',()=>setQuestionCategory(questionCategoryEl.value));
   // A new entry starts as the user's daily fortune reading; saved records restore their own category.
@@ -1146,28 +1509,38 @@
     '午':{partner:'未',pair:'午未',transform:'火土'},
     '未':{partner:'午',pair:'午未',transform:'火土'}
   };
-  function getBranchStatus(value){
+  function getBranchStatus(value,monthBranch=currentMonthBranch,xunkongBranches=currentXunkongBranches){
     if(!value) return {monthBreak:false,xunkong:false,monthly:null};
-    const monthBreak=!!(currentMonthBranch && sixClashes[currentMonthBranch]===value);
-    const xunkong=[calendarAssignments?.xunkong1,calendarAssignments?.xunkong2].includes(value);
-    const monthly=getMonthlyBranchState(value);
+    const monthBreak=!!(monthBranch && sixClashes[monthBranch]===value);
+    const xunkong=xunkongBranches.includes(value);
+    const monthly=getMonthlyBranchState(value,monthBranch);
     return {monthBreak,xunkong,monthly};
   }
   function applyBranchStatus(token,value){
     if(!token || !value) return;
     const status=getBranchStatus(value);
+    // 旬空外环与休囚灰底可以并存；旬空时仍不叠加旺相内圈。
+    const showMonthlyWangxiang=!status.xunkong&&status.monthly?.group==='wangxiang';
+    const showMonthlyXiuqiu=status.monthly?.group==='xiuqiu';
     token.classList.add('branch-token');
     token.classList.toggle('is-month-break',status.monthBreak);
     token.classList.toggle('is-xunkong',status.xunkong);
-    token.classList.toggle('is-monthly-wangxiang',status.monthly?.group==='wangxiang');
-    token.classList.toggle('is-monthly-xiuqiu',status.monthly?.group==='xiuqiu');
+    token.classList.toggle('is-monthly-wangxiang',showMonthlyWangxiang);
+    token.classList.toggle('is-monthly-xiuqiu',showMonthlyXiuqiu);
     token.style.removeProperty('--monthly-bg');
     token.style.removeProperty('--monthly-ring');
-    if(status.monthly?.group==='wangxiang'){
+    token.style.removeProperty('--xunkong-color');
+    if(status.xunkong){
+      const xunkongElement=branchElements[value];
+      token.style.setProperty('--xunkong-color',elementPalette[xunkongElement]?.text||'#7567a6');
+    }
+    if(showMonthlyXiuqiu){
+      token.style.setProperty('--monthly-bg','#777777');
+    }else if(showMonthlyWangxiang){
       token.style.setProperty('--monthly-bg',elementPalette[status.monthly.wang].fill);
       token.style.setProperty('--monthly-ring',elementPalette[status.monthly.xiang].text);
-    }else if(status.monthly?.group==='xiuqiu'){
-      token.style.setProperty('--monthly-bg','#666666');
+    }else if(status.xunkong){
+      token.style.setProperty('--monthly-bg','#f2effa');
     }
     const labels=[];
     if(status.monthly){
@@ -1190,6 +1563,31 @@
   function elementClassForBranch(value){ return branchElements[value] ? 'element-'+branchElements[value] : ''; }
   const generates = {wood:'fire',fire:'earth',earth:'metal',metal:'water',water:'wood'};
   const controls = {wood:'earth',earth:'water',water:'fire',fire:'metal',metal:'wood'};
+  function getLiuHePairInfo(firstBranch,secondBranch){
+    if(!firstBranch||!secondBranch) return null;
+    const relation=liuHe[firstBranch];
+    if(!relation||relation.partner!==secondBranch) return null;
+    const firstElement=branchElements[firstBranch],secondElement=branchElements[secondBranch];
+    const elementNames={water:'水',wood:'木',earth:'土',fire:'火',metal:'金'};
+    let controlBranch=null,controlledBranch=null,controlText='';
+    if(controls[firstElement]===secondElement){
+      controlBranch=firstBranch;controlledBranch=secondBranch;
+    }else if(controls[secondElement]===firstElement){
+      controlBranch=secondBranch;controlledBranch=firstBranch;
+    }
+    if(controlBranch&&controlledBranch){
+      controlText=controlBranch+elementNames[branchElements[controlBranch]]+'克'+controlledBranch+elementNames[branchElements[controlledBranch]];
+    }
+    let generationText='';
+    if(generates[firstElement]===secondElement){
+      generationText=firstBranch+elementNames[firstElement]+'生'+secondBranch+elementNames[secondElement];
+    }else if(generates[secondElement]===firstElement){
+      generationText=secondBranch+elementNames[secondElement]+'生'+firstBranch+elementNames[firstElement];
+    }
+    return {pair:relation.pair,transform:relation.transform,firstBranch,secondBranch,
+      firstElement,secondElement,hasControl:!!controlText,controlBranch,controlledBranch,controlText,
+      generationText,label:controlText?'合中带克':(generationText?'六合兼相生':'六合')};
+  }
   function getShiYingRelation(info){
     if(!info) return null;
     const shiIndex=info.shi-1;
@@ -1212,7 +1610,7 @@
     const relation=getShiYingRelation(info);
     node.replaceChildren();
     if(!relation) return '';
-    const elementColors={water:'#2677b8',wood:'#32844b',earth:'#89613f',fire:'#c44738',metal:'#b98519'};
+    const elementColors={water:'#2677b8',wood:'#32844b',earth:'#89613f',fire:'#c44738',metal:'#D19A00'};
     const addLabel=(label,element,className)=>{
       const span=document.createElement('span');
       span.className=className;
@@ -1265,20 +1663,20 @@
     wood:{text:'#32844b',fill:'#eaf4e9'},
     earth:{text:'#89613f',fill:'#f3ebe4'},
     fire:{text:'#c44738',fill:'#fff0ed'},
-    metal:{text:'#b98519',fill:'#faf2d9'}
+    metal:{text:'#D19A00',fill:'#FFF2BF'}
   };
   // 按 v57 的月令旺相表识别每个纳甲地支的月令状态。
   // 旺：与月令同五行；相：月令所生；休：生月令；囚：月令所克；死：克月令。
   // 旺相共用“旺色底＋相色圈”；休囚死只用灰底，不额外显示文字。
-  function getMonthlyBranchState(branch){
+  function getMonthlyBranchState(branch,monthBranch=currentMonthBranch){
     const branchElement=branchElements[branch];
-    const rule=monthWangXiang[currentMonthBranch];
+    const rule=monthWangXiang[monthBranch];
     if(!branchElement || !rule) return null;
     if(branchElement===rule.wang) return {group:'wangxiang',status:'旺',wang:rule.wang,xiang:rule.xiang};
     if(branchElement===rule.xiang) return {group:'wangxiang',status:'相',wang:rule.wang,xiang:rule.xiang};
     if(generates[branchElement]===rule.wang) return {group:'xiuqiu',status:'休'};
-    if(controls[rule.wang]===branchElement) return {group:'xiuqiu',status:'囚'};
-    if(controls[branchElement]===rule.wang) return {group:'xiuqiu',status:'死'};
+    if(controls[branchElement]===rule.wang) return {group:'xiuqiu',status:'囚'};
+    if(controls[rule.wang]===branchElement) return {group:'xiuqiu',status:'死'};
     return null;
   }
   function renderCalendarValue(node, text){
@@ -1340,6 +1738,10 @@
   let followJapanToday=true;
   let currentDayBranch=null;
   let currentMonthBranch=null;
+  let currentXunkongBranches=[];
+  let lastXunkongDayPillar=null;
+  let calculatedPillars={year:'',month:'',day:''};
+  let currentPillars={year:'',month:'',day:''};
   let currentJianChuInfo=null;
   let worksheetReady=false;
 
@@ -1366,6 +1768,14 @@
   function dayPillar(year,month,day){
     // 2026-10-31 -> JDN 2461345 -> 戊寅; index = (JDN + 49) mod 60.
     return ganzhiFromIndex(julianDayNumber(year,month,day)+49);
+  }
+  // 以完整日柱定位六十甲子所在旬；每旬十日，旬末空缺的两个地支即旬空。
+  function calculateXunkongBranches(dayPillarValue){
+    const cycleIndex=Array.from({length:60},(_,index)=>index)
+      .find(index=>ganzhiFromIndex(index)===dayPillarValue);
+    if(!Number.isInteger(cycleIndex)) return [];
+    const voidStart=(10-2*Math.floor(cycleIndex/10)+12)%12;
+    return [GANZHI_BRANCHES[voidStart],GANZHI_BRANCHES[(voidStart+1)%12]];
   }
   function solarLongitude(jd){
     // Meeus-style apparent geocentric solar longitude, sufficient for the
@@ -1588,7 +1998,6 @@
     const dateKey=dateKeyFromParts(date);
     if(!force && lastJapanDateKey && lastJapanDateKey!==dateKey){
       calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
-      if(typeof renderCalendarDropSlots==='function') renderCalendarDropSlots();
     }
     lastJapanDateKey=dateKey;
     selectedDateKey=dateKey;
@@ -1596,20 +2005,123 @@
     const yearInfo=yearPillarForDate(date,referenceMs);
     const monthValue=monthPillarForDate(date,referenceMs,yearInfo);
     const dayValue=dayPillar(date.year,date.month,date.day);
-    currentMonthBranch=String(monthValue||'').charAt(1)||null;
-    currentDayBranch=String(dayValue||'').charAt(1)||null;
-    renderJianChuInfo(calculateJianChu(currentMonthBranch,currentDayBranch));
+    calculatedPillars={year:yearInfo.value||'',month:monthValue||'',day:dayValue||''};
     renderTwentyEightInfo(date);
-    renderCalendarValue(document.getElementById('year-pillar'),yearInfo.value);
-    renderCalendarValue(document.getElementById('month-pillar'),monthValue);
-    renderCalendarValue(document.getElementById('day-pillar'),dayValue);
-    updateDailySixGod(dayValue);
     const stamp=document.getElementById('calendar-date');
     if(stamp) stamp.textContent=String(date.year)+'.'+String(date.month).padStart(2,'0')+'.'+String(date.day).padStart(2,'0');
     const dateInput=document.getElementById('record-date');
     if(dateInput) dateInput.value=dateKey;
-    // A historical-date change can change 日冲 status without changing any yao input.
-    if(worksheetReady) renderLineIndicators();
+    applyPillarContext();
+  }
+  const PILLAR_KEYS=['year','month','day'];
+  function isValidGanzhiPair(stem,branch){
+    const stemIndex=GANZHI_STEMS.indexOf(stem),branchIndex=GANZHI_BRANCHES.indexOf(branch);
+    return stemIndex>=0&&branchIndex>=0&&(stemIndex%2)===(branchIndex%2);
+  }
+  function manualPillarValue(key){
+    const item=manualPillarOverride[key]||{};
+    return isValidGanzhiPair(item.stem,item.branch)?item.stem+item.branch:'';
+  }
+  function manualPillarBranch(key){
+    const branch=manualPillarOverride[key]?.branch||'';
+    return GANZHI_BRANCHES.includes(branch)?branch:'';
+  }
+  function manualPillarProblem(){
+    if(!isCaseRecord||!manualPillarOverride.enabled) return '';
+    // 月干是可选信息；月支才是月建旺衰、月破等分析的必要输入。
+    const month=manualPillarOverride.month||{};
+    if(!GANZHI_BRANCHES.includes(month.branch||'')) return '月支尚未填写，请拖入地支。';
+    if(month.stem&&!isValidGanzhiPair(month.stem,month.branch)) return '月柱天干与地支不是六十甲子中的有效组合，请核对老师给出的干支。';
+    // 日柱仍需完整干支：日干用于六神，日柱整体用于旬空。
+    const day=manualPillarOverride.day||{};
+    if(!day.stem||!day.branch) return '日柱尚未填写完整，请分别拖入天干和地支。';
+    if(!isValidGanzhiPair(day.stem,day.branch)) return '日柱不是六十甲子中的有效组合，请核对老师给出的干支。';
+    const year=manualPillarOverride.year||{};
+    if((year.stem&&!year.branch)||(!year.stem&&year.branch)) return '年柱请同时填写天干和地支，未知时两项都留空。';
+    if(year.stem&&year.branch&&!isValidGanzhiPair(year.stem,year.branch)) return '年柱不是六十甲子中的有效组合，请核对老师给出的干支。';
+    return '';
+  }
+  function renderManualPillarInputs(){
+    document.querySelectorAll('.case-pillar-slot').forEach(slot=>{
+      const key=slot.dataset.casePillarKey;
+      const part=slot.dataset.casePillarPart;
+      const value=manualPillarOverride[key]?.[part]||'';
+      slot.classList.toggle('filled',!!value);
+      slot.replaceChildren();
+      if(!value){
+        const prompt=document.createElement('span');
+        prompt.className='slot-label';
+        prompt.textContent='＋';
+        slot.appendChild(prompt);
+        return;
+      }
+      const token=document.createElement('span');
+      token.className='drop-token '+(part==='stem'?(elementClassForStem(value)||''):(elementClassForBranch(value)||''));
+      token.textContent=value;
+      slot.appendChild(token);
+      const clear=document.createElement('button');
+      clear.type='button';clear.className='clear-slot';clear.title='清除此项';
+      clear.setAttribute('aria-label','清除'+value);clear.textContent='×';
+      clear.addEventListener('click',event=>{
+        event.stopPropagation();
+        manualPillarOverride[key][part]='';
+        renderManualPillarInputs();
+        applyPillarContext();
+      });
+      slot.appendChild(clear);
+      slot.setAttribute('aria-label',(key==='year'?'年':key==='month'?'月':'日')+(part==='stem'?'干':'支')+value);
+    });
+    if(manualPillarValidation) manualPillarValidation.textContent=manualPillarProblem();
+  }
+  function assignManualPillarToken(key,part,value){
+    if(!isCaseRecord||!manualPillarOverride.enabled)return;
+    clearAutoReviewReport();
+    if(!['year','month','day'].includes(key)||!['stem','branch'].includes(part)) return;
+    manualPillarOverride[key][part]=value;
+    selected=null;
+    updateSelectedTiles();
+    renderManualPillarInputs();
+    applyPillarContext();
+    showToast('已放入'+(key==='year'?'年':key==='month'?'月':'日')+(part==='stem'?'干':'支')+'：'+value);
+  }
+  function applyPillarContext(){
+    const manualActive=isCaseRecord&&manualPillarOverride.enabled;
+    const next=manualActive
+      ?{year:manualPillarValue('year'),month:manualPillarValue('month'),day:manualPillarValue('day')}
+      :{...calculatedPillars};
+    currentPillars={...next};
+    // 月支独立用于月建分析；即使课堂案例没有填写可选的月干，也不能丢失月令。
+    currentMonthBranch=manualActive?(manualPillarBranch('month')||null):(GANZHI_BRANCHES.includes(String(next.month||'').charAt(1))?String(next.month).charAt(1):null);
+    currentDayBranch=GANZHI_BRANCHES.includes(String(next.day||'').charAt(1))?String(next.day).charAt(1):null;
+    const currentDayPillarValue=String(next.day||'');
+    currentXunkongBranches=currentDayPillarValue?calculateXunkongBranches(currentDayPillarValue):[];
+    // 日柱变化才重置为自动计算值；同一日柱下允许手动拖拽，留待检查时校正。
+    if(currentDayPillarValue!==lastXunkongDayPillar){
+      calendarAssignments.xunkong1=currentXunkongBranches[0]||null;
+      calendarAssignments.xunkong2=currentXunkongBranches[1]||null;
+      lastXunkongDayPillar=currentDayPillarValue;
+    }
+    renderCalendarValue(document.getElementById('year-pillar'),next.year||'— —');
+    renderCalendarValue(document.getElementById('month-pillar'),next.month||(manualActive&&currentMonthBranch?'—'+currentMonthBranch:'— —'));
+    renderCalendarValue(document.getElementById('day-pillar'),next.day||'— —');
+    renderJianChuInfo(manualActive?null:calculateJianChu(currentMonthBranch,currentDayBranch));
+    if(manualActive) currentTwentyEightInfo=null;
+    updateDailySixGod(next.day||'');
+    const dateCard=document.querySelector('.date-card');
+    if(dateCard) dateCard.classList.toggle('manual-case-pillars',manualActive);
+    const dateTrigger=document.querySelector('.date-picker-trigger');
+    const dateInput=document.getElementById('record-date');
+    if(dateTrigger) dateTrigger.title=manualActive?'选择归档日期':'选择起卦日期';
+    if(dateInput) dateInput.setAttribute('aria-label',manualActive?'选择归档日期':'选择起卦日期');
+    if(manualPillarValidation) manualPillarValidation.textContent=manualPillarProblem();
+    // The initial date calculation runs before worksheet-only DOM nodes are created.
+    // Delay sidecar/line rendering until the worksheet has completed initialization.
+    if(typeof renderCalendarDropSlots==='function') renderCalendarDropSlots();
+    if(worksheetReady){
+      if(typeof renderDateBranchSidecar==='function') renderDateBranchSidecar();
+      renderLineIndicators();
+      refreshBranchStatusTokens();
+    }
   }
   function updateCalendarForJapanToday(){
     if(!followJapanToday) return;
@@ -1617,15 +2129,18 @@
     updateCalendarForDate(date);
   }
   function chooseCalendarDate(value, preserveAssignments=false){
+    clearAutoReviewReport();
     const date=parseDateInput(value);
     if(!date){showToast('请选择有效日期');return false;}
     const today=getJapanDateParts();
     followJapanToday=(dateKeyFromParts(date)===dateKeyFromParts(today));
     if(!preserveAssignments){
       calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
+      lastXunkongDayPillar=null;
       editingRecordId=null;
       forceNewRecord=false;
       setCaseEditor(null);
+      renderManualPillarInputs();
       const memo=document.getElementById('daily-memo');
       if(memo) memo.value='';
     }
@@ -1640,6 +2155,7 @@
     const delay=Math.max(1000,nextJapanMidnightUtc-now.getTime()+250);
     window.setTimeout(()=>{updateCalendarForJapanToday();scheduleJapanMidnightRefresh();},delay);
   }
+  renderManualPillarInputs();
   updateCalendarForJapanToday();
   scheduleJapanMidnightRefresh();
   document.addEventListener('visibilitychange',()=>{if(!document.hidden) updateCalendarForJapanToday();});
@@ -1655,8 +2171,25 @@
     2:{yang:false,moving:false,label:'••'},
     3:{yang:false,moving:true,label:'X'}
   };
-  let state = Array.from({length:6}, ()=>({flowers:null, branch:null, relation:null, shen:null, changeBranch:null, changeRelation:null, effect:''}));
+  let state = Array.from({length:6}, ()=>({flowers:null, branch:null, relation:null, hiddenRelation:null, shen:null, changeBranch:null, changeRelation:null, effect:''}));
   let selected = null;
+  document.querySelectorAll('.case-pillar-slot').forEach(slot=>{
+    slot.addEventListener('click',()=>{
+      if(!selected) return;
+      if(selected.type!==slot.dataset.dropType){showToast(slot.dataset.dropType==='stem'?'这里需要天干':'这里需要地支');return;}
+      assignManualPillarToken(slot.dataset.casePillarKey,slot.dataset.casePillarPart,selected.value);
+      selected=null;updateSelectedTiles();
+    });
+    slot.addEventListener('keydown',event=>{
+      if((event.key==='Enter'||event.key===' ')&&selected){
+        event.preventDefault();
+        if(selected.type===slot.dataset.dropType){
+          assignManualPillarToken(slot.dataset.casePillarKey,slot.dataset.casePillarPart,selected.value);
+          selected=null;updateSelectedTiles();
+        }
+      }
+    });
+  });
   let toastTimer = null;
   let pointerCandidate = null;
   let dragGhost = null;
@@ -1666,6 +2199,16 @@
   const worksheetHost = document.querySelector('.worksheet');
   const hexagramHeading = document.querySelector('.hexagram-heading');
   const toast = document.getElementById('toast');
+  const saveRecordStatus=document.getElementById('save-record-status');
+  const saveRecordButton=document.getElementById('save-record');
+  function setSaveFeedback(message,state='info'){
+    if(saveRecordStatus){
+      saveRecordStatus.textContent=message||'';
+      saveRecordStatus.className='save-record-status'+(state?' '+state:'');
+      saveRecordStatus.title=message||'';
+    }
+    if(saveRecordButton) saveRecordButton.disabled=state==='pending';
+  }
   const SVG_NS='http://www.w3.org/2000/svg';
   const trineOverlay=document.createElementNS(SVG_NS,'svg');
   trineOverlay.classList.add('trine-overlay');
@@ -1688,18 +2231,79 @@
 
   function showToast(message){
     toast.textContent = message; toast.classList.add('show');
-    clearTimeout(toastTimer); toastTimer = setTimeout(()=>toast.classList.remove('show'),1800);
+    clearTimeout(toastTimer); toastTimer = setTimeout(()=>toast.classList.remove('show'),3800);
   }
+
+  // Palette clicks fill the lowest empty main-line slot (初爻 -> 上爻).
+  // Hidden 六亲 and transformed-line fields remain available through explicit drag-and-drop.
+  const AUTO_LINE_FIELD_BY_TOKEN_TYPE={branch:'branch',relation:'relation',god:'shen'};
+  function nextEmptyLineForPaletteType(type){
+    const field=AUTO_LINE_FIELD_BY_TOKEN_TYPE[type];
+    if(!field)return null;
+    for(let lineId=0;lineId<state.length;lineId++){
+      if(state[lineId][field]===null||state[lineId][field]==='')return lineId;
+    }
+    return null;
+  }
+  function animatePaletteTokenToSlot(tile,target){
+    if(!tile||!target||window.matchMedia?.('(prefers-reduced-motion: reduce)').matches)return;
+    const fromRect=tile.getBoundingClientRect();
+    const toRect=target.getBoundingClientRect();
+    const ghost=tile.cloneNode(true);
+    ghost.classList.remove('selected');
+    ghost.classList.add('auto-place-ghost');
+    ghost.removeAttribute('aria-label');
+    ghost.style.left=fromRect.left+'px';
+    ghost.style.top=fromRect.top+'px';
+    ghost.style.width=fromRect.width+'px';
+    ghost.style.height=fromRect.height+'px';
+    document.body.appendChild(ghost);
+    const dx=toRect.left+toRect.width/2-(fromRect.left+fromRect.width/2);
+    const dy=toRect.top+toRect.height/2-(fromRect.top+fromRect.height/2);
+    const scale=Math.min(1,toRect.width/fromRect.width,toRect.height/fromRect.height)*0.88;
+    requestAnimationFrame(()=>{
+      ghost.style.transform='translate('+dx+'px,'+dy+'px) scale('+scale+')';
+      ghost.style.opacity='0.12';
+    });
+    setTimeout(()=>ghost.remove(),360);
+  }
+  function autoFillNextYaoSlot(tile,type,value){
+    const lineId=nextEmptyLineForPaletteType(type);
+    if(lineId===null)return false;
+    const zone=AUTO_LINE_FIELD_BY_TOKEN_TYPE[type];
+    const target=document.querySelector('.line-row[data-line-id="'+lineId+'"] .drop-slot[data-drop-type="'+type+'"][data-zone="'+zone+'"]');
+    animatePaletteTokenToSlot(tile,target);
+    assignToken(lineId,type,value,zone);
+    return true;
+  }
+
   function addTiles(container, values, type, styleClass){
     values.forEach(value=>{
       const tile=document.createElement('button');
-      tile.type='button'; tile.className='tile '+(styleClass||'')+(type==='branch'&&elementClassForBranch(value)?' '+elementClassForBranch(value):'')+(type==='god'&&sixGodClasses[value]?' '+sixGodClasses[value]:''); tile.textContent=value;
+      tile.type='button'; tile.className='tile '+(styleClass||'')+(type==='branch'&&elementClassForBranch(value)?' '+elementClassForBranch(value):'')+(type==='stem'&&elementClassForStem(value)?' '+elementClassForStem(value):'')+(type==='god'&&sixGodClasses[value]?' '+sixGodClasses[value]:''); tile.textContent=value;
       tile.draggable=false; tile.dataset.tokenType=type; tile.dataset.tokenValue=value;
-      if(type==='branch'){tile.dataset.branch=value;tile.setAttribute('aria-label','地支'+value+'；拖动到爻位，或点选后点击目标位置');}
-      tile.setAttribute('aria-label','拖动'+value+'到对应位置，或点选后再点目标位置');
+      const paletteHost=container.closest('#branch-pairs-top,#branch-pairs');
+      const pairLabel=container.closest('.branch-pair')?.getAttribute('aria-label')||type+'-palette';
+      tile.dataset.paletteId=container.id || (paletteHost?paletteHost.id+':'+pairLabel:pairLabel);
+      if(type==='branch') tile.dataset.branch=value;
+      const typeName=type==='branch'?'地支':type==='stem'?'天干':type==='god'?'六神':'六亲';
+      const isDatePalette=!!container.closest('.calendar-palette-area');
+      const isPillarPalette=!!container.closest('.case-stem-source');
+      tile.setAttribute('aria-label',
+        isPillarPalette
+          ? '单击选择后，再点击上方年柱、月柱或日柱对应的天干／地支位置；也可以直接拖到对应位置'
+          : (isDatePalette
+              ? '拖动到年月日或日干六神对应位置，也可点选后再点目标位置'
+              : (['branch','relation','god'].includes(type)
+                  ? '单击自动填入从初爻开始的第一个空位；也可以拖到指定位置'
+                  : '拖动'+typeName+value+'到对应位置，或点选后再点目标位置')));
       tile.addEventListener('click',e=>{
         if(suppressTileClick){e.preventDefault();e.stopPropagation();return;}
-        if(selected && selected.value===value && selected.type===type){selected=null;} else {selected={type,value};}
+        // Date and manual-pillar palettes must target the calendar above, never auto-fill a six-line yao.
+        const isCalendarSource=!!tile.closest('.calendar-palette-area,.case-stem-source');
+        if(!isCalendarSource && autoFillNextYaoSlot(tile,type,value))return;
+        if(selected && selected.tile===tile){selected=null;}
+        else{selected={type,value,paletteId:tile.dataset.paletteId,tile};}
         updateSelectedTiles();
         showToast(selected ? ('已选「'+value+'」，再点目标位置也可以') : '已取消选中');
       });
@@ -1707,8 +2311,10 @@
     });
   }
   function updateSelectedTiles(){
+    // Selection belongs to one physical tile, not every palette tile with the
+    // same character/value. This keeps the date-side and lower palettes isolated.
     document.querySelectorAll('.tile').forEach(tile=>{
-      tile.classList.toggle('selected',!!selected && tile.dataset.tokenType===selected.type && tile.dataset.tokenValue===selected.value);
+      tile.classList.toggle('selected',!!selected && selected.tile===tile);
     });
   }
   // Column order is intentional: upper row 子、寅、辰、午、申、戌;
@@ -1721,20 +2327,27 @@
     {values:['申','巳'], groupClass:'liuhe-water', label:'巳申合化水'},
     {values:['戌','卯'], groupClass:'liuhe-fire', label:'卯戌合化火'}
   ];
-  const branchPairHost=document.getElementById('branch-pairs');
-  branchPairDefinitions.forEach(pair=>{
-    const group=document.createElement('div');
-    group.className='branch-pair '+pair.groupClass;
-    group.setAttribute('aria-label',pair.label);
-    const upper=document.createElement('div'); upper.className='tiles';
-    const lower=document.createElement('div'); lower.className='tiles';
-    addTiles(upper,[pair.values[0]],'branch','yang');
-    addTiles(lower,[pair.values[1]],'branch','yin');
-    group.append(upper,lower);
-    branchPairHost.appendChild(group);
+  addTiles(document.getElementById('stem-tiles'),GANZHI_STEMS,'stem','');
+  ['branch-pairs-top','branch-pairs'].forEach(hostId=>{
+    const branchPairHost=document.getElementById(hostId);
+    if(!branchPairHost)return;
+    branchPairDefinitions.forEach(pair=>{
+      const group=document.createElement('div');
+      group.className='branch-pair '+pair.groupClass;
+      group.setAttribute('aria-label',pair.label);
+      const upper=document.createElement('div'); upper.className='tiles';
+      const lower=document.createElement('div'); lower.className='tiles';
+      addTiles(upper,[pair.values[0]],'branch','yang');
+      addTiles(lower,[pair.values[1]],'branch','yin');
+      group.append(upper,lower);
+      branchPairHost.appendChild(group);
+    });
   });
   addTiles(document.getElementById('kin-tiles'),relations,'relation','');
   addTiles(document.getElementById('god-tiles'),sixGods,'god','');
+  // The separate chart palette fills the six main lines bottom-up on a single click.
+  addTiles(document.getElementById('chart-kin-tiles'),relations,'relation','');
+  addTiles(document.getElementById('chart-god-tiles'),sixGods,'god','');
   // Re-apply the day-stem highlight now that the six-god palette tiles exist.
   updateDailySixGod(document.getElementById('day-pillar').textContent.replace(/\s/g,''));
 
@@ -1743,14 +2356,24 @@
     const tile=e.target.closest('.tile');
     if(!tile || e.button===2) return;
     pointerCandidate={pointerId:e.pointerId,tile,type:tile.dataset.tokenType,value:tile.dataset.tokenValue,x:e.clientX,y:e.clientY,dragging:false};
+    // Keep receiving pointer moves even after the pointer leaves the source tile.
+    try{tile.setPointerCapture(e.pointerId);}catch(error){}
   });
   document.addEventListener('pointermove',e=>{
     if(!pointerCandidate || e.pointerId!==pointerCandidate.pointerId) return;
     const p=pointerCandidate;
     if(!p.dragging && Math.hypot(e.clientX-p.x,e.clientY-p.y)>7){
-      p.dragging=true; selected={type:p.type,value:p.value}; updateSelectedTiles();
-      dragGhost=p.tile.cloneNode(true); dragGhost.classList.add('drag-ghost');
-      dragGhost.style.width=p.tile.getBoundingClientRect().width+'px';
+      p.dragging=true; selected={type:p.type,value:p.value,paletteId:p.tile.dataset.paletteId,tile:p.tile}; updateSelectedTiles();
+      // The source tile has .selected for feedback; do not copy that class to the
+      // fixed-position ghost because .tile.selected otherwise overrides positioning.
+      dragGhost=p.tile.cloneNode(true);
+      dragGhost.classList.remove('selected');
+      dragGhost.classList.add('drag-ghost');
+      const sourceRect=p.tile.getBoundingClientRect();
+      dragGhost.style.width=sourceRect.width+'px';
+      dragGhost.style.height=sourceRect.height+'px';
+      dragGhost.style.left=e.clientX+'px';
+      dragGhost.style.top=e.clientY+'px';
       document.body.appendChild(dragGhost);
     }
     if(p.dragging){
@@ -1771,7 +2394,8 @@
     suppressTileClick=true; clearTimeout(suppressResetTimer); suppressResetTimer=setTimeout(()=>suppressTileClick=false,0);
     if(target){
       if(target.dataset.dropType!==p.type){selected=null;updateSelectedTiles();showToast('这个项目不能放在这里');return;}
-      if(target.dataset.calendarKey) assignCalendarToken(target.dataset.calendarKey,p.type,p.value);
+      if(target.dataset.casePillarKey) assignManualPillarToken(target.dataset.casePillarKey,target.dataset.casePillarPart,p.value);
+      else if(target.dataset.calendarKey) assignCalendarToken(target.dataset.calendarKey,p.type,p.value);
       else assignToken(Number(target.dataset.lineId),p.type,p.value,target.dataset.zone);
     }else{
       selected=null; updateSelectedTiles(); showToast('把项目拖到对应的小格里');
@@ -1784,11 +2408,15 @@
   });
 
   function assignCalendarToken(key,type,value){
-    const expectedType=key==='dayGod'?'god':(key.startsWith('xunkong')?'branch':'relation');
+    clearAutoReviewReport();
+    const isXunkong=key==='xunkong1'||key==='xunkong2';
+    const expectedType=key==='dayGod'?'god':(isXunkong?'branch':'relation');
     if(type!==expectedType){showToast(expectedType==='branch'?'这里需要地支':expectedType==='god'?'这里需要六神':'这里需要六亲');return;}
     calendarAssignments[key]=value;
     selected=null;updateSelectedTiles();renderCalendarDropSlots();refreshBranchStatusTokens();
-    if(key==='dayGod' && expectedDayGod && value!==expectedDayGod){
+    if(isXunkong){
+      showToast('已手动放入旬空：'+value+'；检查时会按日柱核对并校正');
+    }else if(key==='dayGod' && expectedDayGod && value!==expectedDayGod){
       const dayText=document.getElementById('day-pillar')?.textContent||'';
       showToast('提示：'+dayText.charAt(0)+'日应从'+expectedDayGod+'起；已保留你的选择');
     }else{
@@ -1798,6 +2426,7 @@
   function renderCalendarDropSlots(){
     document.querySelectorAll('[data-calendar-key]').forEach(slot=>{
       const key=slot.dataset.calendarKey;
+      const isCalculatedXunkong=key==='xunkong1'||key==='xunkong2';
       const value=calendarAssignments[key];
       const type=key==='dayGod'?'god':(key.startsWith('xunkong')?'branch':'relation');
       slot.classList.toggle('filled',!!value);
@@ -1806,6 +2435,17 @@
       Object.values(sixGodClasses).forEach(className=>slot.classList.remove(className));
       if(type==='god'&&value&&sixGodClasses[value]) slot.classList.add(sixGodClasses[value]);
       slot.classList.toggle('wrong-god',key==='dayGod'&&!!value&&!!expectedDayGod&&value!==expectedDayGod);
+      const expectedXunkong=isCalculatedXunkong?currentXunkongBranches[key==='xunkong1'?0:1]:null;
+      const wrongXunkong=isCalculatedXunkong&&!!value&&!!expectedXunkong&&value!==expectedXunkong;
+      slot.classList.toggle('wrong-xunkong',wrongXunkong);
+      if(isCalculatedXunkong){
+        const dayText=document.getElementById('day-pillar')?.textContent||'';
+        slot.title=expectedXunkong
+          ?'日柱 '+dayText+' 自动计算旬空应为 '+expectedXunkong+'；可拖拽调整，检查时按日柱校正'
+          :'等待有效日柱后自动计算旬空；可拖拽填写';
+      }else{
+        slot.removeAttribute('title');
+      }
       slot.replaceChildren();
       if(!value){const prompt=document.createElement('span');prompt.className='slot-label';prompt.textContent='＋';slot.appendChild(prompt);return;}
       const token=document.createElement('span');
@@ -1813,7 +2453,7 @@
       if(type==='branch'){token.setAttribute('aria-label','地支'+value);}
       token.textContent=value;slot.appendChild(token);
       const clear=document.createElement('button');clear.type='button';clear.className='clear-slot';clear.title='清除此项';clear.setAttribute('aria-label','清除'+value);clear.textContent='×';
-      clear.addEventListener('click',e=>{e.stopPropagation();calendarAssignments[key]=null;renderCalendarDropSlots();refreshBranchStatusTokens();});
+      clear.addEventListener('click',e=>{e.stopPropagation();calendarAssignments[key]=null;clearAutoReviewReport();renderCalendarDropSlots();refreshBranchStatusTokens();});
       slot.appendChild(clear);
     });
   }
@@ -1845,7 +2485,10 @@
     const count=document.createElement('div'); count.className='cell flower-cell';
     count.innerHTML='<div class="flower-options" role="group" aria-label="第'+meta.cast+'摇的记号">'+[{n:1,s:'•',a:'一花两字'},{n:2,s:'••',a:'两花一字'},{n:3,s:'X',a:'三花',moving:true},{n:0,s:'O',a:'三字',moving:true}].map(o=>'<button class="flower-btn'+(o.moving?' moving-option':'')+'" type="button" data-flower="'+o.n+'"'+(o.moving?' data-moving="true"':'')+' title="'+o.a+'" aria-label="'+o.a+'">'+o.s+'</button>').join('')+'</div>';
     const symbol=document.createElement('div'); symbol.className='cell line-result symbol-cell'; symbol.innerHTML='<div class="yao-mark"><span class="yangbar"></span></div><span class="line-indicators"><span class="shi-indicator"></span><span class="ying-indicator"></span></span>'; 
+    const branchGroup=document.createElement('div'); branchGroup.className='branch-cell-group';
+    const hiddenRelation=document.createElement('div'); hiddenRelation.className='drop-slot kin-cell hidden-relation-cell'; hiddenRelation.dataset.dropType='relation'; hiddenRelation.dataset.zone='hiddenRelation'; hiddenRelation.dataset.lineId=meta.id; hiddenRelation.setAttribute('role','button'); hiddenRelation.setAttribute('tabindex','0'); hiddenRelation.setAttribute('aria-label',meta.pos+'伏藏六亲标记'); hiddenRelation.title='可选：拖入伏藏六亲'; hiddenRelation.innerHTML='<span class="slot-label">＋</span>';
     const branch=document.createElement('div'); branch.className='drop-slot branch-cell'; branch.dataset.dropType='branch'; branch.dataset.zone='branch'; branch.dataset.lineId=meta.id; branch.setAttribute('role','button'); branch.setAttribute('tabindex','0'); branch.setAttribute('aria-label',meta.pos+'地支'); branch.innerHTML='<span class="slot-label">＋</span>';
+    branchGroup.append(hiddenRelation,branch);
     const kin=document.createElement('div'); kin.className='drop-slot kin-cell'; kin.dataset.dropType='relation'; kin.dataset.zone='relation'; kin.dataset.lineId=meta.id; kin.setAttribute('role','button'); kin.setAttribute('tabindex','0'); kin.setAttribute('aria-label',meta.pos+'六亲'); kin.innerHTML='<span class="slot-label">＋</span>';
     const shen=document.createElement('div'); shen.className='drop-slot kin-cell shen-cell'; shen.dataset.dropType='god'; shen.dataset.zone='shen'; shen.dataset.lineId=meta.id; shen.setAttribute('role','button'); shen.setAttribute('tabindex','0'); shen.setAttribute('aria-label',meta.pos+'六神'); shen.innerHTML='<span class="slot-label">＋</span>';
     const change=document.createElement('div'); change.className='change-cell'; change.setAttribute('aria-label',meta.pos+'变卦爻位'); change.innerHTML='<div class="change-mark empty"><span class="yangbar"></span></div>';
@@ -1855,9 +2498,10 @@
     effect.innerHTML='<option value="">—</option>'+effects.map(value=>'<option value="'+value+'">'+value+'</option>').join('');
     effect.addEventListener('change',()=>{state[meta.id].effect=effect.value;});
     count.querySelectorAll('[data-flower]').forEach(btn=>btn.addEventListener('click',()=>{
+      clearAutoReviewReport();
       state[meta.id].flowers=Number(btn.dataset.flower); state.forEach((_,i)=>renderRow(i));
     }));
-    [branch,kin,shen,changeBranch,changeKin].forEach(slot=>{
+    [hiddenRelation,branch,kin,shen,changeBranch,changeKin].forEach(slot=>{
       slot.addEventListener('dragover',e=>{e.preventDefault();slot.classList.add('drag-over');});
       slot.addEventListener('dragleave',()=>slot.classList.remove('drag-over'));
       slot.addEventListener('drop',e=>{
@@ -1876,10 +2520,12 @@
       });
       slot.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&selected){e.preventDefault();if(selected.type===slot.dataset.dropType)assignToken(meta.id,selected.type,selected.value,slot.dataset.zone);}});
     });
-    row.append(count,symbol,branch,kin,shen,change,changeBranch,changeKin,effect);
+    const branchRelationHint=document.createElement('div');branchRelationHint.className='branch-relation-hint';branchRelationHint.setAttribute('aria-live','polite');
+    row.append(count,symbol,branchGroup,kin,shen,change,changeBranch,changeKin,effect,branchRelationHint);
     return row;
   }
   function assignToken(lineId,type,value,zone){
+    clearAutoReviewReport();
     const key=zone || (type==='branch'?'branch':'relation');
     state[lineId][key]=value;
     selected=null; updateSelectedTiles(); renderRow(lineId);
@@ -1895,7 +2541,7 @@
     if(type==='branch'){token.textContent=value;applyBranchStatus(token,value);}else{token.textContent=value;}
     slot.appendChild(token);
     const clear=document.createElement('button');clear.type='button';clear.className='clear-slot';clear.title='清除此项';clear.setAttribute('aria-label','清除'+value);clear.textContent='×';
-    clear.addEventListener('click',e=>{e.stopPropagation();state[Number(slot.dataset.lineId)][slot.dataset.zone]=null;renderRow(Number(slot.dataset.lineId));});slot.appendChild(clear);
+    clear.addEventListener('click',e=>{e.stopPropagation();clearAutoReviewReport();state[Number(slot.dataset.lineId)][slot.dataset.zone]=null;renderRow(Number(slot.dataset.lineId));});slot.appendChild(clear);
   }
   function renderRow(id){
     const row=rowsHost.querySelector('[data-line-id="'+id+'"]'); if(!row)return;
@@ -1905,7 +2551,7 @@
       btn.classList.toggle('active',active);
       btn.classList.toggle('moving-option',btn.dataset.moving==='true');
     });
-    const darkInfo=getDarkMovementInfo(item);
+    const darkInfo=getDarkMovementInfo(item,currentDayBranch,id,state);
     const isDarkMoving=!!darkInfo;
     const isExplicitMoving=!!(result&&result.moving);
     const isMovingForDisplay=isExplicitMoving||isDarkMoving;
@@ -1917,7 +2563,7 @@
     const groupHasMoving=groupIds.some(lineId=>{
       const candidate=state[lineId];
       const candidateResult=candidate.flowers===null?null:mapping[candidate.flowers];
-      return !!(candidateResult&&candidateResult.moving)||!!getDarkMovementInfo(candidate);
+      return !!(candidateResult&&candidateResult.moving)||!!getDarkMovementInfo(candidate,currentDayBranch,lineId,state);
     });
     row.classList.toggle('trigram-inactive',!groupHasMoving);
     row.classList.toggle('has-active-movement',isMovingForDisplay);
@@ -1936,6 +2582,7 @@
       changeMark.innerHTML='<span class="yangbar"></span>';
       changeMark.style.visibility='hidden';
     }
+    filledSlot(row.querySelector('[data-zone="hiddenRelation"]'),item.hiddenRelation,'relation');
     filledSlot(row.querySelector('[data-zone="branch"]'),item.branch,'branch');
     filledSlot(row.querySelector('[data-zone="relation"]'),item.relation,'relation');
     filledSlot(row.querySelector('[data-zone="shen"]'),item.shen,'god');
@@ -1949,6 +2596,25 @@
     filledSlot(changeBranchSlot,item.changeBranch,'branch');
     filledSlot(changeRelationSlot,item.changeRelation,'relation');
     row.querySelector('.effect-select').value=item.effect||'';
+    const branchRelationHint=row.querySelector('.branch-relation-hint');
+    if(branchRelationHint){
+      branchRelationHint.replaceChildren();
+      const pairInfo=isMovingForDisplay?getLiuHePairInfo(item.branch,item.changeBranch):null;
+      branchRelationHint.classList.toggle('has-control',!!pairInfo?.hasControl);
+      if(pairInfo){
+        const label=document.createElement('strong');label.textContent=pairInfo.pair+'合';
+        const detail=document.createElement('small');detail.textContent=pairInfo.label;
+        branchRelationHint.append(label,detail);
+        const forceRule='第十二课规则：力量接近时可考虑贪合忘克；一方明显强于另一方时仍须论克。需结合月令、日辰及其他动爻判断，页面不自动判定哪一方占优。';
+        branchRelationHint.title=pairInfo.controlText
+          ?pairInfo.controlText+'；'+forceRule
+          :(pairInfo.generationText||'六合关系；需结合全卦判断。');
+        branchRelationHint.setAttribute('aria-label',pairInfo.pair+'合，'+pairInfo.label+(pairInfo.controlText?'，'+pairInfo.controlText:''));
+      }else{
+        branchRelationHint.title='';
+        branchRelationHint.removeAttribute('aria-label');
+      }
+    }
     renderTrigramNames();
   }
   // Complete 64-hexagram lookup. Pattern order is bottom-to-top: 初爻 → 上爻.
@@ -2017,29 +2683,37 @@
     if(!node) return;
     const complete=state.every(item=>item.flowers!==null);
     const metaNode=document.getElementById('hexagram-meta');
-    const elementBadge=document.getElementById('hexagram-element-badge');
+    const palaceBadge=document.getElementById('hexagram-palace-badge');
     if(!complete){
       currentHexagramInfo=null;
+      rowsHost.classList.remove(...elementClasses);
       node.textContent=''; node.classList.remove(...elementClasses); node.removeAttribute('title');
       if(metaNode) metaNode.replaceChildren();
-      if(elementBadge){elementBadge.textContent='';elementBadge.classList.remove(...elementClasses);elementBadge.removeAttribute('title');}
+      if(palaceBadge){palaceBadge.textContent='';palaceBadge.hidden=true;palaceBadge.classList.remove(...elementClasses);palaceBadge.removeAttribute('title');palaceBadge.removeAttribute('aria-label');}
       updatePalaceReferenceSelection();
       return;
     }
     const pattern=state.map(item=>mapping[item.flowers].yang?'1':'0').join('');
     const info=hexagramData[pattern];
-    if(!info){currentHexagramInfo=null;node.textContent='';node.classList.remove(...elementClasses);if(metaNode)metaNode.textContent='';if(elementBadge){elementBadge.textContent='';elementBadge.classList.remove(...elementClasses);}updatePalaceReferenceSelection();return;}
+    if(!info){currentHexagramInfo=null;rowsHost.classList.remove(...elementClasses);node.textContent='';node.classList.remove(...elementClasses);if(metaNode)metaNode.textContent='';if(palaceBadge){palaceBadge.textContent='';palaceBadge.hidden=true;palaceBadge.classList.remove(...elementClasses);palaceBadge.removeAttribute('title');palaceBadge.removeAttribute('aria-label');}updatePalaceReferenceSelection();return;}
     currentHexagramInfo={...info,pattern};
+    rowsHost.classList.remove(...elementClasses);
+    if(info.element) rowsHost.classList.add('element-'+info.element);
     node.replaceChildren();
     node.classList.remove(...elementClasses);
-    if(elementBadge){
-      const elementCharacters={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
-      elementBadge.textContent=elementCharacters[info.element]||'';
-      elementBadge.classList.remove(...elementClasses);
-      if(info.element) elementBadge.classList.add('element-'+info.element);
-      elementBadge.title='所属卦宫五行：'+elementBadge.textContent;
-      elementBadge.setAttribute('aria-label','所属卦宫五行：'+elementBadge.textContent);
+    const elementCharacters={metal:'金',wood:'木',water:'水',fire:'火',earth:'土'};
+    if(palaceBadge){
+      palaceBadge.textContent=info.palace||'';
+      palaceBadge.hidden=!info.palace;
+      palaceBadge.classList.remove(...elementClasses);
+      if(info.element) palaceBadge.classList.add('element-'+info.element);
+      palaceBadge.title='所属卦宫：'+(info.palace||'')+'（五行'+(elementCharacters[info.element]||'')+'）';
+      palaceBadge.setAttribute('aria-label','所属卦宫：'+(info.palace||''));
     }
+    const shiPrefix=document.createElement('span');
+    shiPrefix.className='hexagram-shi-prefix element-'+info.element;
+    shiPrefix.textContent=String(info.shi||'');
+    node.appendChild(shiPrefix);
     const symbolElements={'天':'metal','泽':'metal','火':'fire','雷':'wood','风':'wood','水':'water','山':'earth','地':'earth'};
     if(info.label===info.full){
       // The eight pure hexagrams have a single established name, e.g. 乾为天.
@@ -2062,8 +2736,8 @@
       node.appendChild(shortName);
     }
     const relationText=renderShiYingRelation(metaNode,info);
-    node.title=info.full+' · '+(elementBadge?elementBadge.textContent:'')+'行'+(relationText?' · 世应关系：'+relationText:'');
-    node.setAttribute('aria-label',info.full+'，所属卦宫五行：'+(elementBadge?elementBadge.textContent:'')+(relationText?'，世应关系：'+relationText:''));
+    node.title=info.full+' · '+(elementCharacters[info.element]||'')+'行'+(relationText?' · 世应关系：'+relationText:'');
+    node.setAttribute('aria-label',String(info.shi)+'世：'+info.full+'，所属卦宫五行：'+(elementCharacters[info.element]||'')+(relationText?'，世应关系：'+relationText:''));
     updatePalaceReferenceSelection();
   }
 
@@ -2107,22 +2781,30 @@
     renderHexagramName();
     renderLineIndicators();
   }
-  function getDarkMovementInfo(item){
-    if(!item || item.flowers===null || !item.branch || !currentDayBranch) return null;
-    // 第十一课逐爻判断：本爻静止且被日辰冲，可论暗动；其他爻明动不取消本爻的暗动资格。
+  function getDarkMovementInfo(item,dayBranch=currentDayBranch,lineIndex=state.indexOf(item),lineSource=state){
+    if(!item || item.flowers===null || !item.branch || !dayBranch) return null;
     const cast=mapping[item.flowers];
     if(!cast || cast.moving) return null;
-    const clashBranch=sixClashes[currentDayBranch];
-    if(clashBranch && item.branch===clashBranch){
-      return {dayBranch:currentDayBranch,lineBranch:item.branch};
+    // 第十一课：静爻被日辰冲，可逐爻识别暗动。
+    // 第十二课补充：同一上卦／下卦已经有明动时，该卦内的暗动不再叠加。
+    if(Number.isInteger(lineIndex)&&lineIndex>=0&&lineIndex<6){
+      const groupStart=lineIndex<3?0:3;
+      const hasMingDongInSameTrigram=lineSource.slice(groupStart,groupStart+3).some((candidate,offset)=>{
+        const candidateLineId=groupStart+offset;
+        if(candidateLineId===lineIndex||!candidate||candidate.flowers===null) return false;
+        return !!(mapping[candidate.flowers]&&mapping[candidate.flowers].moving);
+      });
+      if(hasMingDongInSameTrigram) return null;
     }
+    const clashBranch=sixClashes[dayBranch];
+    if(clashBranch && item.branch===clashBranch) return {dayBranch,lineBranch:item.branch};
     return null;
   }
-  function getLineMovementInfo(item){
+  function getLineMovementInfo(item,dayBranch=currentDayBranch,lineIndex=state.indexOf(item),lineSource=state){
     if(!item || item.flowers===null) return null;
     const cast=mapping[item.flowers];
     if(cast && cast.moving) return {kind:'明动'};
-    const darkInfo=getDarkMovementInfo(item);
+    const darkInfo=getDarkMovementInfo(item,dayBranch,lineIndex,lineSource);
     if(darkInfo) return {kind:'暗动',...darkInfo};
     return null;
   }
@@ -2132,7 +2814,7 @@
     {branches:['申','子','辰'],element:'water',label:'申子辰三合水局',color:'#2677b8',activationBranches:['子','辰']},
     {branches:['亥','卯','未'],element:'wood',label:'亥卯未三合木局',color:'#32844b',activationBranches:['卯']},
     {branches:['寅','午','戌'],element:'fire',label:'寅午戌三合火局',color:'#c44738',activationBranches:['午']},
-    {branches:['巳','酉','丑'],element:'metal',label:'巳酉丑三合金局',color:'#b98519',activationBranches:['酉']}
+    {branches:['巳','酉','丑'],element:'metal',label:'巳酉丑三合金局',color:'#D19A00',activationBranches:['酉']}
   ];
   // Course rule: the middle branch must move; 申子辰 is the exception where 子 or 辰 may move.
   function isTrineActivationBranch(definition,branch){
@@ -2186,61 +2868,196 @@
   // A：同一卦体内两个（明动或暗动）爻，其中至少一个是允许发动的锚点；日支或月支补第三支。
   // B：一个允许发动的锚点爻；日支、月支分别补足另外两支。申子辰允许子、辰发动。
   // 这两种显示为不同状态，不将流派分歧隐藏掉。
-  function findDateTrineCombinations(){
-    const combinations=[];
-    const seen=new Set();
-    const month=currentMonthBranch;
-    const day=currentDayBranch;
-    const dateSources=[{source:'month',branch:month},{source:'day',branch:day}].filter(x=>!!x.branch);
+  function findDateTrineCombinations(lineSource=state,monthSource=currentMonthBranch,daySource=currentDayBranch){
+    const combinations=[],seen=new Set();
+    const dateSources=[{source:'month',branch:monthSource},{source:'day',branch:daySource}].filter(x=>!!x.branch);
     trineDefinitions.forEach(definition=>{
       const [outerA,middle,outerB]=definition.branches;
-      const activeLines=state.map((item,id)=>({item,id,motion:getLineMovementInfo(item)}))
-        .filter(entry=>entry.motion && definition.branches.includes(entry.item.branch));
+      const activeLines=lineSource.map((item,id)=>({item,id,motion:getLineMovementInfo(item,daySource,id,lineSource)}))
+        .filter(entry=>entry.motion&&entry.item.branch&&definition.branches.includes(entry.item.branch));
       const activationLines=activeLines.filter(entry=>isTrineActivationBranch(definition,entry.item.branch));
-
-      // Mode A: two active lines in the same trigram; one must be an allowed activation branch.
-      for(let i=0;i<activeLines.length;i++){
-        for(let j=i+1;j<activeLines.length;j++){
-          const first=activeLines[i],second=activeLines[j];
-          if(first.item.branch===second.item.branch) continue;
-          if(Math.floor(first.id/3)!==Math.floor(second.id/3)) continue;
-          const anchorLine=isTrineActivationBranch(definition,first.item.branch)?first:
-            isTrineActivationBranch(definition,second.item.branch)?second:null;
-          if(!anchorLine) continue;
-          const missing=definition.branches.find(branch=>branch!==first.item.branch&&branch!==second.item.branch);
-          const dateSource=dateSources.find(source=>source.branch===missing);
-          if(!missing||!dateSource) continue;
-          const key=['A',definition.element,first.id,second.id,dateSource.source].join(':');
-          if(seen.has(key)) continue;
-          seen.add(key);
-          combinations.push({
-            mode:'A',definition,dateSource:dateSource.source,dateBranch:missing,
-            lineIds:[first.id,second.id],anchorLineId:anchorLine.id,
-            motionKinds:[first.motion.kind,second.motion.kind]
-          });
-        }
+      activeLines.forEach(entry=>{
+        const transformed=entry.item.changeBranch;
+        if(!transformed||transformed===entry.item.branch||!definition.branches.includes(transformed)||!isTrineActivationBranch(definition,entry.item.branch)) return;
+        const missing=definition.branches.find(branch=>branch!==entry.item.branch&&branch!==transformed);
+        const dateSource=dateSources.find(item=>item.branch===missing);
+        if(!missing||!dateSource) return;
+        const key=['C',definition.element,entry.id,dateSource.source].join(':');
+        if(seen.has(key)) return;
+        seen.add(key);
+        combinations.push({mode:'C',definition,dateSource:dateSource.source,dateBranch:missing,lineIds:[entry.id],anchorLineId:entry.id,motionKinds:[entry.motion.kind],anchorBranch:entry.item.branch,transformedBranch:transformed});
+      });
+      for(let i=0;i<activeLines.length;i++) for(let j=i+1;j<activeLines.length;j++){
+        const first=activeLines[i],second=activeLines[j];
+        if(first.item.branch===second.item.branch||Math.floor(first.id/3)!==Math.floor(second.id/3)) continue;
+        const anchorLine=isTrineActivationBranch(definition,first.item.branch)?first:isTrineActivationBranch(definition,second.item.branch)?second:null;
+        if(!anchorLine) continue;
+        const missing=definition.branches.find(branch=>branch!==first.item.branch&&branch!==second.item.branch);
+        const dateSource=dateSources.find(item=>item.branch===missing);
+        if(!missing||!dateSource) continue;
+        const key=['A',definition.element,first.id,second.id,dateSource.source].join(':');
+        if(seen.has(key)) continue;
+        seen.add(key);
+        combinations.push({mode:'A',definition,dateSource:dateSource.source,dateBranch:missing,lineIds:[first.id,second.id],anchorLineId:anchorLine.id,motionKinds:[first.motion.kind,second.motion.kind]});
       }
-
-      // Mode B: one active allowed anchor branch + both date branches as the two ends.
-      if(month && day && month!==day && activeLines.length===1 && activationLines.length===1){
-        const dateSet=new Set([month,day]);
-        const requiredOuter=new Set([outerA,outerB]);
-        const exactlyOuter=dateSet.size===2 && [...dateSet].every(branch=>requiredOuter.has(branch)) &&
-          [...requiredOuter].every(branch=>dateSet.has(branch));
-        if(exactlyOuter){
-          activationLines.forEach(entry=>{
-            const key=['B',definition.element,entry.id,month,day].join(':');
-            if(seen.has(key)) return;
-            seen.add(key);
-            combinations.push({
-              mode:'B',definition,dateSource:null,dateBranch:null,
-              lineIds:[entry.id],anchorLineId:entry.id,motionKinds:[entry.motion.kind]
-            });
-          });
-        }
+      if(monthSource&&daySource&&monthSource!==daySource&&activeLines.length===1&&activationLines.length===1){
+        const dateSet=new Set([monthSource,daySource]),requiredOuter=new Set([outerA,outerB]);
+        const exactlyOuter=dateSet.size===2&&[...dateSet].every(branch=>requiredOuter.has(branch))&&[...requiredOuter].every(branch=>dateSet.has(branch));
+        if(exactlyOuter) activationLines.forEach(entry=>{
+          const key=['B',definition.element,entry.id,monthSource,daySource].join(':');
+          if(seen.has(key)) return;
+          seen.add(key);
+          combinations.push({mode:'B',definition,dateSource:null,dateBranch:null,lineIds:[entry.id],anchorLineId:entry.id,motionKinds:[entry.motion.kind]});
+        });
       }
     });
-    return combinations.sort((a,b)=>a.mode===b.mode?0:a.mode==='A'?-1:1);
+    const preferredTrines=new Set(combinations.filter(item=>item.mode==='C').map(item=>item.definition.element));
+    const priority={C:0,A:1,B:2};
+    return combinations.filter(item=>item.mode==='C'||!preferredTrines.has(item.definition.element))
+      .sort((a,b)=>priority[a.mode]-priority[b.mode]||a.lineIds[0]-b.lineIds[0]);
+  }
+
+  function findIntraHexagramTrines(lineSource=state,daySource=currentDayBranch,dateCombinations=[]){
+    const combinations=[],seen=new Set();
+    const preferredDateAnchors=new Set((dateCombinations||[]).filter(item=>item.mode==='C').map(item=>item.definition.element+':'+item.anchorLineId));
+    for(let movingId=0;movingId<lineSource.length;movingId++){
+      const movingItem=lineSource[movingId],movingInfo=getLineMovementInfo(movingItem,daySource,movingId,lineSource);
+      if(!movingInfo||!movingItem.branch||!movingItem.changeBranch||movingItem.branch===movingItem.changeBranch) continue;
+      const sameTrigramIds=movingId<3?[0,1,2]:[3,4,5];
+      if(!sameTrigramIds.every(id=>lineSource[id]&&lineSource[id].flowers!==null&&lineSource[id].flowers!==undefined)) continue;
+      const definition=trineDefinitions.find(trine=>trine.branches.includes(movingItem.branch)&&trine.branches.includes(movingItem.changeBranch));
+      if(!definition||!isTrineActivationBranch(definition,movingItem.branch)||preferredDateAnchors.has(definition.element+':'+movingId)) continue;
+      const missingBranch=definition.branches.find(branch=>branch!==movingItem.branch&&branch!==movingItem.changeBranch);
+      if(!missingBranch) continue;
+      for(const partnerId of sameTrigramIds){
+        if(partnerId===movingId||lineSource[partnerId]?.branch!==missingBranch) continue;
+        const key=[definition.element,movingId,partnerId].join(':');
+        if(seen.has(key)) continue;
+        seen.add(key);
+        combinations.push({name:definition.label,element:definition.element,mode:'same-trigram',
+          movingLineNumber:movingId+1,partnerLineNumber:partnerId+1,movementKind:movingInfo.kind,
+          participants:[
+            {source:'line',lineNumber:movingId+1,side:'本卦',branch:movingItem.branch},
+            {source:'line',lineNumber:movingId+1,side:'变卦',branch:movingItem.changeBranch},
+            {source:'line',lineNumber:partnerId+1,side:'本卦',branch:missingBranch}
+          ]});
+      }
+    }
+    return combinations;
+  }
+
+  function serializeDateTrineCombination(combination,lineSource,monthBranch,dayBranch){
+    const participants=[];
+    if(combination.mode==='C'){
+      const id=combination.lineIds[0],line=lineSource[id]||{};
+      participants.push({source:'line',lineNumber:id+1,side:'本卦',branch:line.branch||combination.anchorBranch||null},
+        {source:'line',lineNumber:id+1,side:'变卦',branch:line.changeBranch||combination.transformedBranch||null},
+        {source:combination.dateSource,branch:combination.dateBranch});
+    }else if(combination.mode==='A'){
+      combination.lineIds.forEach(id=>participants.push({source:'line',lineNumber:id+1,side:'本卦',branch:lineSource[id]?.branch||null}));
+      participants.push({source:combination.dateSource,branch:combination.dateBranch});
+    }else{
+      participants.push({source:'month',branch:monthBranch},{source:'day',branch:dayBranch},
+        {source:'line',lineNumber:combination.lineIds[0]+1,side:'本卦',branch:lineSource[combination.lineIds[0]]?.branch||null});
+    }
+    return {name:combination.definition.label,element:combination.definition.element,mode:combination.mode,
+      modeLabel:{C:'动爻本支＋变支＋日/月支',A:'同一卦体两条动爻＋日/月支',B:'月支＋日支＋中神动爻'}[combination.mode],
+      lineNumbers:[...new Set(participants.filter(item=>item.source==='line').map(item=>item.lineNumber))],
+      anchorLineNumber:Number.isInteger(combination.anchorLineId)?combination.anchorLineId+1:null,
+      motionKinds:[...(combination.motionKinds||[])],participants};
+  }
+
+  function buildRecordAnalysisSnapshot(record){
+    const recordLines=Array.isArray(record?.lines)?record.lines:[];
+    const monthPillar=String(record?.pillars?.month||''),dayPillar=String(record?.pillars?.day||'');
+    const monthCandidate=monthPillar.slice(-1),dayCandidate=dayPillar.slice(-1);
+    const hasManualPillarOverride=record?.pillarOverride?.enabled===true;
+    const overrideMonthBranch=record?.pillarOverride?.month?.branch||'';
+    const savedMonthBranch=record?.analysisSnapshot?.calendar?.monthBranch||'';
+    const monthBranch=GANZHI_BRANCHES.includes(monthCandidate)?monthCandidate:
+      (hasManualPillarOverride?(GANZHI_BRANCHES.includes(overrideMonthBranch)?overrideMonthBranch:null):
+        (GANZHI_BRANCHES.includes(savedMonthBranch)?savedMonthBranch:null));
+    const dayBranch=GANZHI_BRANCHES.includes(dayCandidate)?dayCandidate:(record?.analysisSnapshot?.calendar?.dayBranch||null);
+    const calculatedXunkong=dayPillar?calculateXunkongBranches(dayPillar):[];
+    const storedXunkong=[record?.calendarAssignments?.xunkong1,record?.calendarAssignments?.xunkong2].filter(Boolean);
+    const xunkongBranches=calculatedXunkong.length===2?calculatedXunkong:storedXunkong;
+    const xunkongKnown=xunkongBranches.length===2,monthRule=monthWangXiang[monthBranch]||null;
+    const elementNames={water:'水',wood:'木',earth:'土',fire:'火',metal:'金'};
+    function branchSnapshot(branch){
+      if(!branch) return null;
+      const monthly=getMonthlyBranchState(branch,monthBranch);
+      return {branch,element:branchElements[branch]||null,elementName:elementNames[branchElements[branch]]||null,
+        monthStatus:monthly?.status||null,monthStatusGroup:monthly?.group||null,monthRule:monthRule?.label||null,
+        monthBreak:monthBranch?sixClashes[monthBranch]===branch:null,xunkong:xunkongKnown?xunkongBranches.includes(branch):null};
+    }
+    const pattern=recordLines.length===6&&recordLines.every(line=>[0,1,2,3].includes(line.flowers))
+      ?recordLines.map(line=>mapping[line.flowers]?.yang?'1':'0').join(''):null;
+    const hexagram=pattern?hexagramData[pattern]||null:null;
+    const shiLineNumber=hexagram?.shi||null,yingLineNumber=shiLineNumber?((shiLineNumber-1+3)%6)+1:null;
+    const lineSnapshots=recordLines.map((line,index)=>{
+      const movement=getLineMovementInfo(line,dayBranch,index,recordLines);
+      return {lineNumber:index+1,position:['初爻','二爻','三爻','四爻','五爻','上爻'][index]||'',
+        role:index+1===shiLineNumber?'世爻':(index+1===yingLineNumber?'应爻':null),flowers:line.flowers,
+        relation:line.relation||null,hiddenRelation:relations.includes(line.hiddenRelation)?line.hiddenRelation:null,sixGod:line.shen||null,movement:movement?movement.kind:null,
+        original:branchSnapshot(line.branch),transformed:movement&&line.changeBranch?branchSnapshot(line.changeBranch):null,
+        changeRelation:movement?(line.changeRelation||null):null,effect:movement?(line.effect||''):''};
+    });
+    const branchTokens=[];
+    lineSnapshots.forEach(line=>{
+      if(line.original) branchTokens.push({lineNumber:line.lineNumber,position:line.position,side:'本卦',snapshot:line.original});
+      if(line.transformed) branchTokens.push({lineNumber:line.lineNumber,position:line.position,side:'变卦',snapshot:line.transformed});
+    });
+    const sameLineLiuHe=[],betweenLinesLiuHe=[];
+    for(let i=0;i<branchTokens.length;i++){
+      for(let j=i+1;j<branchTokens.length;j++){
+        const first=branchTokens[i],second=branchTokens[j];
+        const sameLine=first.lineNumber===second.lineNumber;
+        if(sameLine&&!(first.side==='本卦'&&second.side==='变卦')) continue;
+        const pairInfo=getLiuHePairInfo(first.snapshot.branch,second.snapshot.branch);
+        if(!pairInfo) continue;
+        const entry={pair:pairInfo.pair,mode:sameLine?'same-line-original-to-transformed':'between-lines',
+          first:{lineNumber:first.lineNumber,position:first.position,side:first.side,...first.snapshot},
+          second:{lineNumber:second.lineNumber,position:second.position,side:second.side,...second.snapshot},
+          fiveElementRelation:pairInfo.controlText?'control':(pairInfo.generationText?'generation':'none'),
+          controlText:pairInfo.controlText||null,generationText:pairInfo.generationText||null,
+          interpretation:pairInfo.hasControl?'合中带克：是否论克需比较双方力量':'六合：仍需结合问事与全卦判断',
+          forceJudgement:'not-automatically-determined'};
+        (sameLine?sameLineLiuHe:betweenLinesLiuHe).push(entry);
+      }
+    }
+    const liuHeRule={source:'第十二课',title:'合中带克、克中带合与贪合忘克',
+      principle:'六合与五行生克可能同时存在；不能见合就一概判断不克，也不能只见相克就忽略合。',
+      forceComparison:'力量接近时可考虑贪合忘克、以合为主；若克制一方力量明显强于被克一方，仍须论克。',
+      assessmentFactors:'结合月令旺衰、日辰生扶克制、卦中其他动爻及整体卦局比较双方力量。',
+      automation:'页面只识别六合配对并保存五行生克与旺衰背景，不自动判定贪合忘克是否成立。'};
+    let shiYing=null;
+    if(shiLineNumber&&yingLineNumber){
+      const shiBranch=recordLines[shiLineNumber-1]?.branch,yingBranch=recordLines[yingLineNumber-1]?.branch;
+      const shiElement=branchElements[shiBranch],yingElement=branchElements[yingBranch];
+      if(shiElement&&yingElement){
+        let kind='比和';
+        if(shiElement!==yingElement){
+          if(generates[shiElement]===yingElement) kind='世生应';
+          else if(generates[yingElement]===shiElement) kind='应生世';
+          else if(controls[shiElement]===yingElement) kind='世克应';
+          else if(controls[yingElement]===shiElement) kind='应克世';
+        }
+        shiYing={kind,shiLineNumber,yingLineNumber,shiBranch,yingBranch,shiElement,yingElement};
+      }
+    }
+    const dateCombinations=findDateTrineCombinations(recordLines,monthBranch,dayBranch);
+    const dateTrines=dateCombinations.map(item=>serializeDateTrineCombination(item,recordLines,monthBranch,dayBranch));
+    const intraTrines=findIntraHexagramTrines(recordLines,dayBranch,dateCombinations);
+    return {schemaVersion:5,calculatedAt:new Date().toISOString(),calculationSource:'saved-pillars-and-line-inputs',
+      calendar:{yearPillar:String(record?.pillars?.year||'')||null,monthPillar:monthPillar||null,dayPillar:dayPillar||null,
+        pillarSource:record?.pillarSource||'calendar-date',
+        monthBranch,dayBranch,monthWangXiangRule:monthRule?.label||null,
+        xunkongBranches:[...xunkongBranches],xunkongKnown},
+      pillarOverride:record?.pillarOverride?.enabled?JSON.parse(JSON.stringify(record.pillarOverride)):null,
+      hexagram:hexagram?{name:hexagram.full,palace:hexagram.palace,element:hexagram.element,
+        elementName:elementNames[hexagram.element]||null,stage:hexagram.stage,shiLineNumber,yingLineNumber}:null,
+      lines:lineSnapshots,shiYing,trines:{dateBased:dateTrines,withinHexagram:intraTrines},
+      branchRelations:{sameLineLiuHe,betweenLinesLiuHe,lessonRule:liuHeRule}};
   }
 
   // v57: 日期地支固定在最上面一行，并以第一条（上爻）纳甲槽的列中心定位。
@@ -2254,6 +3071,9 @@
     const groupRect=topGroup.getBoundingClientRect();
     const targetRect=topBranchSlot.getBoundingClientRect();
     const sideRect=dateBranchSidecar.getBoundingClientRect();
+    // Reserve a dedicated row for the sidecar, so it cannot overlap the title band or the first yao.
+    topGroup.style.paddingTop=(sideRect.height+7)+'px';
+    dateBranchSidecar.style.top='0px';
     const branchItems=[...dateBranchSidecar.querySelectorAll('.date-branch-item')];
     const firstBranchRect=branchItems[0]?.getBoundingClientRect();
     const lastBranchRect=branchItems[branchItems.length-1]?.getBoundingClientRect();
@@ -2261,8 +3081,9 @@
     const branchGroupWidth=firstBranchRect&&lastBranchRect
       ?lastBranchRect.right-firstBranchRect.left
       :sideRect.width;
-    dateBranchSidecar.style.left=(desiredCenter-branchGroupWidth/2)+'px';
-    dateBranchSidecar.style.top=(-sideRect.height-7)+'px';
+    const maxLeft=Math.max(0,topGroup.clientWidth-branchGroupWidth);
+    const desiredLeft=desiredCenter-branchGroupWidth/2;
+    dateBranchSidecar.style.left=Math.max(0,Math.min(maxLeft,desiredLeft))+'px';
     return combination||null;
   }
 
@@ -2323,6 +3144,9 @@
     if(Math.abs(target-row.scrollLeft)>1) row.scrollLeft=target;
   }
   function renderTrineOverlay(){
+    const dateCombinations=arguments.length?(arguments[0]||[]):findDateTrineCombinations();
+    const preferredDateAnchors=new Set(dateCombinations.filter(item=>item.mode==='C')
+      .map(item=>item.definition.element+':'+item.anchorLineId));
     if(!trineOverlay || !worksheetHost) return;
     const hostRect=worksheetHost.getBoundingClientRect();
     const width=Math.max(1,worksheetHost.clientWidth);
@@ -2334,7 +3158,7 @@
     const drawn=new Set();
     for(let movingId=0;movingId<6;movingId++){
       const movingItem=state[movingId];
-      const movingInfo=getLineMovementInfo(movingItem);
+      const movingInfo=getLineMovementInfo(movingItem,currentDayBranch,movingId,state);
       if(!movingInfo) continue;
       if(!movingItem.branch || !movingItem.changeBranch || movingItem.branch===movingItem.changeBranch) continue;
       const sameTrigramIds=movingId<3?[0,1,2]:[3,4,5];
@@ -2345,6 +3169,7 @@
         trine.branches.includes(movingItem.branch)&&trine.branches.includes(movingItem.changeBranch)
       );
       if(!matchingTrine || !isTrineActivationBranch(matchingTrine,movingItem.branch)) continue;
+      if(preferredDateAnchors.has(matchingTrine.element+':'+movingId)) continue;
       const missingBranch=matchingTrine.branches.find(branch=>branch!==movingItem.branch&&branch!==movingItem.changeBranch);
       if(!missingBranch) continue;
 
@@ -2403,15 +3228,21 @@
       }
     }
 
-    // v56: 日月参与三合绘图；节点在纳甲列上方并排显示。
-    const dateCombinations=arguments.length ? (arguments[0]||[]) : findDateTrineCombinations();
+    // 日月参与三合绘图；Mode C 优先展示同一动爻的本支→变支，再由日/月支补第三支。
     positionDateBranchSidecar(dateCombinations[0]||null);
     positionHexagramHeading();
     dateCombinations.forEach(combination=>{
       const {mode,definition,dateSource,lineIds,motionKinds}=combination;
       let nodes=[];
       let sourceText='';
-      if(mode==='A'){
+      if(mode==='C'){
+        const lineId=lineIds[0];
+        const baseToken=rowsHost.querySelector('[data-line-id="'+lineId+'"][data-zone="branch"] .drop-token');
+        const changeToken=rowsHost.querySelector('[data-line-id="'+lineId+'"][data-zone="changeBranch"] .drop-token');
+        const dateToken=dateBranchSidecar.querySelector('[data-date-branch="'+dateSource+'"]');
+        nodes=[baseToken,changeToken,dateToken];
+        sourceText='第'+(lineId+1)+'爻'+motionKinds[0]+'：'+(baseToken?.textContent.trim()||'')+'→'+(changeToken?.textContent.trim()||'')+' + '+(dateSource==='month'?'月支':'日支')+(dateToken?.textContent.trim()||'');
+      }else if(mode==='A'){
         const dateToken=dateBranchSidecar.querySelector('[data-date-branch="'+dateSource+'"]');
         const lineTokens=lineIds.map(id=>rowsHost.querySelector('[data-line-id="'+id+'"][data-zone="branch"] .drop-token'));
         nodes=[...lineTokens,dateToken];
@@ -2437,7 +3268,7 @@
       });
       group.appendChild(svgNode('polygon',{
         points:points.map(point=>point.x+','+point.y).join(' '),
-        fill:definition.color,'fill-opacity':mode==='A'?'.045':'.035',
+        fill:definition.color,'fill-opacity':mode==='C'?'.055':(mode==='A'?'.045':'.035'),
         'class':'date-trine-fill'
       }));
       [[0,1],[1,2],[2,0]].forEach(([a,b])=>{
@@ -2449,13 +3280,10 @@
           'class':'date-trine-edge mode-'+mode.toLowerCase()
         }));
       });
-      rects.forEach((rect,i)=>group.appendChild(svgNode('circle',{
-        cx:points[i].x,cy:points[i].y,r:Math.min(rect.width,rect.height)/2+3,
-        stroke:definition.color,'class':'date-trine-node'
-      })));
       const title=svgNode('title');
       const activationNote=definition.element==='water'?'申子辰允许子爻或辰爻发动。':'须由中神爻发动。';
-      title.textContent=definition.label+' · 方式'+mode+'：'+sourceText+'。'+activationNote+(mode==='A'?'另一个动爻与发动爻须在同一卦体，日支或月支补第三支。':'日支和月支补足另外两支。');
+      const modeNote=mode==='C'?'同一条发动爻的本卦地支与变卦地支组成两支，日支或月支补第三支。':(mode==='A'?'另一个动爻与发动爻须在同一卦体，日支或月支补第三支。':'日支和月支补足另外两支。');
+      title.textContent=definition.label+' · 方式'+mode+'：'+sourceText+'。'+activationNote+modeNote;
       group.appendChild(title);
       trineOverlay.appendChild(group);
     });
@@ -2475,7 +3303,7 @@
   // 只有对应两爻的纳甲地支确实互为六合时才画虚线；三组都出现时即呈现完整六合卦。
   const liuhePairColors={
     '子丑':'#89613f','寅亥':'#32844b','卯戌':'#c44738',
-    '辰酉':'#b98519','巳申':'#2677b8','午未':'#89613f'
+    '辰酉':'#D19A00','巳申':'#2677b8','午未':'#89613f'
   };
   function renderLiuheOverlay(){
     if(!liuheOverlay || !rowsHost) return;
@@ -2532,6 +3360,186 @@
   rowsHost.addEventListener('scroll',scheduleLiuheOverlay,true);
 
 
+
+  // v98: automatic Najia / 六亲 / 六神 with a non-destructive checker.
+  // Pattern strings are bottom-to-top: 初爻 -> 上爻.
+  const TRIGRAM_NAME_BY_PATTERN={'111':'乾','110':'兑','101':'离','100':'震','011':'巽','010':'坎','001':'艮','000':'坤'};
+  const TRIGRAM_NAJIA_BRANCHES={
+    '乾':{inner:['子','寅','辰'],outer:['午','申','戌']},
+    '兑':{inner:['巳','卯','丑'],outer:['亥','酉','未']},
+    '离':{inner:['卯','丑','亥'],outer:['酉','未','巳']},
+    '震':{inner:['子','寅','辰'],outer:['午','申','戌']},
+    '巽':{inner:['丑','亥','酉'],outer:['未','巳','卯']},
+    '坎':{inner:['寅','辰','午'],outer:['申','戌','子']},
+    '艮':{inner:['辰','午','申'],outer:['戌','子','寅']},
+    '坤':{inner:['未','巳','卯'],outer:['丑','亥','酉']}
+  };
+  const AUTO_LINE_POSITIONS=['初爻','二爻','三爻','四爻','五爻','上爻'];
+  const autoReviewReportEl=document.getElementById('auto-review-report');
+
+  function clearAutoReviewReport(){
+    document.querySelectorAll('.drop-slot.auto-check-error,.drop-slot.auto-check-missing').forEach(slot=>slot.classList.remove('auto-check-error','auto-check-missing'));
+    if(autoReviewReportEl){autoReviewReportEl.hidden=true;autoReviewReportEl.replaceChildren();}
+  }
+  function najiaBranchesForPattern(pattern){
+    if(typeof pattern!=='string'||!/^[01]{6}$/.test(pattern)) return null;
+    const lower=TRIGRAM_NAJIA_BRANCHES[TRIGRAM_NAME_BY_PATTERN[pattern.slice(0,3)]];
+    const upper=TRIGRAM_NAJIA_BRANCHES[TRIGRAM_NAME_BY_PATTERN[pattern.slice(3,6)]];
+    return lower&&upper?[...lower.inner,...upper.outer]:null;
+  }
+  function sixKinForBranch(branch,palaceElement){
+    const element=branchElements[branch];
+    if(!element||!palaceElement) return null;
+    if(element===palaceElement) return '兄弟';
+    if(generates[palaceElement]===element) return '子孙';
+    if(controls[palaceElement]===element) return '妻财';
+    if(controls[element]===palaceElement) return '官鬼';
+    if(generates[element]===palaceElement) return '父母';
+    return null;
+  }
+  function buildAutoAssemblyPlan(){
+    if(!state.every(item=>item.flowers!==null&&mapping[item.flowers])||!currentHexagramInfo){
+      return {ready:false,entries:[],notes:['请先完成六次摇卦的阴阳输入，确定本卦后再自动装卦或检查。']};
+    }
+    const pattern=state.map(item=>mapping[item.flowers].yang?'1':'0').join('');
+    const originalBranches=najiaBranchesForPattern(pattern);
+    if(!originalBranches) return {ready:false,entries:[],notes:['无法识别当前上下卦的纳甲结构，请检查六爻阴阳输入。']};
+    const palaceElement=currentHexagramInfo.element,entries=[],notes=[],originalKins=[];
+    for(let i=0;i<6;i++){
+      const branch=originalBranches[i],kin=sixKinForBranch(branch,palaceElement);
+      if(!kin) return {ready:false,entries:[],notes:['无法根据本卦卦宫五行计算第'+(i+1)+'爻六亲。']};
+      originalKins.push(kin);
+      entries.push(
+        {kind:'line',lineId:i,zone:'branch',label:AUTO_LINE_POSITIONS[i]+'纳甲地支',expected:branch},
+        {kind:'line',lineId:i,zone:'relation',label:AUTO_LINE_POSITIONS[i]+'六亲',expected:kin}
+      );
+    }
+    // 伏神规则：只有问事分类明确指定六亲用神，且该六亲没有出现在本卦六爻时，
+    // 才从当前卦所属卦宫的本宫纯卦定位该六亲，并伏在对应爻位的飞神之下。
+    // “世爻”类运势卦不是六亲用神，不自动生成伏神。
+    const mainUseGod=String(QUESTION_CATEGORY_BY_VALUE.get(questionCategoryEl.value)?.useGod||'').trim();
+    if(relations.includes(mainUseGod)&&!originalKins.includes(mainUseGod)){
+      const palaceRoot=Object.entries(hexagramData).find(([,info])=>info.palace===currentHexagramInfo.palace&&info.stage==='本宫');
+      const palaceBranches=palaceRoot?najiaBranchesForPattern(palaceRoot[0]):null;
+      const hiddenLineIds=(palaceBranches||[]).map((branch,index)=>sixKinForBranch(branch,palaceElement)===mainUseGod?index:-1).filter(index=>index>=0);
+      if(hiddenLineIds.length!==1){
+        return {ready:false,entries:[],notes:['无法在'+currentHexagramInfo.palace+'宫本宫卦中唯一定位'+mainUseGod+'伏神，请人工核对。']};
+      }
+      const hiddenLineId=hiddenLineIds[0];
+      entries.push({kind:'line',lineId:hiddenLineId,zone:'hiddenRelation',label:AUTO_LINE_POSITIONS[hiddenLineId]+'伏神',expected:mainUseGod});
+    }
+    const dayPillar=String(currentPillars?.day||''),dayStem=dayPillar.charAt(0);
+    const firstGod=dayStemFirstGod[dayStem]||null;
+    if(firstGod){
+      const firstIndex=sixGods.indexOf(firstGod);
+      for(let i=0;i<6;i++) entries.push({kind:'line',lineId:i,zone:'shen',label:AUTO_LINE_POSITIONS[i]+'六神',expected:sixGods[(firstIndex+i)%sixGods.length]});
+      entries.push({kind:'calendar',key:'dayGod',label:'日干六神起神',expected:firstGod});
+    }
+    for(const key of ['year','month','day']){
+      const pillar=String(currentPillars?.[key]||''),branch=pillar.charAt(1);
+      if(GANZHI_STEMS.includes(pillar.charAt(0))&&GANZHI_BRANCHES.includes(branch)){
+        const kin=sixKinForBranch(branch,palaceElement);
+        if(kin) entries.push({kind:'calendar',key:key+'Relation',label:(key==='year'?'年':key==='month'?'月':'日')+'柱六亲',expected:kin});
+      }
+    }
+    // 明动按摇卦标记变化；暗动仅在其所在上／下卦没有明动时才参与该卦的变化。
+    const transformedPattern=state.map((item,index)=>{
+      const bit=mapping[item.flowers].yang?'1':'0';
+      return getLineMovementInfo(item,currentDayBranch,index,state)?(bit==='1'?'0':'1'):bit;
+    }).join('');
+    const transformedBranches=najiaBranchesForPattern(transformedPattern);
+    if(!transformedBranches) return {ready:false,entries:[],notes:['变卦上下卦无法识别，停止装配以免写入错误纳甲。']};
+    for(let i=0;i<6;i++){
+      if(getLineMovementInfo(state[i],currentDayBranch,i,state)){
+        const branch=transformedBranches[i],kin=sixKinForBranch(branch,palaceElement);
+        if(kin) entries.push(
+          {kind:'line',lineId:i,zone:'changeBranch',label:AUTO_LINE_POSITIONS[i]+'变卦纳甲地支',expected:branch},
+          {kind:'line',lineId:i,zone:'changeRelation',label:AUTO_LINE_POSITIONS[i]+'变卦六亲',expected:kin}
+        );
+      }
+    }
+    return {ready:true,entries,notes,pattern,transformedPattern};
+  }
+  function readAutoEntry(entry){
+    return entry.kind==='line'?(state[entry.lineId]?.[entry.zone]||''):(calendarAssignments[entry.key]||'');
+  }
+  function writeAutoEntry(entry,value){
+    if(entry.kind==='line') state[entry.lineId][entry.zone]=value;
+    else calendarAssignments[entry.key]=value;
+  }
+  function autoEntrySlot(entry){
+    return entry.kind==='line'
+      ?rowsHost.querySelector('[data-line-id="'+entry.lineId+'"][data-zone="'+entry.zone+'"]')
+      :document.querySelector('[data-calendar-key="'+entry.key+'"]');
+  }
+  function renderAutoAssemblyReport(mode,summary,issues,notes){
+    clearAutoReviewReport();
+    if(!autoReviewReportEl) return;
+    const messages=[...issues,...(notes||[]).map(message=>({kind:'note',message}))];
+    if(!messages.length) return;
+    const list=document.createElement('ul');list.className='auto-review-list';
+    messages.forEach(issue=>{
+      const item=document.createElement('li');
+      item.className=issue.kind==='error'?'error':issue.kind==='missing'?'missing':'note';
+      item.textContent=issue.message;list.appendChild(item);
+      const slot=issue.entry?autoEntrySlot(issue.entry):null;
+      if(slot&&issue.kind==='error') slot.classList.add('auto-check-error');
+      if(slot&&issue.kind==='missing') slot.classList.add('auto-check-missing');
+    });
+    autoReviewReportEl.appendChild(list);
+    autoReviewReportEl.hidden=false;
+  }
+  function correctCalendarXunkongFromDayPillar(){
+    if(currentXunkongBranches.length!==2) return [];
+    const expected=[currentXunkongBranches[0],currentXunkongBranches[1]];
+    const actual=[calendarAssignments.xunkong1||null,calendarAssignments.xunkong2||null];
+    if(actual[0]===expected[0]&&actual[1]===expected[1]) return [];
+    calendarAssignments.xunkong1=expected[0];
+    calendarAssignments.xunkong2=expected[1];
+    renderCalendarDropSlots();
+    return ['旬空已按日柱校正：原填写为「'+actual.map(value=>value||'空').join('、')+'」，正确为「'+expected.join('、')+'」。'];
+  }
+  function runAutoAssembly(mode){
+    const xunkongNotes=correctCalendarXunkongFromDayPillar();
+    const plan=buildAutoAssemblyPlan();
+    if(!plan.ready){
+      renderAutoAssemblyReport(mode,'',[],[...xunkongNotes,...plan.notes.slice(0,1)]);
+      showToast(xunkongNotes.length?'已校正旬空；请先完成摇卦':'请先完成摇卦或核对卦盘条件');
+      return;
+    }
+    // Preserve the original values so automatically inserted values are not
+    // presented as if the user had already entered and passed them.
+    const originalValues=new Map(plan.entries.map(entry=>[entry,readAutoEntry(entry)]));
+    if(mode==='fill'){
+      plan.entries.forEach(entry=>{
+        if(!originalValues.get(entry)){
+          writeAutoEntry(entry,entry.expected);
+        }
+      });
+      for(let i=0;i<6;i++) renderRow(i);
+      renderCalendarDropSlots();
+      renderLineIndicators();
+    }
+    const errors=[],missing=[];
+    for(const entry of plan.entries){
+      const current=readAutoEntry(entry);
+      if(mode==='fill'&&!originalValues.get(entry)) continue;
+      if(!current) missing.push({kind:'missing',entry,message:entry.label+'：尚未填写，应该为「'+entry.expected+'」。'});
+      else if(current!==entry.expected) errors.push({kind:'error',entry,message:entry.label+'：你填写的是「'+current+'」，正确应为「'+entry.expected+'」。已保留原值。'});
+    }
+    const issues=[...errors,...missing];
+    renderAutoAssemblyReport(mode,'',issues,xunkongNotes);
+    if(mode==='fill') showToast(xunkongNotes.length?'已校正旬空；装卦完成':(errors.length?'有项目需要核对':'装卦完成'));
+    else showToast(xunkongNotes.length?'已校正旬空并完成检查':(issues.length?'发现需要核对的项目':'未发现错误'));
+  }
+  const autoAssembleCheckButton=document.getElementById('auto-assemble-check');
+  if(autoAssembleCheckButton) autoAssembleCheckButton.addEventListener('click',()=>{
+    const plan=buildAutoAssemblyPlan();
+    if(!plan.ready){runAutoAssembly('fill');return;}
+    const hasMissing=plan.entries.some(entry=>!readAutoEntry(entry));
+    runAutoAssembly(hasMissing?'fill':'check');
+  });
+
   function renderLineIndicators(){
     state.forEach((item,id)=>{
       const row=rowsHost.querySelector('[data-line-id="'+id+'"]');
@@ -2545,7 +3553,7 @@
       shi.classList.toggle('active',isShi);
       ying.classList.toggle('active',isYing);
       // 世、应标记分别按各自纳甲地支的五行着色，关系判断也使用这两个五行。
-      const elementColors={water:'#2677b8',wood:'#32844b',earth:'#89613f',fire:'#c44738',metal:'#b98519'};
+      const elementColors={water:'#2677b8',wood:'#32844b',earth:'#89613f',fire:'#c44738',metal:'#D19A00'};
       const shiLine=(currentHexagramInfo?.shi-1);
       const yingLine=((currentHexagramInfo?.shi-1+3)%6);
       const shiElement=currentHexagramInfo ? branchElements[state[shiLine]?.branch] : '';
@@ -2554,13 +3562,13 @@
       ying.style.backgroundColor=isYing?(elementColors[yingElement]||'#aaa69b'):'#aaa69b';
       shi.title=isShi?'世爻 · '+(shiElement?'纳甲地支五行':'请先填写该爻纳甲地支'):'';
       ying.title=isYing?'应爻 · '+(yingElement?'纳甲地支五行':'请先填写该爻纳甲地支'):'';
-      const darkInfo=getDarkMovementInfo(item);
+      const darkInfo=getDarkMovementInfo(item,currentDayBranch,id,state);
       const lineResult=item.flowers===null?null:mapping[item.flowers];
       const activeNow=!!(lineResult&&lineResult.moving)||!!darkInfo;
       const effectSelect=row.querySelector('.effect-select');
       if(effectSelect) effectSelect.style.display=activeNow?'':'none';
       const groupIds=id<3?[0,1,2]:[3,4,5];
-      const groupHasMotion=groupIds.some(lineId=>getLineMovementInfo(state[lineId]));
+      const groupHasMotion=groupIds.some(lineId=>getLineMovementInfo(state[lineId],currentDayBranch,lineId,state));
       const changeMark=row.querySelector('.change-mark');
       row.classList.toggle('trigram-inactive',!groupHasMotion);
       if(groupHasMotion && lineResult){
@@ -2663,10 +3671,19 @@
     renderRecords();
   }
   async function githubRequest(path, options={}){
-    const response=await fetch('/api'+path,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
-    const payload=await response.json().catch(()=>({}));
-    if(!response.ok){const error=new Error(payload.error||('GitHub API error '+response.status));error.status=response.status;throw error;}
-    return payload;
+    const controller=new AbortController();
+    const timeoutId=window.setTimeout(()=>controller.abort(),20000);
+    try{
+      const response=await fetch('/api'+path,{...options,signal:controller.signal,headers:{'Content-Type':'application/json',...(options.headers||{})}});
+      const payload=await response.json().catch(()=>({}));
+      if(!response.ok){const error=new Error(payload.error||('GitHub API error '+response.status));error.status=response.status;throw error;}
+      return payload;
+    }catch(error){
+      if(error?.name==='AbortError') throw new Error('GitHub 请求超过 20 秒没有响应，请检查网络或重新连接 GitHub');
+      throw error;
+    }finally{
+      window.clearTimeout(timeoutId);
+    }
   }
   async function refreshGitHubAuth(){
     try{
@@ -2758,34 +3775,34 @@
     return result;
   }
   function makeRecordSnapshot(){
-    return {
-      schemaVersion:11,
+    const record={
+      schemaVersion:16,
       id:editingRecordId||(crypto.randomUUID?crypto.randomUUID():String(Date.now())+'-'+Math.random().toString(16).slice(2)),
-      savedAt:new Date().toISOString(),
-      date:document.getElementById('record-date').value||selectedDateKey,
-      timezone:JAPAN_TZ,
-      question:getQuestionSnapshot(),
-      isCase:isCaseRecord,
-      ...(isCaseRecord?{caseSource:caseSourceSelect.value,caseReviewStatus:caseSourceSelect.value==='classroom'?caseReviewStatusSelect.value:null,caseMemo:memoTextarea.value.trim()}:{}),
+      savedAt:new Date().toISOString(),date:document.getElementById('record-date').value||selectedDateKey,timezone:JAPAN_TZ,
+      question:getQuestionSnapshot(),isCase:isCaseRecord,
+      ...(isCaseRecord?{caseSource:caseSourceSelect.value,caseMemo:memoTextarea.value.trim(),caseConclusion:caseConclusionTextarea.value.trim()}:{}),
       dailyMemo:isCaseRecord?'':memoTextarea.value.trim(),
-      pillars:{year:document.getElementById('year-pillar').textContent,month:document.getElementById('month-pillar').textContent,day:document.getElementById('day-pillar').textContent},
-      // Every manually assigned token/list value is saved per line for exact restoration.
-      lines:state.map(item=>{
-        const isMoving=!!getLineMovementInfo(item);
-        return {
-          flowers:item.flowers,branch:item.branch,relation:item.relation,shen:item.shen,
-          changeBranch:isMoving?item.changeBranch:null,
-          changeRelation:isMoving?item.changeRelation:null,
-          effect:isMoving?(item.effect||''):''
-        };
+      pillars:{year:currentPillars.year||'',month:currentPillars.month||'',day:currentPillars.day||''},
+      pillarSource:isCaseRecord&&manualPillarOverride.enabled?'manual-case':'calendar-date',
+      pillarOverride:isCaseRecord&&manualPillarOverride.enabled?{
+        enabled:true,
+        year:{...manualPillarOverride.year},
+        month:{...manualPillarOverride.month},
+        day:{...manualPillarOverride.day}
+      }:null,
+      // Keep user input separate from calculated analysis, so records can be independently re-evaluated.
+      lines:state.map((item,index)=>{
+        const isMoving=!!getLineMovementInfo(item,currentDayBranch,index,state);
+        return {flowers:item.flowers,branch:item.branch,relation:item.relation,hiddenRelation:item.hiddenRelation||null,shen:item.shen,
+          changeBranch:isMoving?item.changeBranch:null,changeRelation:isMoving?item.changeRelation:null,
+          effect:isMoving?(item.effect||''):''};
       }),
-      // Year/month/day six-relative slots, day-stem six-god slot and the two xunkong branches.
       calendarAssignments:{...calendarAssignments},
-      // Preserve the exact displayed 建除日 and the month/day branches used at save time.
-      jianchu:currentJianChuInfo?{...currentJianChuInfo,yi:currentJianChuInfo.yi||'',ji:currentJianChuInfo.ji||'',guidanceSnapshot:currentJianChuInfo.guidance||'',savedAt:new Date().toISOString()}:null,
-      // Preserve the exact value-day mansion and the candidate source snapshot for historical records.
-      twentyEight:currentTwentyEightInfo?{...currentTwentyEightInfo,candidateYiji:{...currentTwentyEightInfo.candidateYiji}}:null
+      jianchu:!(isCaseRecord&&manualPillarOverride.enabled)&&currentJianChuInfo?{...currentJianChuInfo,yi:currentJianChuInfo.yi||'',ji:currentJianChuInfo.ji||'',guidanceSnapshot:currentJianChuInfo.guidance||'',savedAt:new Date().toISOString()}:null,
+      twentyEight:!(isCaseRecord&&manualPillarOverride.enabled)&&currentTwentyEightInfo?{...currentTwentyEightInfo,candidateYiji:{...currentTwentyEightInfo.candidateYiji}}:null
     };
+    record.analysisSnapshot=buildRecordAnalysisSnapshot(record);
+    return record;
   }
   function editableEntryFingerprint(){
     const record=makeRecordSnapshot();
@@ -2796,7 +3813,10 @@
       isCase:record.isCase,
       caseSource:record.isCase?record.caseSource:null,
       caseReviewStatus:record.isCase?record.caseReviewStatus:null,
+      pillarSource:record.pillarSource,
+      pillarOverride:record.pillarOverride,
       memo:record.isCase?record.caseMemo:record.dailyMemo,
+      caseConclusion:record.isCase?record.caseConclusion||'':null,
       lines:record.lines,
       calendarAssignments:record.calendarAssignments
     });
@@ -2834,12 +3854,26 @@
     activeDayDocument=JSON.parse(JSON.stringify(doc));
     return JSON.parse(JSON.stringify(doc));
   }
+  let saveFeedbackRevision=0;
+  let markdownSyncQueue=Promise.resolve();
   async function saveCurrentRecord(){
-    const record=makeRecordSnapshot();
+    const feedbackRevision=++saveFeedbackRevision;
+    setSaveFeedback('正在保存…','pending');
+    // 课堂案例允许分阶段录入；未完成或暂时不合法的年月日柱作为草稿原样保存，
+    // 完整性／六十甲子合法性由检查流程提示，不阻止保存。
+    const pillarProblem=manualPillarProblem();
+    let record;
+    try{record=makeRecordSnapshot();}
+    catch(error){
+      setGitHubStatus('未同步：'+error.message);
+      setSaveFeedback('保存前出错：'+error.message,'error');
+      showToast('生成卦例数据失败：'+error.message);
+      return false;
+    }
     const date=record.date;
     let doc;
     try{doc=await getDayDocumentForSave(date);}
-    catch(error){setGitHubStatus('未同步：'+error.message);showToast('GitHub 读取失败，未保存：'+error.message);return false;}
+    catch(error){setGitHubStatus('未同步：'+error.message);setSaveFeedback('保存失败：'+error.message,'error');showToast('GitHub 读取失败，未保存：'+error.message);return false;}
     const now=new Date().toISOString();
     doc.schemaVersion=1;doc.recordDate=date;doc.timezone=JAPAN_TZ;
     doc.createdAt=doc.createdAt||now;doc.updatedAt=now;
@@ -2879,15 +3913,52 @@
     try{
       await saveDayToGitHub(date,doc);
       editingRecordId=record.id;forceNewRecord=false;
-      replaceDayCache(date,doc);markEntryClean();
-      const savedLabel=record.isCase?(record.caseSource==='practice'?'个人练习案例已保存：':'课堂案例已保存：'):(shouldSaveAsDaily?'每日卦已保存：':(category==='daily'?'新卦例已另存：':'额外问题已保存：'));
-      showToast(savedLabel+recordHexagramName(record));
+      replaceDayCache(date,doc);
+      markEntryClean();
+      const savedLabel=record.isCase?(record.caseSource==='practice'?'个人练习案例已保存：':'课堂案例已保存：'):(shouldSaveAsDaily?'每日卦已另存：':(category==='daily'?'新卦例已另存：':'额外问题已保存：'));
+      const savedTime=new Date().toLocaleTimeString('zh-CN',{hour12:false,hour:'2-digit',minute:'2-digit'});
+      const savedName=recordHexagramName(record);
+      // JSON is the authoritative save. Confirm it immediately; Markdown is a secondary, queued sync.
+      setGitHubStatus('JSON 已保存：'+date+'；MD 正在同步…');
+      setSaveFeedback(pillarProblem?'草稿已保存：'+pillarProblem+' · '+savedTime:'JSON 已保存：'+savedName+' · '+savedTime,pillarProblem?'partial':'success');
+      showToast(pillarProblem
+        ?savedLabel+savedName+'；草稿已保存，'+pillarProblem
+        :savedLabel+savedName+'；JSON 已保存，MD 正在同步');
+      const markdownRecord={
+        ...record,
+        date,
+        recordType:shouldSaveAsDaily?'dailyFortune':'additionalQuestion',
+        ...(shouldSaveAsDaily?{dailyMemo:doc.dailyMemo||''}:{})
+      };
+      markdownSyncQueue=markdownSyncQueue.catch(()=>{}).then(()=>saveRecordMarkdown(markdownRecord));
+      markdownSyncQueue.then(()=>{
+        if(feedbackRevision!==saveFeedbackRevision)return;
+        setGitHubStatus('JSON 与 MD 已保存：'+date+(pillarProblem?'；柱信息仍为未完成草稿':''));
+        setSaveFeedback(pillarProblem?'草稿已保存：'+pillarProblem+' · '+savedTime:'已保存：'+savedName+' · '+savedTime,pillarProblem?'partial':'success');
+        showToast(pillarProblem
+          ?savedLabel+savedName+'；JSON 与 MD 已保存，'+pillarProblem
+          :savedLabel+savedName+'；JSON 与 MD 均已保存');
+      }).catch(error=>{
+        if(feedbackRevision!==saveFeedbackRevision)return;
+        setGitHubStatus('JSON 已保存；MD 未同步：'+error.message);
+        setSaveFeedback('JSON 已保存；MD 未同步 · '+savedTime,'partial');
+        showToast('JSON 已保存；MD 未同步：'+error.message);
+      });
       return true;
-    }catch(error){setGitHubStatus('未同步：'+error.message);showToast('GitHub 保存失败，尚未同步：'+error.message);return false;}
+    }catch(error){
+      setGitHubStatus('未同步：'+error.message);
+      setSaveFeedback('保存失败：'+error.message,'error');
+      showToast('GitHub 保存失败，尚未同步：'+error.message);
+      return false;
+    }
   }
   function openRecord(record){
     if(!record||!Array.isArray(record.lines)||record.lines.length!==6){showToast('卦例数据格式不正确');return;}
+    clearAutoReviewReport();
     const date=record.date||getJapanDateParts();
+    const modeKey=record.isCase?'classroom':'daily';
+    const dateKey=typeof date==='string'?date:modeDraftDateKey();
+    entryModeDraftCache[modeKey]?.delete(dateKey);
     if(typeof date==='string'){
       if(!chooseCalendarDate(date,true)) return;
     }
@@ -2900,6 +3971,7 @@
       flowers:[0,1,2,3].includes(line.flowers)?line.flowers:null,
       branch:typeof line.branch==='string'?line.branch:null,
       relation:relations.includes(line.relation)?line.relation:null,
+      hiddenRelation:relations.includes(line.hiddenRelation)?line.hiddenRelation:null,
       shen:sixGods.includes(line.shen)?line.shen:null,
       changeBranch:typeof line.changeBranch==='string'?line.changeBranch:null,
       changeRelation:relations.includes(line.changeRelation)?line.changeRelation:null,
@@ -2912,6 +3984,7 @@
     }
     restoreQuestion(record.question||null);
     setCaseEditor(record);
+    renderManualPillarInputs();
     const legacyMemo=[record.morningAnalysis,record.eveningMemo].filter(value=>typeof value==='string'&&value.trim()).join('\n\n');
     memoTextarea.value=record.isCase?(typeof record.caseMemo==='string'?record.caseMemo:''):(typeof record.dailyMemo==='string'?record.dailyMemo:(activeDayDocument?.dailyMemo||legacyMemo));
     calendarAssignments={
@@ -2919,9 +3992,11 @@
       monthRelation:relations.includes(record.calendarAssignments?.monthRelation)?record.calendarAssignments.monthRelation:null,
       dayRelation:relations.includes(record.calendarAssignments?.dayRelation)?record.calendarAssignments.dayRelation:null,
       dayGod:sixGods.includes(record.calendarAssignments?.dayGod)?record.calendarAssignments.dayGod:null,
-      xunkong1:yangBranches.concat(yinBranches).includes(record.calendarAssignments?.xunkong1)?record.calendarAssignments.xunkong1:null,
-      xunkong2:yangBranches.concat(yinBranches).includes(record.calendarAssignments?.xunkong2)?record.calendarAssignments.xunkong2:null
+      xunkong1:record.calendarAssignments?.xunkong1??currentXunkongBranches[0]??null,
+      xunkong2:record.calendarAssignments?.xunkong2??currentXunkongBranches[1]??null
     };
+    lastXunkongDayPillar=String(record.pillars?.day||'');
+    applyPillarContext();
     selected=null;updateSelectedTiles();
     renderCalendarDropSlots();
     state.forEach((_,index)=>renderRow(index));
@@ -2965,7 +4040,8 @@
       if(record.isCase){
         if(record.caseSource==='practice') questionParts.push('个人练习案例');
         else questionParts.push('课堂案例 · '+(CASE_REVIEW_LABELS[record.caseReviewStatus]||'待核对'));
-        if(record.caseMemo) questionParts.push('案例 Memo：'+record.caseMemo.slice(0,80));
+        if(record.caseMemo) questionParts.push('老师分析：'+record.caseMemo.slice(0,80));
+        if(record.caseConclusion) questionParts.push('老师结论：'+record.caseConclusion.slice(0,80));
       }else if(record.dailyMemo) questionParts.push('Memo：'+record.dailyMemo.slice(0,80));
       else if(record.morningAnalysis||record.eveningMemo) questionParts.push('Memo：'+[record.morningAnalysis,record.eveningMemo].filter(Boolean).join(' / ').slice(0,80));
       const journalText=questionParts.length?(questionParts.join(' · ')+' · '):'';
@@ -2976,7 +4052,8 @@
       const actions=document.createElement('div');actions.className='record-actions';
       const open=document.createElement('button');open.type='button';open.className='small-action primary';open.textContent='打开';open.addEventListener('click',()=>openRecord(record));
       const exportOne=document.createElement('button');exportOne.type='button';exportOne.className='small-action';exportOne.textContent='导出';exportOne.title='只导出这一条卦例';exportOne.addEventListener('click',()=>exportRecords([record],'single'));
-      const copy=document.createElement('button');copy.type='button';copy.className='small-action';copy.textContent='复制';copy.title='复制卦例内容，供 AI 分析';copy.addEventListener('click',()=>copyRecordForAI(record));
+      const copy=document.createElement('button');copy.type='button';copy.className='small-action';copy.textContent='复制';copy.title='复制完整卦盘文字资料（含原始 JSON）';copy.addEventListener('click',()=>copyRecordForAI(record));
+      const copyMd=document.createElement('button');copyMd.type='button';copyMd.className='small-action';copyMd.textContent='复制 MD';copyMd.title='生成并保存独立 Markdown 文件，再复制 MD 内容';copyMd.addEventListener('click',()=>copyRecordMarkdown(record));
       const remove=document.createElement('button');remove.type='button';remove.className='small-action';remove.textContent='删除';remove.addEventListener('click',async()=>{
         if(!window.confirm('确定从 GitHub 删除这条卦例吗？')) return;
         const date=record.date;const doc=activeDayDocument&&activeDayDocument.recordDate===date?JSON.parse(JSON.stringify(activeDayDocument)):await loadDayFromGitHub(date);
@@ -2986,14 +4063,19 @@
         doc.updatedAt=new Date().toISOString();
         try{
           await saveDayToGitHub(date,doc);
+          let markdownDeleteError=null;
+          try{await deleteRecordMarkdown(record);}catch(error){markdownDeleteError=error;}
           if(editingRecordId===record.id)editingRecordId=null;
           replaceDayCache(date,doc);
           selectedRecordKeys.delete(key);
           renderRecords();
-          showToast('已从 GitHub 删除');
+          if(markdownDeleteError){
+            setGitHubStatus('JSON 已删除；MD 清理失败：'+markdownDeleteError.message);
+            showToast('卦例已删除，但 MD 文件清理失败');
+          }else showToast('卦例及 MD 文件已删除');
         }catch(error){showToast('删除失败：'+error.message);}
       });
-      actions.append(open,exportOne,copy,remove);
+      actions.append(open,exportOne,copy,copyMd,remove);
       item.append(selectLabel,main,actions);
       recordsList.appendChild(item);
     });
@@ -3001,103 +4083,270 @@
   }
   function exportRecords(records){
     if(!Array.isArray(records)||!records.length){showToast('请先勾选要导出的卦例');return;}
-    const payload={app:'liuyao-learning-app',schemaVersion:11,exportedAt:new Date().toISOString(),records};
+    const portableRecords=records.map(record=>({...record,schemaVersion:16,
+      analysisSnapshot:record.analysisSnapshot?.schemaVersion>=5?record.analysisSnapshot:buildRecordAnalysisSnapshot(record)}));
+    const payload={app:'liuyao-learning-app',schemaVersion:16,exportedAt:new Date().toISOString(),records:portableRecords};
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const anchor=document.createElement('a');anchor.href=url;
-    const datePart=records.length===1?(records[0].date||'record'):'selected';
+    const url=URL.createObjectURL(blob),anchor=document.createElement('a');anchor.href=url;
+    const datePart=portableRecords.length===1?(portableRecords[0].date||'record'):'selected';
     anchor.download='liuyao-records-'+datePart+'-'+(new Date().toISOString().slice(0,10))+'.json';
-    anchor.click();
-    window.setTimeout(()=>URL.revokeObjectURL(url),1000);
-    showToast(records.length===1?'已导出这一条卦例':'已导出 '+records.length+' 条卦例');
+    anchor.click();window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+    showToast(portableRecords.length===1?'已导出这一条卦例':'已导出 '+portableRecords.length+' 条卦例');
   }
   function formatRecordForAI(record){
     const question=record.question||{};
-    const flowerLabels={
-      0:'O（三字，老阳／动爻）',
-      1:'•（一花两字，少阳／静爻）',
-      2:'••（两花一字，少阴／静爻）',
-      3:'X（三花，老阴／动爻）'
-    };
+    const flowerLabels={0:'O（三字，老阳／动爻）',1:'•（一花两字，少阳／静爻）',2:'••（两花一字，少阴／静爻）',3:'X（三花，老阴／动爻）'};
     const recordLines=Array.isArray(record.lines)?record.lines:[];
-
-    const recordDayBranch=String(record.pillars?.day||'').slice(-1);
-    const recordClashBranch=recordDayBranch?sixClashes[recordDayBranch]:null;
+    const analysisSnapshot=record.analysisSnapshot?.schemaVersion>=5?record.analysisSnapshot:buildRecordAnalysisSnapshot(record);
+    const analysisLines=Array.isArray(analysisSnapshot.lines)?analysisSnapshot.lines:[];
+    function branchStatusText(status){
+      if(!status) return '未记录地支';
+      const parts=[];
+      parts.push(status.monthStatus?'月令状态：'+status.monthStatus+'（'+(status.monthStatusGroup==='wangxiang'?'旺相':'休囚死')+'）':'月令状态：未计算（缺少有效月支或地支）');
+      parts.push('旬空：'+(status.xunkong===null?'未计算':(status.xunkong?'是':'否')));
+      parts.push('月破：'+(status.monthBreak===null?'未计算':(status.monthBreak?'是':'否')));
+      return parts.join('；');
+    }
+    function dayBranchInteractionText(lineBranch){
+      const dayBranch=analysisSnapshot.calendar?.dayBranch;
+      if(!lineBranch||!dayBranch||!branchElements[lineBranch]||!branchElements[dayBranch]) return '日辰作用未计算';
+      const names={water:'水',wood:'木',earth:'土',fire:'火',metal:'金'};
+      const dayElement=branchElements[dayBranch],lineElement=branchElements[lineBranch];
+      let relation='比和';
+      if(dayElement!==lineElement){
+        if(generates[dayElement]===lineElement) relation='日支'+dayBranch+names[dayElement]+'生爻支'+lineBranch+names[lineElement];
+        else if(generates[lineElement]===dayElement) relation='爻支'+lineBranch+names[lineElement]+'生日支'+dayBranch+names[dayElement];
+        else if(controls[dayElement]===lineElement) relation='日支'+dayBranch+names[dayElement]+'克爻支'+lineBranch+names[lineElement];
+        else if(controls[lineElement]===dayElement) relation='爻支'+lineBranch+names[lineElement]+'克日支'+dayBranch+names[dayElement];
+      }else{
+        relation='日支'+dayBranch+names[dayElement]+'与爻支'+lineBranch+names[lineElement]+'比和';
+      }
+      const extras=[];
+      if(sixClashes[dayBranch]===lineBranch) extras.push('日辰六冲：'+dayBranch+'冲'+lineBranch);
+      if(liuHe[dayBranch]?.partner===lineBranch) extras.push('日辰六合：'+dayBranch+lineBranch+'合');
+      return relation+(extras.length?'；'+extras.join('；'):'');
+    }
+    function monthBranchInteractionText(lineBranch){
+      const monthBranch=analysisSnapshot.calendar?.monthBranch;
+      if(!lineBranch||!monthBranch||!branchElements[lineBranch]||!branchElements[monthBranch]) return '月建作用未计算';
+      const names={water:'水',wood:'木',earth:'土',fire:'火',metal:'金'};
+      const monthElement=branchElements[monthBranch],lineElement=branchElements[lineBranch];
+      let relation='月支'+monthBranch+names[monthElement]+'与爻支'+lineBranch+names[lineElement]+'比和';
+      if(monthElement!==lineElement){
+        if(generates[monthElement]===lineElement) relation='月支'+monthBranch+names[monthElement]+'生爻支'+lineBranch+names[lineElement];
+        else if(generates[lineElement]===monthElement) relation='爻支'+lineBranch+names[lineElement]+'生月支'+monthBranch+names[monthElement];
+        else if(controls[monthElement]===lineElement) relation='月支'+monthBranch+names[monthElement]+'克爻支'+lineBranch+names[lineElement];
+        else if(controls[lineElement]===monthElement) relation='爻支'+lineBranch+names[lineElement]+'克月支'+monthBranch+names[monthElement];
+      }
+      const extras=[];
+      if(sixClashes[monthBranch]===lineBranch) extras.push('月建六冲：'+monthBranch+'冲'+lineBranch+'（月破）');
+      if(liuHe[monthBranch]?.partner===lineBranch) extras.push('月建六合：'+monthBranch+lineBranch+'合');
+      return relation+(extras.length?'；'+extras.join('；'):'');
+    }
     const lines=recordLines.map((line,index)=>{
-      const isBrightMoving=!!mapping[line.flowers]?.moving;
-      const isDarkMoving=!isBrightMoving&&!!recordClashBranch&&line.branch===recordClashBranch;
-      const isMoving=isBrightMoving||isDarkMoving;
-      const fields=[];
-      fields.push('摇卦：'+(flowerLabels[line.flowers]||'未记录'));
-      if(line.branch) fields.push('纳甲地支：'+line.branch);
-      if(line.relation) fields.push('六亲：'+line.relation);
-      if(line.shen) fields.push('六神：'+line.shen);
-      if(isMoving&&line.changeBranch) fields.push('变爻地支：'+line.changeBranch);
-      if(isMoving&&line.changeRelation) fields.push('变爻六亲：'+line.changeRelation);
-      if(isMoving&&line.effect) fields.push('生克关系：'+line.effect);
-      if(isBrightMoving) fields.push('状态：明动');
-      else if(isDarkMoving) fields.push('状态：暗动');
+      const savedLine=analysisLines[index]||{},isBrightMoving=!!mapping[line.flowers]?.moving,isMoving=isBrightMoving||!!savedLine.movement;
+      const fields=['摇卦：'+(flowerLabels[line.flowers]||'未记录')];
+      if(line.branch){
+        fields.push('本卦纳甲：'+line.branch+(savedLine.original?.elementName||'')+'（'+branchStatusText(savedLine.original)+'）');
+        fields.push('月建对本爻：'+monthBranchInteractionText(line.branch));
+        fields.push('日辰对本爻：'+dayBranchInteractionText(line.branch));
+      }else{
+        fields.push('本卦纳甲：未填写');
+      }
+      fields.push('六亲：'+(line.relation||'未填写'));
+      fields.push('伏藏六亲：'+(line.hiddenRelation?'人工标注'+line.hiddenRelation:'未作人工标注'));
+      fields.push('六神：'+(line.shen||'未填写'));
+      fields.push('爻动静：'+(savedLine.movement||(isBrightMoving?'明动':'静爻')));
+      if(isMoving){
+        if(line.changeBranch) fields.push('变卦纳甲：'+line.changeBranch+(savedLine.transformed?.elementName||'')+'（'+branchStatusText(savedLine.transformed)+'）');
+        else fields.push('变卦纳甲：未填写');
+        fields.push('变卦六亲：'+(line.changeRelation||'未填写'));
+        if(line.effect) fields.push('已手工标注的动变关系：'+line.effect);
+      }
+      if(savedLine.role) fields.push('爻位：'+savedLine.role);
       return '第'+(index+1)+'爻（'+(['初爻','二爻','三爻','四爻','五爻','上爻'][index]||'')+'）：'+fields.join('；');
     });
     const calendar=record.calendarAssignments||{};
     const calendarText=[
+      analysisSnapshot.calendar?.yearPillar?'年柱：'+analysisSnapshot.calendar.yearPillar:'年柱：未提供',
+      analysisSnapshot.calendar?.monthPillar?'月柱：'+analysisSnapshot.calendar.monthPillar:'',
+      analysisSnapshot.calendar?.dayPillar?'日柱：'+analysisSnapshot.calendar.dayPillar:'',
+      analysisSnapshot.calendar?.monthWangXiangRule?'月令旺相规则：'+analysisSnapshot.calendar.monthWangXiangRule:'',
+      analysisSnapshot.calendar?.monthBranch?'月支：'+analysisSnapshot.calendar.monthBranch:'',
+      analysisSnapshot.calendar?.dayBranch?'日支：'+analysisSnapshot.calendar.dayBranch:'',
       calendar.yearRelation?'年柱六亲：'+calendar.yearRelation:'',
       calendar.monthRelation?'月柱六亲：'+calendar.monthRelation:'',
       calendar.dayRelation?'日柱六亲：'+calendar.dayRelation:'',
-      calendar.dayGod?'日干六神：'+calendar.dayGod:'',
-      calendar.xunkong1||calendar.xunkong2?'旬空：'+[calendar.xunkong1,calendar.xunkong2].filter(Boolean).join('、'):''
+      calendar.dayGod?'日干起六神：'+calendar.dayGod+'（初爻起）':'日干起六神：未填写',
+      analysisSnapshot.calendar?.xunkongBranches?.length===2?'旬空：'+analysisSnapshot.calendar.xunkongBranches.join('、')+'（已在六爻中逐爻标记）':'旬空：无法从保存的日柱确认'
     ].filter(Boolean);
+    function trineText(trine,kind){
+      const participants=(trine.participants||[]).map(item=>{
+        if(item.source==='line') return '第'+item.lineNumber+'爻'+(item.side||'')+item.branch;
+        if(item.source==='month') return '月支'+item.branch;
+        if(item.source==='day') return '日支'+item.branch;
+        return item.branch||'';
+      }).filter(Boolean).join('、');
+      const modeLabel=trine.modeLabel||(trine.mode==='same-trigram'?'同一卦体内动爻本支＋变支＋第三支':trine.mode==='C'?'动爻本支＋变支＋日/月支':trine.mode==='A'?'同一卦体两条动爻＋日/月支':'月支＋日支＋中神动爻');
+      return trine.name+'（'+modeLabel+'；'+kind+'）参与来源：'+participants;
+    }
+    const trines=analysisSnapshot.trines||{};
+    const trineTexts=[...(trines.dateBased||[]).map(item=>trineText(item,'日月参与三合')),...(trines.withinHexagram||[]).map(item=>trineText(item,'同一卦体三合'))];
+    const branchRelations=analysisSnapshot.branchRelations||{};
+    function liuHeText(item){
+      const first=item.first||{},second=item.second||{};
+      const firstLabel='第'+first.lineNumber+'爻'+(first.side||'')+(first.branch||'');
+      const secondLabel='第'+second.lineNumber+'爻'+(second.side||'')+(second.branch||'');
+      const pairLabel=firstLabel+(item.mode==='same-line-original-to-transformed'?'动化':' 与 ')+secondLabel;
+      const detail=item.controlText?'；五行关系：'+item.controlText+'；合中带克，需比较双方力量':(item.generationText?'；五行关系：'+item.generationText:'；未识别到直接五行生克');
+      const stateLabels=[first.monthStatus?'第一支月令'+first.monthStatus:null,second.monthStatus?'第二支月令'+second.monthStatus:null,
+        first.xunkong===true?'第一支旬空':null,second.xunkong===true?'第二支旬空':null,
+        first.monthBreak===true?'第一支月破':null,second.monthBreak===true?'第二支月破':null].filter(Boolean);
+      return pairLabel+'：'+item.pair+'合'+detail+(stateLabels.length?'（'+stateLabels.join('、')+'）':'')+'；力量结论：待结合日月及全卦人工判断';
+    }
+    const liuHeTexts=[...(branchRelations.sameLineLiuHe||[]).map(liuHeText),...(branchRelations.betweenLinesLiuHe||[]).map(liuHeText)];
+    const liuHeRuleText=branchRelations.lessonRule
+      ?'课程规则（'+branchRelations.lessonRule.source+'）：'+branchRelations.lessonRule.principle+' '+branchRelations.lessonRule.forceComparison+' '+branchRelations.lessonRule.assessmentFactors+' '+branchRelations.lessonRule.automation
+      :'课程规则提醒：六合与五行克制可能并存；力量接近时可考虑贪合忘克，一方明显强于另一方时仍须论克。需结合月令、日辰及其他动爻判断。';
+    const shiYingText=analysisSnapshot.shiYing
+      ?'世应关系：第'+analysisSnapshot.shiYing.shiLineNumber+'爻世爻（'+analysisSnapshot.shiYing.shiBranch+({water:'水',wood:'木',earth:'土',fire:'火',metal:'金'}[analysisSnapshot.shiYing.shiElement]||'')+'）与第'+analysisSnapshot.shiYing.yingLineNumber+'爻应爻（'+analysisSnapshot.shiYing.yingBranch+({water:'水',wood:'木',earth:'土',fire:'火',metal:'金'}[analysisSnapshot.shiYing.yingElement]||'')+'）：'+analysisSnapshot.shiYing.kind
+      :'世应关系：纳甲资料不足，暂不能判断';
+    const palace=analysisSnapshot.hexagram||{};
+    const linePattern=recordLines.length===6&&recordLines.every(line=>[0,1,2,3].includes(line.flowers))
+      ?recordLines.map(line=>mapping[line.flowers]?.yang?'1':'0').join(''):null;
+    const trigramNames=linePattern?{upper:TRIGRAM_NAME_BY_PATTERN[linePattern.slice(3,6)],lower:TRIGRAM_NAME_BY_PATTERN[linePattern.slice(0,3)]}:{};
+    const trigramElements={乾:'金',兑:'金',离:'火',震:'木',巽:'木',坎:'水',艮:'土',坤:'土'};
+    const hexagramStructureText=palace.name
+      ?'本卦：'+palace.name+'；上卦：'+(trigramNames.upper||'未识别')+(trigramNames.upper?'（'+trigramElements[trigramNames.upper]+'）':'')+'；下卦：'+(trigramNames.lower||'未识别')+(trigramNames.lower?'（'+trigramElements[trigramNames.lower]+'）':'')+'；卦宫：'+palace.palace+'宫（'+(palace.elementName||'五行未记录')+'）；卦宫世次：'+(palace.stage||'未记录')
+      :'本卦结构：卦宫或上下卦信息不足';
+    const movementLines=analysisLines.filter(line=>line.movement);
+    const movementSummaryText=movementLines.length
+      ?'动爻概况：'+movementLines.map(line=>'第'+line.lineNumber+'爻'+line.movement).join('、')
+      :'动爻概况：六爻皆静，无明动或暗动，未形成变卦';
+    const portableRecord={...record,schemaVersion:16,analysisSnapshot,
+      lines:recordLines.map((line,index)=>{
+        const isBrightMoving=!!mapping[line.flowers]?.moving,isMoving=isBrightMoving||!!analysisLines[index]?.movement;
+        return {...line,changeBranch:isMoving?(line.changeBranch||null):null,changeRelation:isMoving?(line.changeRelation||null):null,effect:isMoving?(line.effect||''):''};
+      })};
+    const allSixRelationsKnown=recordLines.length===6&&recordLines.every(line=>relations.includes(line.relation));
+    const visibleUseGod=question.mainUseGod&&recordLines.some(line=>line.relation===question.mainUseGod);
+    const hasManualHiddenRelation=recordLines.some(line=>line.hiddenRelation===question.mainUseGod);
+    const hiddenCheckText=allSixRelationsKnown&&relations.includes(question.mainUseGod)&&!visibleUseGod&&!hasManualHiddenRelation
+      ?'提示：六爻已记录的六亲中未见主要用神'+question.mainUseGod+'，且尚未手动标记伏藏位置，请人工核对。':'';
+    const isClassroomCase=!!record.isCase&&record.caseSource!=='practice';
+    const memoSection=record.isCase
+      ?(record.caseMemo?'【'+(isClassroomCase?'老师分析 Memo':'个人案例 Memo')+'】\n'+record.caseMemo:'')
+      :(record.recordType==='dailyFortune'&&record.dailyMemo?'【个人复盘 Memo】\n'+record.dailyMemo:'');
+    const conclusionSection=record.isCase&&record.caseConclusion
+      ?'【'+(isClassroomCase?'老师结论':'个人结论')+'】\n'+record.caseConclusion:'';
     const result=[
-      '【六爻卦例｜供 AI 分析】',
-      '日期：'+(record.date||'未注明'),
-      '卦名：'+recordHexagramName(record),
-      record.pillars?'年月日柱：'+[record.pillars.year,record.pillars.month,record.pillars.day].filter(Boolean).join('、'):'',
-      question.categoryLabel?'问事分类：'+question.categoryLabel:'',
-      question.text?'所问事项：'+question.text:'',
-      question.mainUseGod?'主要用神：'+question.mainUseGod:'',
-      question.hint?'用神提示：'+question.hint:'',
+      '【六爻卦盘资料｜供其他 AI 阅读】','日期：'+(record.date||'未注明'),'卦名：'+recordHexagramName(record),
+      record.pillarSource==='manual-case'
+        ?'年月日柱（老师案例手动指定）：年柱'+(record.pillars?.year||'未知')+'；月柱'+(record.pillars?.month||'未填写')+'；日柱'+(record.pillars?.day||'未填写')+'；记录日期'+(record.date||'未注明')+'仅用于归档'
+        :(record.pillars?'起卦年月日柱：'+[record.pillars.year,record.pillars.month,record.pillars.day].filter(Boolean).join('、'):''),
+      question.categoryLabel?'问事分类：'+question.categoryLabel:'',question.text?'所问事项：'+question.text:'',
+      (['daily','annual'].includes(question.category)?'主要用神：无固定用神（以世爻为主）':(question.mainUseGod?'主要用神：'+question.mainUseGod:'')),question.hint?'用神提示：'+question.hint:'',
       record.isCase?'案例类型：'+(record.caseSource==='practice'?'个人练习案例':'课堂案例（老师讲解）'):'',
       record.isCase&&record.caseSource!=='practice'?'案例核对状态：'+(CASE_REVIEW_LABELS[record.caseReviewStatus]||'待核对'):'',
-      '',
-      '【六爻记录｜从初爻到上爻】',
-      ...lines,
-      '',
-      calendarText.length?'【年月日及旬空标注】\n'+calendarText.join('\n'):'',
-      record.isCase&&record.caseMemo?'【案例分析 Memo】\n'+record.caseMemo:(!record.isCase&&record.dailyMemo?'【每日记录 Memo】\n'+record.dailyMemo:''),
-      record.jianchu?.name?'建除：'+record.jianchu.name:'',
-      record.twentyEight?.name?'二十八宿：'+record.twentyEight.name:'',
-      '保存时间：'+(record.savedAt||'未记录'),
-      '',
-      '【原始记录 JSON】',
-      JSON.stringify({
-        ...record,
-        lines:recordLines.map((line,index)=>{
-          const isBrightMoving=!!mapping[line.flowers]?.moving;
-          const isDarkMoving=!isBrightMoving&&!!recordClashBranch&&line.branch===recordClashBranch;
-          const isMoving=isBrightMoving||isDarkMoving;
-          return {
-            ...line,
-            changeBranch:isMoving?(line.changeBranch||null):null,
-            changeRelation:isMoving?(line.changeRelation||null):null,
-            effect:isMoving?(line.effect||''):''
-          };
-        })
-      },null,2)
+      '','【卦盘基本信息】',hexagramStructureText,shiYingText,movementSummaryText,
+      '','【六爻记录｜从初爻到上爻｜含本卦与变卦状态】',...lines,'',
+      '【年月日及旬空标注】\n'+calendarText.join('\n'),hiddenCheckText,'',
+      '【三合识别结果】',...(trineTexts.length?trineTexts:['当前保存资料中未识别到符合页面规则的三合局']),
+      '','【六合与合中带克】',liuHeRuleText,...(liuHeTexts.length?liuHeTexts:['当前保存的本卦与变爻地支中未识别到六合配对']),
+      memoSection,
+      conclusionSection,
+      record.jianchu?.name?'建除：'+record.jianchu.name:'',record.twentyEight?.name?'二十八宿：'+record.twentyEight.name:'',
+      '保存时间：'+(record.savedAt||'未记录'),'','【原始记录 JSON｜schemaVersion 16，含 analysisSnapshot v5（含人工伏藏标记）】',JSON.stringify(portableRecord,null,2)
     ].filter(value=>value!==''||value===0);
     return result.join('\n');
+  }
+  function recordMarkdownApiPath(record){
+    const date=String(record?.date||'');
+    const id=String(record?.id||'');
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^[A-Za-z0-9_-]{1,100}$/.test(id)){
+      throw new Error('这条卦例缺少合法日期或记录 ID，无法生成独立 MD 文件');
+    }
+    return '/record-markdown/'+date+'/'+encodeURIComponent(id);
+  }
+  function recordMarkdownFilePath(record){
+    const date=String(record.date),id=String(record.id);
+    return 'daily-records/'+date.slice(0,4)+'/'+date.slice(5,7)+'/markdown/'+date+'--'+id+'.md';
+  }
+  function formatRecordAsMarkdown(record){
+    const text=formatRecordForAI(record);
+    const marker='【原始记录 JSON｜schemaVersion 16，含 analysisSnapshot v5（含人工伏藏标记）】';
+    const markerIndex=text.lastIndexOf(marker);
+    if(markerIndex<0) throw new Error('卦盘文字中缺少原始 JSON，无法生成完整 MD 文件');
+    const narrative=text.slice(0,markerIndex).trim()
+      .replace(/^【六爻卦盘资料｜供其他 AI 阅读】$/m,'# 六爻卦盘资料')
+      .replace(/^【([^】]+)】/gm,'## $1');
+    const rawJson=text.slice(markerIndex+marker.length).trim();
+    const recordPath='daily-records/'+String(record.date).slice(0,4)+'/'+String(record.date).slice(5,7)+'/'+String(record.date)+'.json';
+    const fence='\u0060\u0060\u0060';
+    return [
+      narrative,
+      '',
+      '> 本文件由六爻排卦页面中的 JavaScript 根据保存的 JSON 和确定性排盘规则生成；未调用 AI 模型，不包含 AI 解卦意见。',
+      '> 对应原始数据：'+recordPath,
+      '> 本文件路径：'+recordMarkdownFilePath(record),
+      '',
+      '## 原始记录 JSON',
+      '',
+      fence+'json',
+      rawJson,
+      fence,
+      ''
+    ].join('\n');
+  }
+  async function saveRecordMarkdown(record){
+    if(!githubAuthenticated&&!await refreshGitHubAuth()) throw new Error('请先连接 GitHub');
+    const path=recordMarkdownApiPath(record);
+    const markdown=formatRecordAsMarkdown(record);
+    const existing=await githubRequest(path,{method:'GET'});
+    if(existing.markdown===markdown&&existing.sha) return {saved:true,unchanged:true,sha:existing.sha};
+    return githubRequest(path,{method:'PUT',body:JSON.stringify({markdown,sha:existing.sha||null})});
+  }
+  async function deleteRecordMarkdown(record){
+    const path=recordMarkdownApiPath(record);
+    const existing=await githubRequest(path,{method:'GET'});
+    if(!existing.sha) return {deleted:true,missing:true};
+    return githubRequest(path,{method:'DELETE',body:JSON.stringify({sha:existing.sha})});
+  }
+  async function copyRecordMarkdown(record){
+    const markdown=formatRecordAsMarkdown(record);
+    let saved=false,saveError=null;
+    if(githubAuthenticated||await refreshGitHubAuth()){
+      try{await saveRecordMarkdown(record);saved=true;}
+      catch(error){saveError=error;}
+    }
+    let copied=false;
+    try{
+      await navigator.clipboard.writeText(markdown);
+      copied=true;
+    }catch(error){
+      const field=document.createElement('textarea');
+      field.value=markdown;field.setAttribute('readonly','');
+      field.style.position='fixed';field.style.opacity='0';field.style.pointerEvents='none';
+      document.body.appendChild(field);field.select();
+      copied=document.execCommand('copy');field.remove();
+    }
+    if(!copied){showToast('复制 MD 失败，请检查浏览器剪贴板权限');return;}
+    if(saved) showToast('MD 文件已保存并复制');
+    else if(saveError){setGitHubStatus('MD 未同步：'+saveError.message);showToast('MD 已复制，但保存失败：'+saveError.message);}
+    else showToast('MD 已复制；连接 GitHub 后才能保存文件');
   }
   async function copyRecordForAI(record){
     const text=formatRecordForAI(record);
     try{
       await navigator.clipboard.writeText(text);
-      showToast('卦例内容已复制，可以粘贴给 AI 分析');
+      showToast('卦盘文字资料已复制，可以交给其他 AI 阅读');
     }catch(error){
       const field=document.createElement('textarea');
       field.value=text;field.setAttribute('readonly','');
       field.style.position='fixed';field.style.opacity='0';field.style.pointerEvents='none';
       document.body.appendChild(field);field.select();
       const copied=document.execCommand('copy');field.remove();
-      showToast(copied?'卦例内容已复制，可以粘贴给 AI 分析':'复制失败，请检查浏览器剪贴板权限');
+      showToast(copied?'卦盘文字资料已复制，可以交给其他 AI 阅读':'复制失败，请检查浏览器剪贴板权限');
     }
   }
   function updateImportSelectionUI(){
@@ -3189,10 +4438,11 @@
   }
   document.getElementById('save-record').addEventListener('click',saveCurrentRecord);
   function resetToNewEntry(){
-    state=Array.from({length:6},()=>({flowers:null,branch:null,relation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}));
+    state=Array.from({length:6},()=>({flowers:null,branch:null,relation:null,hiddenRelation:null,shen:null,changeBranch:null,changeRelation:null,effect:''}));
     calendarAssignments={yearRelation:null,monthRelation:null,dayRelation:null,dayGod:null,xunkong1:null,xunkong2:null};
     selected=null;editingRecordId=null;forceNewRecord=true;
-    setCaseEditor(null);setQuestionCategory('daily');questionTextEl.value='';memoTextarea.value='';
+    setCaseEditor(null);setQuestionCategory('daily');questionTextEl.value='';memoTextarea.value='';caseConclusionTextarea.value='';
+    renderManualPillarInputs();applyPillarContext();
     updateSelectedTiles();renderCalendarDropSlots();
     state.forEach((_,index)=>renderRow(index));refreshBranchStatusTokens();renderTrigramNames();
     markEntryClean();showToast('已开启新卦；之前的记录保持不变');
