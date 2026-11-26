@@ -127,13 +127,13 @@ class TestIngestDryRun:
         assert result.exit_code == 0
         assert "Dry run" in result.stdout
 
-    def test_write_is_refused_in_m1(self, tmp_path: Path) -> None:
+    def test_write_requires_a_repository(self, tmp_path: Path) -> None:
         (tmp_path / "sources.yaml").write_text(
             yaml.safe_dump({"curated_notes": {"enabled": True}}), encoding="utf-8"
         )
         result = runner.invoke(app, ["ingest", "run", "--no-dry-run"])
         assert result.exit_code == 1
-        assert "not implemented until M4" in result.stdout
+        assert "--repository is required" in result.stdout
 
     def test_missing_config_is_reported(self) -> None:
         result = runner.invoke(app, ["ingest", "run", "--dry-run"])
